@@ -6,13 +6,15 @@
   <style>
     body {
       font-family: Arial;
-      text-align: center;
       background: black;
       color: white;
-      padding: 50px;
+      text-align: center;
+      padding: 40px;
     }
+    .screen { display: none; }
+    .active { display: block; }
     button {
-      padding: 15px 30px;
+      padding: 15px 25px;
       font-size: 18px;
       margin-top: 20px;
       background: red;
@@ -22,14 +24,46 @@
     }
   </style>
 </head>
+
 <body>
 
-<h1>🏃 SprintIQ</h1>
-<p>Your Sprint Tracking App</p>
+<!-- HOME -->
+<div id="home" class="screen active">
+  <h1>🏃 SprintIQ</h1>
+  <p>Your Sprint Tracking App</p>
+  <button onclick="showScreen('setup')">Start New Run</button>
+</div>
 
-<button onclick="alert('Start Run Coming Soon 🔥')">
-Start New Run
-</button>
+<!-- SETUP -->
+<div id="setup" class="screen">
+  <h2>Select Distance</h2>
+  <button onclick="showScreen('live')">200m</button><br>
+  <button onclick="showScreen('live')">400m</button>
+</div>
+
+<!-- LIVE RUN -->
+<div id="live" class="screen">
+  <h2>Live Run</h2>
+  <p>Tracking Speed...</p>
+  <button onclick="showScreen('results')">Finish Run</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <h2>Results</h2>
+  <p>Time: 58.22s</p>
+  <p>Max Speed: 18.5 mph</p>
+  <button onclick="showScreen('home')">Back Home</button>
+</div>
+
+<script>
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.classList.remove('active');
+  });
+  document.getElementById(screenId).classList.add('active');
+}
+</script>
 
 </body>
 </html>
