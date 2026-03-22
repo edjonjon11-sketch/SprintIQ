@@ -10,7 +10,6 @@
       background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
       color: white;
     }
-
     .screen {
       display: none;
       padding: 20px;
@@ -118,36 +117,43 @@
   </div>
 
   <div id="live" class="screen">
-    <div class="header">Live Run</div>
+  <div class="header">Live Run</div>
 
-    <video id="camera" autoplay playsinline muted></video>
+  <!-- CAMERA -->
+  <video id="camera" autoplay playsinline muted class="camera-preview"></video>
+
+  <!-- GRAPH -->
+  <div class="card">
     <canvas id="speedChart" width="600" height="120"></canvas>
-
-    <div class="card">
-      <p id="timer">0.00s</p>
-      <p id="speed">Speed: 0 mph</p>
-      <p id="splitDisplay">Split: --</p>
-    </div>
-
-    <button class="btn" onclick="beginMovement()">Start Movement</button>
-    <button class="btn" onclick="markSplit()">Mark Split</button>
-    <button class="btn" onclick="switchCamera()">Switch Camera</button>
-    <button class="btn" onclick="stopRun()">Finish Run</button>
   </div>
 
-  <div id="results" class="screen">
-    <div class="header">Results</div>
-
-    <div class="card">
-      <p id="finalTime"></p>
-      <p id="finalSpeed"></p>
-    </div>
-
-    <div class="card" id="splitsBox"></div>
-    <div class="card" id="aiFeedback"></div>
-
-    <button class="btn" onclick="showScreen('home')">Back Home</button>
+  <!-- STATS -->
+  <div class="card">
+    <p id="timer">0.00s</p>
+    <p id="speed">Speed: 0 mph</p>
+    <p id="splitDisplay">Split: --</p>
   </div>
+
+  <!-- BUTTONS -->
+  <button class="btn" onclick="beginMovement()">Start Movement</button>
+  <button class="btn" onclick="markSplit()">Mark Split</button>
+  <button class="btn" onclick="switchCamera()">Switch Camera</button>
+  <button class="btn" onclick="stopRun()">Finish Run</button>
+</div>
+
+<div id="results" class="screen">
+  <div class="header">Results</div>
+
+  <div class="card">
+    <p id="finalTime"></p>
+    <p id="finalSpeed"></p>
+  </div>
+
+  <div class="card" id="splitsBox"></div>
+  <div class="card" id="aiFeedback"></div>
+
+  <button class="btn" onclick="showScreen('home')">Back Home</button>
+</div>
 
   <script>
     let startTime;
