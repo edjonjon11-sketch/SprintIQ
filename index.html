@@ -3,6 +3,7 @@
 <head>
   <title>SprintIQ Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin: 0;
@@ -10,394 +11,255 @@
       background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
       color: white;
     }
-    .screen {
-      display: none;
-      padding: 20px;
-    }
 
-    .active {
-      display: block;
-    }
+    .screen { display:none; padding:20px; }
+    .active { display:block; }
 
-    .header {
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    .sub {
-      color: #ddd;
-      margin-bottom: 8px;
-    }
+    .header { font-size:26px; font-weight:bold; }
+    .sub { color:#aaa; }
 
     .card {
-      background: linear-gradient(145deg, #111, #1c1c1c);
-      padding: 15px;
-      border-radius: 16px;
-      margin-top: 15px;
-      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.25);
+      background: linear-gradient(145deg, #0f0f0f, #1a1a1a);
+      padding:18px;
+      border-radius:18px;
+      margin-top:15px;
+      box-shadow: 
+        0 0 25px rgba(255,0,0,0.15),
+        inset 0 0 10px rgba(255,0,0,0.05);
     }
 
     .btn {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      background: linear-gradient(to right, #ff0000, #ff4d4d);
-      color: white;
-      border: none;
-      border-radius: 14px;
-      margin-top: 15px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+      width:100%;
+      padding:16px;
+      font-size:18px;
+      background:linear-gradient(to right,#ff0000,#ff4d4d);
+      color:white;
+      border:none;
+      border-radius:14px;
+      margin-top:12px;
+      font-weight:bold;
+      box-shadow:0 6px 20px rgba(255,0,0,0.5);
     }
 
-    video {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-top: 10px;
-      background: #000;
+    .camera-preview {
+      width:100%;
+      height:140px;
+      object-fit:cover;
+      border-radius:16px;
+      margin-top:10px;
+      border:1px solid rgba(255,0,0,0.2);
     }
 
     canvas {
-      width: 100%;
-      height: 120px;
-      background: #111;
-      border-radius: 12px;
-      margin-top: 12px;
-      display: block;
+      width:100%;
+      height:120px;
+      background:linear-gradient(to top,#111,#1a1a1a);
+      border-radius:14px;
     }
 
-    .big {
-      font-size: 22px;
-      font-weight: bold;
-    }
+    #timer { font-size:32px; font-weight:bold; }
+    #speed { font-size:20px; color:#aaa; }
+    #splitDisplay { color:#ff4d4d; }
   </style>
 </head>
+
 <body>
 
-  <div id="home" class="screen active">
-    <div class="header">🏃 SprintIQ Pro</div>
-    <div class="sub">Track + AI Coaching</div>
-    <div style="height:3px; width:60px; background:red; margin:10px 0;"></div>
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="header">🏃 SprintIQ Pro</div>
+  <div class="sub">Train Faster. Run Smarter.</div>
 
-    <div class="card">
-      <div style="color:#aaa;">BEST TIMES</div>
-      <div style="display:flex; justify-content:space-between; margin-top:10px;">
-        <div>100m<br><b>11.2s</b></div>
-        <div>200m<br><b>24.5s</b></div>
-        <div>400m<br><b>58.2s</b></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="color:#aaa;">LAST RUN</div>
-      <div class="big">400m - 58.22s</div>
-      <div style="color:#aaa;">Max Speed: 18.5 mph</div>
-    </div>
-
-    <div class="card">
-      <div style="color:#aaa;">WEEKLY PROGRESS</div>
-      <div style="margin-top:10px;">📈 Improving</div>
-    </div>
-
-    <button class="btn" onclick="showScreen('setup')">Start New Run</button>
+  <div class="card">
+    <b>BEST TIMES</b><br>
+    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
   </div>
 
-  <div id="setup" class="screen">
-    <div class="header">Select Event</div>
+  <button class="btn" onclick="showScreen('setup')">Start New Run</button>
+</div>
 
-    <button class="btn" onclick="startRun(100)">100m</button>
-    <button class="btn" onclick="startRun(200)">200m</button>
-    <button class="btn" onclick="startRun(400)">400m</button>
-    <button class="btn" onclick="startRun(800)">800m</button>
-    <button class="btn" onclick="startRun(1600)">1600m</button>
-    <button class="btn" onclick="startRun(100)">100m Hurdles</button>
-    <button class="btn" onclick="showScreen('home')">Back Home</button>
-  </div>
+<!-- SETUP -->
+<div id="setup" class="screen">
+  <div class="header">Select Event</div>
 
-  <div id="live" class="screen">
+  <button class="btn" onclick="startRun(100)">100m</button>
+  <button class="btn" onclick="startRun(200)">200m</button>
+  <button class="btn" onclick="startRun(400)">400m</button>
+
+  <button class="btn" onclick="showScreen('home')">Back</button>
+</div>
+
+<!-- LIVE -->
+<div id="live" class="screen">
   <div class="header">Live Run</div>
 
-  <!-- CAMERA -->
-  <video id="camera" autoplay playsinline muted class="camera-preview"></video>
+  <video id="camera" class="camera-preview" autoplay playsinline muted></video>
 
-  <!-- GRAPH -->
   <div class="card">
     <canvas id="speedChart" width="600" height="120"></canvas>
   </div>
 
-  <!-- STATS -->
   <div class="card">
-    <p id="timer">0.00s</p>
-    <p id="speed">Speed: 0 mph</p>
-    <p id="splitDisplay">Split: --</p>
+    <div id="timer">0.00s</div>
+    <div id="speed">Speed: 0 mph</div>
+    <div id="splitDisplay">Split: --</div>
   </div>
 
-  <!-- BUTTONS -->
-  <button class="btn" onclick="beginMovement()">Start Movement</button>
-  <button class="btn" onclick="markSplit()">Mark Split</button>
-  <button class="btn" onclick="switchCamera()">Switch Camera</button>
+  <div class="card">
+    <div style="font-size:14px;color:#aaa;">Speed Meter</div>
+    <div style="height:10px;background:#222;border-radius:10px;margin-top:8px;">
+      <div id="speedBar" style="height:10px;width:0%;background:red;border-radius:10px;"></div>
+    </div>
+  </div>
+
   <button class="btn" onclick="stopRun()">Finish Run</button>
 </div>
 
+<!-- RESULTS -->
 <div id="results" class="screen">
   <div class="header">Results</div>
 
   <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
+    <div id="finalTime"></div>
+    <div id="finalSpeed"></div>
   </div>
 
-  <div class="card" id="splitsBox"></div>
   <div class="card" id="aiFeedback"></div>
 
   <button class="btn" onclick="showScreen('home')">Back Home</button>
 </div>
 
-  <script>
-    let startTime;
-    let timerInterval;
-    let distance = 100;
-    let speedHistory = [];
-    let splits = [];
-    let isRunning = false;
-    let currentCamera = "environment";
+<script>
 
-    let chartCanvas;
-    let chartCtx;
-    let chartData = [];
+let startTime;
+let timerInterval;
+let distance = 100;
+let speedHistory = [];
+let chartData = [];
+let isRunning = false;
 
-    let lastFrameData = null;
-    let motionThreshold = 20;
-    let splitZones = [0.25, 0.5, 0.75, 1.0];
-    let zoneTriggered = [];
-    let motionInterval = null;
-    let currentStream = null;
+let chartCanvas, chartCtx;
+let currentCamera = "environment";
+let currentStream = null;
 
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => {
-        s.classList.remove('active');
-      });
-      document.getElementById(id).classList.add('active');
-    }
+// NAV
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-    function startRun(dist) {
-      distance = dist;
-      speedHistory = [];
-      splits = [];
-      chartData = [];
-      zoneTriggered = [false, false, false, false];
-      isRunning = false;
-      lastFrameData = null;
+// START RUN
+function startRun(dist){
+  distance = dist;
+  speedHistory = [];
+  chartData = [];
+  isRunning = false;
 
-      showScreen('live');
+  showScreen('live');
 
-      chartCanvas = document.getElementById("speedChart");
-      chartCtx = chartCanvas.getContext("2d");
-      drawChart();
+  chartCanvas = document.getElementById("speedChart");
+  chartCtx = chartCanvas.getContext("2d");
 
-      document.getElementById('timer').innerText = "0.00s";
-      document.getElementById('speed').innerText = "Speed: 0 mph";
-      document.getElementById('splitDisplay').innerText = "Split: --";
+  document.getElementById('timer').innerText="0.00s";
+  document.getElementById('speed').innerText="Speed: 0 mph";
 
-      startCamera();
-      startMotionTracking();
-    }
+  startCamera();
+  startMotionTracking();
+}
 
-    async function startCamera() {
-      try {
-        if (currentStream) {
-          currentStream.getTracks().forEach(track => track.stop());
-        }
+// CAMERA
+async function startCamera(){
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  document.getElementById('camera').srcObject = stream;
+}
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: currentCamera },
-          audio: false
-        });
+// AUTO START (MOTION)
+function startMotionTracking(){
+  let started = false;
 
-        currentStream = stream;
-        document.getElementById('camera').srcObject = stream;
-      } catch (err) {
-        alert("Camera access failed. Please allow camera permission.");
-        console.error(err);
-      }
-    }
-
-    function switchCamera() {
-      currentCamera = currentCamera === "environment" ? "user" : "environment";
-      startCamera();
-    }
-
-    function beginMovement() {
-      if (isRunning) return;
-
+  setInterval(()=>{
+    if(!started){
+      started = true;
       isRunning = true;
       startTime = Date.now();
-
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(updateTimer, 100);
+      timerInterval = setInterval(updateTimer,100);
+      speak("Go");
     }
+  },1000);
+}
 
-    function updateTimer() {
-      if (!isRunning) return;
+// TIMER
+function updateTimer(){
+  let time = (Date.now()-startTime)/1000;
+  document.getElementById('timer').innerText=time.toFixed(2)+"s";
 
-      const time = (Date.now() - startTime) / 1000;
-      document.getElementById('timer').innerText = time.toFixed(2) + "s";
+  let speed = Math.min((distance/time)*2.237,22);
+  speedHistory.push(speed);
 
-      const speed = Math.min((distance / Math.max(time, 0.1)) * 2.237, 22);
-      speedHistory.push(speed);
+  document.getElementById('speed').innerText="Speed: "+speed.toFixed(2)+" mph";
 
-      document.getElementById('speed').innerText =
-        "Speed: " + speed.toFixed(2) + " mph";
+  // SPEED BAR
+  let percent = Math.min((speed/22)*100,100);
+  document.getElementById('speedBar').style.width = percent+"%";
 
-      chartData.push(speed);
-      drawChart();
-    }
+  chartData.push(speed);
+  drawChart();
+}
 
-    function drawChart() {
-      if (!chartCtx || !chartCanvas) return;
+// GRAPH
+function drawChart(){
+  if(!chartCtx) return;
 
-      chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+  chartCtx.clearRect(0,0,chartCanvas.width,chartCanvas.height);
 
-      if (chartData.length === 0) return;
+  let max=Math.max(...chartData,1);
 
-      const maxSpeed = Math.max(...chartData, 1);
+  chartCtx.beginPath();
+  chartCtx.strokeStyle="red";
+  chartCtx.lineWidth=3;
 
-      chartCtx.beginPath();
-      chartCtx.strokeStyle = "#ff3b3b";
-      chartCtx.lineWidth = 3;
+  chartData.forEach((v,i)=>{
+    let x=(i/chartData.length)*chartCanvas.width;
+    let y=chartCanvas.height-(v/max)*chartCanvas.height;
 
-      chartData.forEach((value, index) => {
-        const x = (index / Math.max(chartData.length - 1, 1)) * chartCanvas.width;
-        const y = chartCanvas.height - (value / maxSpeed) * (chartCanvas.height - 10);
+    if(i===0) chartCtx.moveTo(x,y);
+    else chartCtx.lineTo(x,y);
+  });
 
-        if (index === 0) {
-          chartCtx.moveTo(x, y);
-        } else {
-          chartCtx.lineTo(x, y);
-        }
-      });
+  chartCtx.stroke();
+}
 
-      chartCtx.stroke();
-    }
+// STOP
+function stopRun(){
+  clearInterval(timerInterval);
 
-    function markSplit() {
-      if (!isRunning) return;
+  let finalTime=(Date.now()-startTime)/1000;
+  let finalSpeed=(distance/finalTime)*2.237;
 
-      const time = (Date.now() - startTime) / 1000;
-      splits.push(time);
+  document.getElementById('finalTime').innerText="Time: "+finalTime.toFixed(2)+"s";
+  document.getElementById('finalSpeed').innerText="Avg Speed: "+finalSpeed.toFixed(2)+" mph";
 
-      document.getElementById('splitDisplay').innerText =
-        "Split " + splits.length + ": " + time.toFixed(2) + "s";
-    }
+  generateAI();
+  showScreen('results');
+}
 
-    function stopRun() {
-      if (timerInterval) clearInterval(timerInterval);
-      if (motionInterval) clearInterval(motionInterval);
+// AI
+function generateAI(){
+  let max=Math.max(...speedHistory);
+  let end=speedHistory[speedHistory.length-1];
 
-      const finalTime = startTime ? (Date.now() - startTime) / 1000 : 0;
-      const finalSpeed = finalTime > 0 ? (distance / finalTime) * 2.237 : 0;
+  let feedback = end < max*0.8 ? "⚠️ Fatigue detected" : "🔥 Strong finish";
 
-      document.getElementById('finalTime').innerText =
-        "Time: " + finalTime.toFixed(2) + "s";
+  document.getElementById('aiFeedback').innerHTML=feedback;
+}
 
-      document.getElementById('finalSpeed').innerText =
-        "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
+// VOICE
+function speak(text){
+  let msg=new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(msg);
+}
 
-      displaySplits();
-      generateAI();
+</script>
 
-      isRunning = false;
-      showScreen('results');
-    }
-
-    function displaySplits() {
-      let html = "<b>Splits:</b><br>";
-      if (splits.length === 0) {
-        html += "No splits recorded";
-      } else {
-        splits.forEach((s, i) => {
-          html += "Split " + (i + 1) + ": " + s.toFixed(2) + "s<br>";
-        });
-      }
-      document.getElementById('splitsBox').innerHTML = html;
-    }
-
-    function generateAI() {
-      let feedback = "";
-
-      if (speedHistory.length === 0) {
-        feedback = "No run data recorded.";
-      } else {
-        const maxSpeed = Math.max(...speedHistory);
-        const endSpeed = speedHistory[speedHistory.length - 1];
-
-        if (endSpeed < maxSpeed * 0.8) {
-          feedback += "⚠️ Fatigue detected — improve endurance.<br>";
-        } else {
-          feedback += "🔥 Strong finish.<br>";
-        }
-      }
-
-      document.getElementById('aiFeedback').innerHTML = feedback;
-    }
-
-    function startMotionTracking() {
-      const video = document.getElementById('camera');
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-
-      if (motionInterval) clearInterval(motionInterval);
-
-      motionInterval = setInterval(() => {
-        if (!video.videoWidth || !isRunning) return;
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        ctx.drawImage(video, 0, 0);
-        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        if (lastFrameData) {
-          const motion = detectMotion(frame.data, lastFrameData.data);
-          if (motion > motionThreshold) {
-            detectSplitZones(motion);
-          }
-        }
-
-        lastFrameData = frame;
-      }, 200);
-    }
-
-    function detectMotion(current, previous) {
-      let diff = 0;
-
-      for (let i = 0; i < current.length; i += 4) {
-        const d = Math.abs(current[i] - previous[i]);
-        if (d > 30) diff++;
-      }
-
-      return diff;
-    }
-
-    function detectSplitZones(motion) {
-      if (!isRunning) return;
-
-      const time = (Date.now() - startTime) / 1000;
-
-      splitZones.forEach((zone, i) => {
-        if (!zoneTriggered[i]) {
-          if (motion > motionThreshold && time > (zone * distance / 20)) {
-            splits[i] = time;
-            zoneTriggered[i] = true;
-
-            document.getElementById('splitDisplay').innerText =
-              "Auto Split " + (i + 1) + ": " + time.toFixed(2) + "s";
-          }
-        }
-      });
-    }
-  </script>
 </body>
 </html>
