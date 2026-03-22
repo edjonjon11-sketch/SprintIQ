@@ -99,7 +99,10 @@
 <div id="live" class="screen">
   <div class="header">Live Run</div>
   <video id="camera" autoplay playsinline></video>
+<video id="camera" autoplay playsinline></video>
 
+<!-- 🔥 ADD THIS -->
+<canvas id="speedChart" height="120"></canvas>
   <div class="card">
     <p id="timer">0.00s</p>
     <p id="speed">Speed: 0 mph</p>
@@ -136,6 +139,9 @@ let splits = [];
 let isRunning = false;
 let currentCamera = "environment"; // back camera
 
+  let chartCanvas;
+let chartCtx;
+let chartData = [];
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
