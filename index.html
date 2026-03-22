@@ -1,46 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SprintIQ</title>
+  <title>SprintIQ Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, Arial;
-      background: #000;
-      color: white;
-      text-align: center;
+    body { margin:0; font-family:-apple-system; background:#000; color:white; }
+    .screen { display:none; padding:20px; }
+    .active { display:block; }
+    .header { font-size:26px; font-weight:bold; }
+    .card { background:#111; padding:15px; border-radius:15px; margin-top:15px; }
+    .btn {
+      width:100%; padding:15px; font-size:18px;
+      background:#e50914; color:white;
+      border:none; border-radius:12px; margin-top:10px;
     }
-    .screen { display: none; padding: 20px; }
-    .active { display: block; }
-
-    h1 { font-size: 28px; }
-    h2 { font-size: 22px; }
-
-    button {
-      padding: 15px;
-      font-size: 18px;
-      margin: 10px;
-      background: #e50914;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      width: 80%;
-      max-width: 300px;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 12px;
-      margin-top: 15px;
-    }
-
-    .card {
-      background: #111;
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 15px;
-    }
+    video { width:100%; border-radius:12px; margin-top:10px; }
   </style>
 </head>
 
@@ -48,73 +22,108 @@
 
 <!-- HOME -->
 <div id="home" class="screen active">
-  <h1>🏃 SprintIQ</h1>
-  <p>Your Sprint Tracking App</p>
-  <button onclick="showScreen('setup')">Start New Run</button>
+  <div class="header">🏃 SprintIQ Pro</div>
+  <p>Track + AI Coaching</p>
+  <button class="btn" onclick="showScreen('setup')">Start Run</button>
 </div>
 
 <!-- SETUP -->
 <div id="setup" class="screen">
-  <h2>Select Distance</h2>
-  <button onclick="startRun(200)">200m</button>
-  <button onclick="startRun(400)">400m</button>
+  <div class="header">Select Event</div>
+
+  <button class="btn" onclick="startRun(100)">100m</button>
+  <button class="btn" onclick="startRun(200)">200m</button>
+  <button class="btn" onclick="startRun(400)">400m</button>
+  <button class="btn" onclick="startRun(800)">800m</button>
+  <button class="btn" onclick="startRun(1600)">1600m</button>
+  <button class="btn" onclick="startRun(100)">100m Hurdles</button>
 </div>
 
 <!-- LIVE -->
 <div id="live" class="screen">
-  <h2>Live Run</h2>
+  <div class="header">Live Run</div>
   <video id="camera" autoplay playsinline></video>
 
   <div class="card">
-    <p id="timer">Time: 0.00s</p>
+    <p id="timer">0.00s</p>
     <p id="speed">Speed: 0 mph</p>
+    <p id="splitDisplay">Split: --</p>
   </div>
 
-  <button onclick="stopRun()">Finish Run</button>
+  <button class="btn" onclick="stopRun()">Finish Run</button>
 </div>
 
 <!-- RESULTS -->
 <div id="results" class="screen">
-  <h2>Results</h2>
+  <div class="header">Results</div>
+
   <div class="card">
     <p id="finalTime"></p>
     <p id="finalSpeed"></p>
   </div>
-  <button onclick="showScreen('home')">Back Home</button>
+
+  <div class="card" id="splitsBox"></div>
+
+  <div class="card" id="aiFeedback"></div>
+
+  <button class="btn" onclick="showScreen('home')">Back Home</button>
 </div>
 
 <script>
 let startTime;
 let timerInterval;
-let distance = 200;
+let distance = 100;
+let speedHistory = [];
+let splits = [];
+let splitPoints = [];
 
-function showScreen(screenId) {
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+  document.getElementById(id).classList.add('active');
 }
 
 function startRun(dist) {
   distance = dist;
+  speedHistory = [];
+  splits = [];
+
+  // Define split points
+  splitPoints = [];
+  let segment = dist / 4;
+  for (let i = 1; i <= 4; i++) {
+    splitPoints.push(segment * i);
+  }
+
   showScreen('live');
 
-  // Start camera
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
       document.getElementById('camera').srcObject = stream;
     });
 
-  // Start timer
   startTime = Date.now();
   timerInterval = setInterval(updateTimer, 100);
 }
 
 function updateTimer() {
   let time = (Date.now() - startTime) / 1000;
-  document.getElementById('timer').innerText = "Time: " + time.toFixed(2) + "s";
+  document.getElementById('timer').innerText = time.toFixed(2) + "s";
 
-  // Simple speed estimate (distance ÷ time)
-  let speed = (distance / time) * 2.237; // m/s → mph
-  document.getElementById('speed').innerText = "Speed: " + speed.toFixed(2) + " mph";
+  let speed = (distance / time) * 2.237;
+  speedHistory.push(speed);
+
+  document.getElementById('speed').innerText =
+    "Speed: " + speed.toFixed(2) + " mph";
+
+  // Fake split timing based on progress
+  let progress = (time / (distance / 6)); // estimate
+  splitPoints.forEach((point, i) => {
+    if (!splits[i] && progress >= (i+1)) {
+      splits[i] = time;
+      document.getElementById('splitDisplay').innerText =
+        "Split " + (i+1) + ": " + time.toFixed(2) + "s";
+    }
+  });
 }
 
 function stopRun() {
@@ -123,10 +132,42 @@ function stopRun() {
   let finalTime = (Date.now() - startTime) / 1000;
   let finalSpeed = (distance / finalTime) * 2.237;
 
-  document.getElementById('finalTime').innerText = "Time: " + finalTime.toFixed(2) + "s";
-  document.getElementById('finalSpeed').innerText = "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
+  document.getElementById('finalTime').innerText =
+    "Time: " + finalTime.toFixed(2) + "s";
+
+  document.getElementById('finalSpeed').innerText =
+    "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
+
+  displaySplits();
+  generateAI();
 
   showScreen('results');
+}
+
+function displaySplits() {
+  let html = "<b>Splits:</b><br>";
+  splits.forEach((s, i) => {
+    html += "Segment " + (i+1) + ": " + s.toFixed(2) + "s<br>";
+  });
+  document.getElementById('splitsBox').innerHTML = html;
+}
+
+function generateAI() {
+  let feedback = "";
+  let maxSpeed = Math.max(...speedHistory);
+  let endSpeed = speedHistory[speedHistory.length - 1];
+
+  if (endSpeed < maxSpeed * 0.8) {
+    feedback += "⚠️ Fatigue detected — improve endurance.<br>";
+  } else {
+    feedback += "🔥 Strong finish.<br>";
+  }
+
+  if (distance >= 800) {
+    feedback += "💡 Focus on pacing strategy.<br>";
+  }
+
+  document.getElementById('aiFeedback').innerHTML = feedback;
 }
 </script>
 
