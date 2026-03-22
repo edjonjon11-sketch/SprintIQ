@@ -89,13 +89,14 @@ canvas{
   <button class="btn" onclick="showHistory()">View History</button>
 </div>
 
-<!-- SETUP -->
 <div id="setup" class="screen">
   <div class="header">Select Event</div>
 
   <button class="btn" onclick="startRun(100)">100m</button>
   <button class="btn" onclick="startRun(200)">200m</button>
   <button class="btn" onclick="startRun(400)">400m</button>
+  <button class="btn" onclick="startRun(800)">800m</button>
+  <button class="btn" onclick="startRun(1600)">1600m</button>
 
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
@@ -152,6 +153,10 @@ let distance=100;
 let splits=[];
 let speeds=[];
 let chartData=[];
+  // LAP TRACKING
+let lapDistance = 400;
+let totalLaps = 1;
+let currentLap = 0;
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
