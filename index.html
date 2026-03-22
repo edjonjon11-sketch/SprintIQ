@@ -5,22 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial;
-      background: black;
+      margin: 0;
+      font-family: -apple-system, Arial;
+      background: #000;
       color: white;
       text-align: center;
-      padding: 40px;
     }
-    .screen { display: none; }
+    .screen { display: none; padding: 20px; }
     .active { display: block; }
+
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+
     button {
-      padding: 15px 25px;
+      padding: 15px;
       font-size: 18px;
-      margin-top: 20px;
-      background: red;
+      margin: 10px;
+      background: #e50914;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    .card {
+      background: #111;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -37,31 +56,77 @@
 <!-- SETUP -->
 <div id="setup" class="screen">
   <h2>Select Distance</h2>
-  <button onclick="showScreen('live')">200m</button><br>
-  <button onclick="showScreen('live')">400m</button>
+  <button onclick="startRun(200)">200m</button>
+  <button onclick="startRun(400)">400m</button>
 </div>
 
-<!-- LIVE RUN -->
+<!-- LIVE -->
 <div id="live" class="screen">
   <h2>Live Run</h2>
-  <p>Tracking Speed...</p>
-  <button onclick="showScreen('results')">Finish Run</button>
+  <video id="camera" autoplay playsinline></video>
+
+  <div class="card">
+    <p id="timer">Time: 0.00s</p>
+    <p id="speed">Speed: 0 mph</p>
+  </div>
+
+  <button onclick="stopRun()">Finish Run</button>
 </div>
 
 <!-- RESULTS -->
 <div id="results" class="screen">
   <h2>Results</h2>
-  <p>Time: 58.22s</p>
-  <p>Max Speed: 18.5 mph</p>
+  <div class="card">
+    <p id="finalTime"></p>
+    <p id="finalSpeed"></p>
+  </div>
   <button onclick="showScreen('home')">Back Home</button>
 </div>
 
 <script>
+let startTime;
+let timerInterval;
+let distance = 200;
+
 function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(screen => {
-    screen.classList.remove('active');
-  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+}
+
+function startRun(dist) {
+  distance = dist;
+  showScreen('live');
+
+  // Start camera
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      document.getElementById('camera').srcObject = stream;
+    });
+
+  // Start timer
+  startTime = Date.now();
+  timerInterval = setInterval(updateTimer, 100);
+}
+
+function updateTimer() {
+  let time = (Date.now() - startTime) / 1000;
+  document.getElementById('timer').innerText = "Time: " + time.toFixed(2) + "s";
+
+  // Simple speed estimate (distance ÷ time)
+  let speed = (distance / time) * 2.237; // m/s → mph
+  document.getElementById('speed').innerText = "Speed: " + speed.toFixed(2) + " mph";
+}
+
+function stopRun() {
+  clearInterval(timerInterval);
+
+  let finalTime = (Date.now() - startTime) / 1000;
+  let finalSpeed = (distance / finalTime) * 2.237;
+
+  document.getElementById('finalTime').innerText = "Time: " + finalTime.toFixed(2) + "s";
+  document.getElementById('finalSpeed').innerText = "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
+
+  showScreen('results');
 }
 </script>
 
