@@ -18,13 +18,39 @@
   </style>
 </head>
 
-<body>
-
-<!-- HOME -->
 <div id="home" class="screen active">
+
   <div class="header">🏃 SprintIQ Pro</div>
-  <p>Track + AI Coaching</p>
-  <button class="btn" onclick="showScreen('setup')">Start Run</button>
+  <div class="sub">Track + AI Coaching</div>
+
+  <!-- BEST TIMES -->
+  <div class="card">
+    <div style="color:#aaa;">BEST TIMES</div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px;">
+      <div>100m<br><b>11.2s</b></div>
+      <div>200m<br><b>24.5s</b></div>
+      <div>400m<br><b>58.2s</b></div>
+    </div>
+  </div>
+
+  <!-- LAST RUN -->
+  <div class="card">
+    <div style="color:#aaa;">LAST RUN</div>
+    <div class="big">400m - 58.22s</div>
+    <div style="color:#aaa;">Max Speed: 18.5 mph</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="card">
+    <div style="color:#aaa;">WEEKLY PROGRESS</div>
+    <div style="margin-top:10px;">📈 Improving</div>
+  </div>
+
+  <!-- BUTTON -->
+  <button class="btn" onclick="showScreen('setup')">
+    Start New Run
+  </button>
+
 </div>
 
 <!-- SETUP -->
