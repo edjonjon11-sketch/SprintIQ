@@ -177,6 +177,22 @@ function startRun(d){
   startCamera();
 }
 
+  function saveRunToHistory(finalTime, finalSpeed) {
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
+  if (!allData[currentUser]) {
+    allData[currentUser] = [];
+  }
+
+  allData[currentUser].push({
+    distance: distance,
+    time: finalTime,
+    speed: finalSpeed,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
+}
 async function startCamera(){
   let stream=await navigator.mediaDevices.getUserMedia({video:true});
   document.getElementById('camera').srcObject=stream;
