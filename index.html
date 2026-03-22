@@ -49,7 +49,6 @@
   <div class="sub">Track + AI Coaching</div>
 
 
-<!-- 🔥 ADD THIS LINE -->
 <div style="height:3px; width:60px; background:red; margin:10px 0;"></div>
 
 
@@ -101,7 +100,6 @@
   <video id="camera" autoplay playsinline></video>
 <video id="camera" autoplay playsinline></video>
 
-<!-- 🔥 ADD THIS -->
 <canvas id="speedChart" height="120"></canvas>
   <div class="card">
     <p id="timer">0.00s</p>
@@ -155,6 +153,10 @@ function startRun(dist) {
 
   showScreen('live');
   startCamera();
+  startMotionTracking();
+  chartCanvas = document.getElementById("speedChart");
+chartCtx = chartCanvas.getContext("2d");
+chartData = [];
 
   document.getElementById('timer').innerText = "0.00s";
   document.getElementById('speed').innerText = "Speed: 0 mph";
@@ -193,6 +195,8 @@ function updateTimer() {
 
   document.getElementById('speed').innerText =
     "Speed: " + speed.toFixed(2) + " mph";
+  chartData.push(speed);
+drawChart();
 }
 
 // 👆 Manual split
@@ -247,7 +251,6 @@ function generateAI() {
   // your existing code
 }
 
-/* 🔥 PASTE HERE 👇 */
 
 let lastFrameData = null;
 let motionThreshold = 20;
@@ -296,17 +299,17 @@ function detectSplitZones(motion) {
 
   splitZones.forEach((zone, i) => {
     if (!zoneTriggered[i]) {
-      if (motion > (motionThreshold * (i+1))) {
-        splits[i] = time;
-        zoneTriggered[i] = true;
+      if (motion > motionThreshold && time > (zone * distance / 2)) {
+  splits[i] = time;
+  zoneTriggered[i] = true;
 
-        document.getElementById('splitDisplay').innerText =
-          "Auto Split " + (i+1) + ": " + time.toFixed(2) + "s";
+  document.getElementById('splitDisplay').innerText =
+    "Auto Split " + (i+1) + ": " + time.toFixed(2) + "s";
+}
       }
     }
   });
 }
 
 
-</script>
 </script>
