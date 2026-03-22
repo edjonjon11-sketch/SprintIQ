@@ -181,4 +181,70 @@ function generateAI() {
 
   document.getElementById('aiFeedback').innerHTML = feedback;
 }
+  function generateAI() {
+  // your existing code
+}
+
+/* 🔥 PASTE HERE 👇 */
+
+let lastFrameData = null;
+let motionThreshold = 20;
+let splitZones = [0.25, 0.5, 0.75, 1.0];
+let zoneTriggered = [];
+
+function startMotionTracking() {
+  const video = document.getElementById('camera');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  setInterval(() => {
+    if (!video.videoWidth) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0);
+    let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    if (lastFrameData) {
+      let motion = detectMotion(frame.data, lastFrameData.data);
+
+      if (motion > motionThreshold) {
+        detectSplitZones(motion);
+      }
+    }
+
+    lastFrameData = frame;
+  }, 200);
+}
+
+function detectMotion(current, previous) {
+  let diff = 0;
+
+  for (let i = 0; i < current.length; i += 4) {
+    let d = Math.abs(current[i] - previous[i]);
+    if (d > 30) diff++;
+  }
+
+  return diff;
+}
+
+function detectSplitZones(motion) {
+  let time = (Date.now() - startTime) / 1000;
+
+  splitZones.forEach((zone, i) => {
+    if (!zoneTriggered[i]) {
+      if (motion > (motionThreshold * (i+1))) {
+        splits[i] = time;
+        zoneTriggered[i] = true;
+
+        document.getElementById('splitDisplay').innerText =
+          "Auto Split " + (i+1) + ": " + time.toFixed(2) + "s";
+      }
+    }
+  });
+}
+
+
+</script>
 </script>
