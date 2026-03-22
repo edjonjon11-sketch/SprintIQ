@@ -5,315 +5,393 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-  margin: 0;
-  font-family: -apple-system;
-  background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
-  color: white;
-}
-    .screen { display:none; padding:20px; }
-    .active { display:block; }
-    .header { font-size:26px; font-weight:bold; }
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
+      color: white;
+    }
+
+    .screen {
+      display: none;
+      padding: 20px;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .header {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .sub {
+      color: #ddd;
+      margin-bottom: 8px;
+    }
+
     .card {
-  background: linear-gradient(145deg, #111, #1c1c1c);
-  padding: 15px;
-  border-radius: 16px;
-  margin-top: 15px;
-  box-shadow: 0 4px 15px rgba(255,0,0,0.25);
-}
+      background: linear-gradient(145deg, #111, #1c1c1c);
+      padding: 15px;
+      border-radius: 16px;
+      margin-top: 15px;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.25);
+    }
+
     .btn {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  background: linear-gradient(to right, #ff0000, #ff4d4d);
-  color: white;
-  border: none;
-  border-radius: 14px;
-  margin-top: 15px;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(255,0,0,0.4);
-}
-    
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      background: linear-gradient(to right, #ff0000, #ff4d4d);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      margin-top: 15px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+    }
+
     video {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-top: 10px;
-}
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 10px;
+      background: #000;
+    }
+
+    canvas {
+      width: 100%;
+      height: 120px;
+      background: #111;
+      border-radius: 12px;
+      margin-top: 12px;
+      display: block;
+    }
+
+    .big {
+      font-size: 22px;
+      font-weight: bold;
+    }
   </style>
 </head>
+<body>
 
-<div id="home" class="screen active">
+  <div id="home" class="screen active">
+    <div class="header">🏃 SprintIQ Pro</div>
+    <div class="sub">Track + AI Coaching</div>
+    <div style="height:3px; width:60px; background:red; margin:10px 0;"></div>
 
-  <div class="header">🏃 SprintIQ Pro</div>
-  <div class="sub">Track + AI Coaching</div>
-
-
-<div style="height:3px; width:60px; background:red; margin:10px 0;"></div>
-
-
-  <!-- BEST TIMES -->
-  <div class="card">
-    <div style="color:#aaa;">BEST TIMES</div>
-    <div style="display:flex; justify-content:space-between; margin-top:10px;">
-      <div>100m<br><b>11.2s</b></div>
-      <div>200m<br><b>24.5s</b></div>
-      <div>400m<br><b>58.2s</b></div>
+    <div class="card">
+      <div style="color:#aaa;">BEST TIMES</div>
+      <div style="display:flex; justify-content:space-between; margin-top:10px;">
+        <div>100m<br><b>11.2s</b></div>
+        <div>200m<br><b>24.5s</b></div>
+        <div>400m<br><b>58.2s</b></div>
+      </div>
     </div>
+
+    <div class="card">
+      <div style="color:#aaa;">LAST RUN</div>
+      <div class="big">400m - 58.22s</div>
+      <div style="color:#aaa;">Max Speed: 18.5 mph</div>
+    </div>
+
+    <div class="card">
+      <div style="color:#aaa;">WEEKLY PROGRESS</div>
+      <div style="margin-top:10px;">📈 Improving</div>
+    </div>
+
+    <button class="btn" onclick="showScreen('setup')">Start New Run</button>
   </div>
 
-  <!-- LAST RUN -->
-  <div class="card">
-    <div style="color:#aaa;">LAST RUN</div>
-    <div class="big">400m - 58.22s</div>
-    <div style="color:#aaa;">Max Speed: 18.5 mph</div>
+  <div id="setup" class="screen">
+    <div class="header">Select Event</div>
+
+    <button class="btn" onclick="startRun(100)">100m</button>
+    <button class="btn" onclick="startRun(200)">200m</button>
+    <button class="btn" onclick="startRun(400)">400m</button>
+    <button class="btn" onclick="startRun(800)">800m</button>
+    <button class="btn" onclick="startRun(1600)">1600m</button>
+    <button class="btn" onclick="startRun(100)">100m Hurdles</button>
+    <button class="btn" onclick="showScreen('home')">Back Home</button>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="card">
-    <div style="color:#aaa;">WEEKLY PROGRESS</div>
-    <div style="margin-top:10px;">📈 Improving</div>
+  <div id="live" class="screen">
+    <div class="header">Live Run</div>
+
+    <video id="camera" autoplay playsinline muted></video>
+    <canvas id="speedChart" width="600" height="120"></canvas>
+
+    <div class="card">
+      <p id="timer">0.00s</p>
+      <p id="speed">Speed: 0 mph</p>
+      <p id="splitDisplay">Split: --</p>
+    </div>
+
+    <button class="btn" onclick="beginMovement()">Start Movement</button>
+    <button class="btn" onclick="markSplit()">Mark Split</button>
+    <button class="btn" onclick="switchCamera()">Switch Camera</button>
+    <button class="btn" onclick="stopRun()">Finish Run</button>
   </div>
 
-  <!-- BUTTON -->
-  <button class="btn" onclick="startRun(100)">
-  Start New Run
-</button>
-  </button>
+  <div id="results" class="screen">
+    <div class="header">Results</div>
 
-</div>
+    <div class="card">
+      <p id="finalTime"></p>
+      <p id="finalSpeed"></p>
+    </div>
 
-<!-- SETUP -->
-<div id="setup" class="screen">
-  <div class="header">Select Event</div>
+    <div class="card" id="splitsBox"></div>
+    <div class="card" id="aiFeedback"></div>
 
-  <button class="btn" onclick="startRun(100)">100m</button>
-  <button class="btn" onclick="startRun(200)">200m</button>
-  <button class="btn" onclick="startRun(400)">400m</button>
-  <button class="btn" onclick="startRun(800)">800m</button>
-  <button class="btn" onclick="startRun(1600)">1600m</button>
-  <button class="btn" onclick="startRun(100)">100m Hurdles</button>
-</div>
-
-<!-- LIVE -->
-<div id="live" class="screen">
-  <div class="header">Live Run</div>
-  <video id="camera" autoplay playsinline></video>
-<video id="camera" autoplay playsinline></video>
-
-<canvas id="speedChart" height="120"></canvas>
-  <div class="card">
-    <p id="timer">0.00s</p>
-    <p id="speed">Speed: 0 mph</p>
-    <p id="splitDisplay">Split: --</p>
-  </div>
-<button class="btn" onclick="beginMovement()">Start Movement</button>
-<button class="btn" onclick="markSplit()">Mark Split</button>
-<button class="btn" onclick="switchCamera()">Switch Camera</button>
-  <button class="btn" onclick="stopRun()">Finish Run</button>
-</div>
-
-<!-- RESULTS -->
-<div id="results" class="screen">
-  <div class="header">Results</div>
-
-  <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
+    <button class="btn" onclick="showScreen('home')">Back Home</button>
   </div>
 
-  <div class="card" id="splitsBox"></div>
+  <script>
+    let startTime;
+    let timerInterval;
+    let distance = 100;
+    let speedHistory = [];
+    let splits = [];
+    let isRunning = false;
+    let currentCamera = "environment";
 
-  <div class="card" id="aiFeedback"></div>
+    let chartCanvas;
+    let chartCtx;
+    let chartData = [];
 
-  <button class="btn" onclick="showScreen('home')">Back Home</button>
-</div>
+    let lastFrameData = null;
+    let motionThreshold = 20;
+    let splitZones = [0.25, 0.5, 0.75, 1.0];
+    let zoneTriggered = [];
+    let motionInterval = null;
+    let currentStream = null;
 
-<script>
-let startTime;
-let timerInterval;
-let distance = 100;
-let speedHistory = [];
-let splits = [];
-let isRunning = false;
-let currentCamera = "environment"; // back camera
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
 
-  let chartCanvas;
-let chartCtx;
-let chartData = [];
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+    function startRun(dist) {
+      distance = dist;
+      speedHistory = [];
+      splits = [];
+      chartData = [];
+      zoneTriggered = [false, false, false, false];
+      isRunning = false;
+      lastFrameData = null;
 
-function startRun(dist) {
-  distance = dist;
-  speedHistory = [];
-  splits = [];
-  isRunning = true;
+      showScreen('live');
 
-  showScreen('live');
-  startCamera();
-  startMotionTracking();
-  chartCanvas = document.getElementById("speedChart");
-chartCtx = chartCanvas.getContext("2d");
-chartData = [];
+      chartCanvas = document.getElementById("speedChart");
+      chartCtx = chartCanvas.getContext("2d");
+      drawChart();
 
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  
-  startTime = Date.now();
-timerInterval = setInterval(updateTimer, 100);
-}
+      document.getElementById('timer').innerText = "0.00s";
+      document.getElementById('speed').innerText = "Speed: 0 mph";
+      document.getElementById('splitDisplay').innerText = "Split: --";
 
-function startCamera() {
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: currentCamera }
-  }).then(stream => {
-    document.getElementById('camera').srcObject = stream;
-  });
-}
+      startCamera();
+      startMotionTracking();
+    }
 
-// 🔄 Switch Camera
-function switchCamera() {
-  currentCamera = currentCamera === "environment" ? "user" : "environment";
-  startCamera();
-}
+    async function startCamera() {
+      try {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
 
-// ▶️ Start actual timing
-function beginMovement() {
-  if (!isRunning) {
-    isRunning = true;
-    startTime = Date.now();
-    timerInterval = setInterval(updateTimer, 100);
-  }
-}
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentCamera },
+          audio: false
+        });
 
-function updateTimer() {
-  let time = (Date.now() - startTime) / 1000;
-  document.getElementById('timer').innerText = time.toFixed(2) + "s";
-
-  // More realistic speed cap
-  let speed = Math.min((distance / time) * 2.237, 22);
-  speedHistory.push(speed);
-
-  document.getElementById('speed').innerText =
-    "Speed: " + speed.toFixed(2) + " mph";
-  chartData.push(speed);
-drawChart();
-}
-
-// 👆 Manual split
-function markSplit() {
-  let time = (Date.now() - startTime) / 1000;
-  splits.push(time);
-
-  document.getElementById('splitDisplay').innerText =
-    "Split " + splits.length + ": " + time.toFixed(2) + "s";
-}
-
-function stopRun() {
-  clearInterval(timerInterval);
-
-  let finalTime = (Date.now() - startTime) / 1000;
-  let finalSpeed = (distance / finalTime) * 2.237;
-
-  document.getElementById('finalTime').innerText =
-    "Time: " + finalTime.toFixed(2) + "s";
-
-  document.getElementById('finalSpeed').innerText =
-    "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
-
-  displaySplits();
-  generateAI();
-
-  showScreen('results');
-}
-
-function displaySplits() {
-  let html = "<b>Splits:</b><br>";
-  splits.forEach((s, i) => {
-    html += "Split " + (i+1) + ": " + s.toFixed(2) + "s<br>";
-  });
-  document.getElementById('splitsBox').innerHTML = html;
-}
-
-function generateAI() {
-  let feedback = "";
-  let maxSpeed = Math.max(...speedHistory);
-  let endSpeed = speedHistory[speedHistory.length - 1];
-
-  if (endSpeed < maxSpeed * 0.8) {
-    feedback += "⚠️ Fatigue detected — improve endurance.<br>";
-  } else {
-    feedback += "🔥 Strong finish.<br>";
-  }
-
-  document.getElementById('aiFeedback').innerHTML = feedback;
-}
-  function generateAI() {
-  // your existing code
-}
-
-
-let lastFrameData = null;
-let motionThreshold = 20;
-let splitZones = [0.25, 0.5, 0.75, 1.0];
-let zoneTriggered = [];
-
-function startMotionTracking() {
-  const video = document.getElementById('camera');
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  setInterval(() => {
-    if (!video.videoWidth) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.drawImage(video, 0, 0);
-    let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    if (lastFrameData) {
-      let motion = detectMotion(frame.data, lastFrameData.data);
-
-      if (motion > motionThreshold) {
-        detectSplitZones(motion);
+        currentStream = stream;
+        document.getElementById('camera').srcObject = stream;
+      } catch (err) {
+        alert("Camera access failed. Please allow camera permission.");
+        console.error(err);
       }
     }
 
-    lastFrameData = frame;
-  }, 200);
-}
-
-function detectMotion(current, previous) {
-  let diff = 0;
-
-  for (let i = 0; i < current.length; i += 4) {
-    let d = Math.abs(current[i] - previous[i]);
-    if (d > 30) diff++;
-  }
-
-  return diff;
-}
-
-function detectSplitZones(motion) {
-  let time = (Date.now() - startTime) / 1000;
-
-  splitZones.forEach((zone, i) => {
-    if (!zoneTriggered[i]) {
-      if (motion > motionThreshold && time > (zone * distance / 2)) {
-  splits[i] = time;
-  zoneTriggered[i] = true;
-
-  document.getElementById('splitDisplay').innerText =
-    "Auto Split " + (i+1) + ": " + time.toFixed(2) + "s";
-}
-      }
+    function switchCamera() {
+      currentCamera = currentCamera === "environment" ? "user" : "environment";
+      startCamera();
     }
-  });
-}
 
+    function beginMovement() {
+      if (isRunning) return;
 
-</script>
+      isRunning = true;
+      startTime = Date.now();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 100);
+    }
+
+    function updateTimer() {
+      if (!isRunning) return;
+
+      const time = (Date.now() - startTime) / 1000;
+      document.getElementById('timer').innerText = time.toFixed(2) + "s";
+
+      const speed = Math.min((distance / Math.max(time, 0.1)) * 2.237, 22);
+      speedHistory.push(speed);
+
+      document.getElementById('speed').innerText =
+        "Speed: " + speed.toFixed(2) + " mph";
+
+      chartData.push(speed);
+      drawChart();
+    }
+
+    function drawChart() {
+      if (!chartCtx || !chartCanvas) return;
+
+      chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+
+      if (chartData.length === 0) return;
+
+      const maxSpeed = Math.max(...chartData, 1);
+
+      chartCtx.beginPath();
+      chartCtx.strokeStyle = "#ff3b3b";
+      chartCtx.lineWidth = 3;
+
+      chartData.forEach((value, index) => {
+        const x = (index / Math.max(chartData.length - 1, 1)) * chartCanvas.width;
+        const y = chartCanvas.height - (value / maxSpeed) * (chartCanvas.height - 10);
+
+        if (index === 0) {
+          chartCtx.moveTo(x, y);
+        } else {
+          chartCtx.lineTo(x, y);
+        }
+      });
+
+      chartCtx.stroke();
+    }
+
+    function markSplit() {
+      if (!isRunning) return;
+
+      const time = (Date.now() - startTime) / 1000;
+      splits.push(time);
+
+      document.getElementById('splitDisplay').innerText =
+        "Split " + splits.length + ": " + time.toFixed(2) + "s";
+    }
+
+    function stopRun() {
+      if (timerInterval) clearInterval(timerInterval);
+      if (motionInterval) clearInterval(motionInterval);
+
+      const finalTime = startTime ? (Date.now() - startTime) / 1000 : 0;
+      const finalSpeed = finalTime > 0 ? (distance / finalTime) * 2.237 : 0;
+
+      document.getElementById('finalTime').innerText =
+        "Time: " + finalTime.toFixed(2) + "s";
+
+      document.getElementById('finalSpeed').innerText =
+        "Avg Speed: " + finalSpeed.toFixed(2) + " mph";
+
+      displaySplits();
+      generateAI();
+
+      isRunning = false;
+      showScreen('results');
+    }
+
+    function displaySplits() {
+      let html = "<b>Splits:</b><br>";
+      if (splits.length === 0) {
+        html += "No splits recorded";
+      } else {
+        splits.forEach((s, i) => {
+          html += "Split " + (i + 1) + ": " + s.toFixed(2) + "s<br>";
+        });
+      }
+      document.getElementById('splitsBox').innerHTML = html;
+    }
+
+    function generateAI() {
+      let feedback = "";
+
+      if (speedHistory.length === 0) {
+        feedback = "No run data recorded.";
+      } else {
+        const maxSpeed = Math.max(...speedHistory);
+        const endSpeed = speedHistory[speedHistory.length - 1];
+
+        if (endSpeed < maxSpeed * 0.8) {
+          feedback += "⚠️ Fatigue detected — improve endurance.<br>";
+        } else {
+          feedback += "🔥 Strong finish.<br>";
+        }
+      }
+
+      document.getElementById('aiFeedback').innerHTML = feedback;
+    }
+
+    function startMotionTracking() {
+      const video = document.getElementById('camera');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (motionInterval) clearInterval(motionInterval);
+
+      motionInterval = setInterval(() => {
+        if (!video.videoWidth || !isRunning) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        ctx.drawImage(video, 0, 0);
+        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        if (lastFrameData) {
+          const motion = detectMotion(frame.data, lastFrameData.data);
+          if (motion > motionThreshold) {
+            detectSplitZones(motion);
+          }
+        }
+
+        lastFrameData = frame;
+      }, 200);
+    }
+
+    function detectMotion(current, previous) {
+      let diff = 0;
+
+      for (let i = 0; i < current.length; i += 4) {
+        const d = Math.abs(current[i] - previous[i]);
+        if (d > 30) diff++;
+      }
+
+      return diff;
+    }
+
+    function detectSplitZones(motion) {
+      if (!isRunning) return;
+
+      const time = (Date.now() - startTime) / 1000;
+
+      splitZones.forEach((zone, i) => {
+        if (!zoneTriggered[i]) {
+          if (motion > motionThreshold && time > (zone * distance / 20)) {
+            splits[i] = time;
+            zoneTriggered[i] = true;
+
+            document.getElementById('splitDisplay').innerText =
+              "Auto Split " + (i + 1) + ": " + time.toFixed(2) + "s";
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
