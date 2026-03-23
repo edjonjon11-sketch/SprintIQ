@@ -173,13 +173,19 @@ let lapDistance = 400;
 let totalLaps = 1;
 let currentLap = 0;
 
-function clearHistory(){
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  allData[currentUser] = [];
-  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
-  showHistory();
+// =========================
+// USER LABEL
+// =========================
+function updateUserLabel(){
+  let el = document.getElementById("currentUserLabel");
+  if(el){
+    el.innerText = "Athlete: " + currentUser;
+  }
 }
 
+// =========================
+// NAVIGATION
+// =========================
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -190,18 +196,22 @@ function goToHistory(){
   showScreen('history');
 }
 
+// =========================
+// RUN SETUP
+// =========================
 function startRun(d){
   distance = d;
   splits = [];
   speeds = [];
   chartData = [];
+
   totalLaps = Math.max(1, Math.round(distance / 400));
   currentLap = 0;
+
   isRunning = false;
   startTime = null;
 
   if(timer) clearInterval(timer);
-  timer = null;
 
   document.getElementById('timer').innerText = "0.00s";
   document.getElementById('speed').innerText = "Speed: 0 mph";
@@ -213,20 +223,26 @@ function startRun(d){
   startCamera();
 }
 
+// =========================
+// CAMERA
+// =========================
 async function startCamera(){
   try{
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
     }
 
-    currentStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+    currentStream = await navigator.mediaDevices.getUserMedia({ video:true });
     document.getElementById('camera').srcObject = currentStream;
+
   } catch(err){
-    console.error(err);
-    alert("Camera access failed. Please allow camera permission.");
+    alert("Camera access denied");
   }
 }
 
+// =========================
+// RUN CONTROL
+// =========================
 function beginMovement(){
   if(isRunning) return;
 
@@ -240,10 +256,11 @@ function beginMovement(){
 function update(){
   if(!isRunning || !startTime) return;
 
-  const t = (Date.now() - startTime) / 1000;
+  let t = (Date.now() - startTime) / 1000;
+
   document.getElementById('timer').innerText = t.toFixed(2) + "s";
 
-  const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
+  let speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
@@ -252,44 +269,43 @@ function update(){
   chartData.push(speed);
   drawChart();
 
-  // AUTO LAP TRACKING
-  const progress = t / (distance / 10);
-  const estimatedDistance = progress * distance;
-  const lapIndex = Math.floor(estimatedDistance / lapDistance);
+  // AUTO LAP
+  let progress = t / (distance / 10);
+  let estimatedDistance = progress * distance;
+  let lapIndex = Math.floor(estimatedDistance / lapDistance);
 
   if (lapIndex > currentLap && lapIndex < totalLaps) {
     currentLap = lapIndex;
 
-    const splitTime = t;
-    const splitSpeed = speeds[speeds.length - 1] || 0;
+    let splitSpeed = speeds[speeds.length - 1] || 0;
 
     splits.push({
-      time: splitTime,
+      time: t,
       speed: splitSpeed,
       lap: currentLap
     });
 
     document.getElementById('splitDisplay').innerText =
-      `Lap ${currentLap}: ${splitTime.toFixed(2)}s | ${splitSpeed.toFixed(1)} mph`;
+      `Lap ${currentLap}: ${t.toFixed(2)}s | ${splitSpeed.toFixed(1)} mph`;
   }
 }
 
 function markSplit(){
   if(!isRunning) return;
 
-  const time = (Date.now() - startTime) / 1000;
-  const speed = speeds[speeds.length - 1] || 0;
-
-  splits.push({
-    time: time,
-    speed: speed,
-    lap: currentLap + 1
-  });
+  let t = (Date.now() - startTime) / 1000;
+  let speed = speeds[speeds.length - 1] || 0;
 
   currentLap++;
 
+  splits.push({
+    time: t,
+    speed: speed,
+    lap: currentLap
+  });
+
   document.getElementById('splitDisplay').innerText =
-    `Lap ${currentLap}: ${time.toFixed(2)}s | ${speed.toFixed(1)} mph`;
+    `Lap ${currentLap}: ${t.toFixed(2)}s | ${speed.toFixed(1)} mph`;
 }
 
 function resetRun(){
@@ -315,8 +331,8 @@ function stopRun(){
 
   isRunning = false;
 
-  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  const speed = t > 0 ? (distance / t) * 2.237 : 0;
+  let t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  let speed = t > 0 ? (distance / t) * 2.237 : 0;
 
   document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
   document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
@@ -327,6 +343,9 @@ function stopRun(){
   showScreen('results');
 }
 
+// =========================
+// SPLITS
+// =========================
 function showSplits(){
   let html = "<b>Splits</b><br>";
 
@@ -341,17 +360,20 @@ function showSplits(){
   document.getElementById('splitsBox').innerHTML = html;
 }
 
-function saveRunToHistory(finalTime, finalSpeed) {
+// =========================
+// HISTORY
+// =========================
+function saveRunToHistory(time, speed){
   let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
-  if (!allData[currentUser]) {
+  if(!allData[currentUser]){
     allData[currentUser] = [];
   }
 
   allData[currentUser].push({
     distance: distance,
-    time: finalTime,
-    speed: finalSpeed,
+    time: time,
+    speed: speed,
     date: new Date().toLocaleString()
   });
 
@@ -359,20 +381,20 @@ function saveRunToHistory(finalTime, finalSpeed) {
 }
 
 function showHistory(){
-  const allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const userRuns = allData[currentUser] || [];
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  let userRuns = allData[currentUser] || [];
 
-  let html = `<b>${currentUser} History</b><br><br>`;
+  let html = `<b>${currentUser} Performance</b><br><br>`;
 
   if(userRuns.length === 0){
     html += "No runs yet";
   } else {
     userRuns.slice().reverse().forEach(run => {
-      const pace = (Number(run.time) / Number(run.distance) * 100).toFixed(2);
+      let pace = (run.time / run.distance * 100).toFixed(2);
 
       html += `
         <div style="
-          background:#0f0f0f;
+          background:#111;
           padding:12px;
           border-radius:12px;
           margin-bottom:10px;
@@ -383,7 +405,7 @@ function showHistory(){
           </div>
 
           <div style="color:#aaa;margin-top:4px;">
-            ⚡ ${Number(run.speed).toFixed(2)} mph | 🧠 Pace: ${pace}s /100m
+            ⚡ ${Number(run.speed).toFixed(2)} mph | 🧠 ${pace}s/100m
           </div>
 
           <div style="font-size:12px;color:#666;margin-top:6px;">
@@ -397,32 +419,38 @@ function showHistory(){
   document.getElementById("historyList").innerHTML = html;
 }
 
+// =========================
+// USER SWITCH
+// =========================
 function switchUser(){
-  const name = prompt("Enter athlete name:");
+  let name = prompt("Enter athlete name:");
 
   if(!name || name.trim() === "") return;
 
   currentUser = name.trim();
   localStorage.setItem("currentUser", currentUser);
 
-  alert("Switched to: " + currentUser);
+  updateUserLabel();
 }
 
+// =========================
+// CHART
+// =========================
 function drawChart(){
-  const c = document.getElementById('chart');
-  const ctx = c.getContext('2d');
+  let c = document.getElementById('chart');
+  let ctx = c.getContext('2d');
 
   ctx.clearRect(0, 0, c.width, c.height);
 
-  const max = Math.max(...chartData, 1);
+  let max = Math.max(...chartData, 1);
 
   ctx.beginPath();
   ctx.strokeStyle = "red";
   ctx.lineWidth = 3;
 
   chartData.forEach((v, i) => {
-    const x = i * 3;
-    const y = c.height - (v / max * c.height);
+    let x = i * 3;
+    let y = c.height - (v / max * c.height);
 
     if(i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -430,6 +458,9 @@ function drawChart(){
 
   ctx.stroke();
 }
+
+// INIT
+updateUserLabel();
 </script>
 
 </body>
