@@ -7,7 +7,7 @@
 <style>
 body{
   margin:0;
-  font-family:-apple-system;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
   background:linear-gradient(to bottom,#000,#111);
   color:white;
 }
@@ -40,10 +40,11 @@ body{
 
 video{
   width:100%;
-  height:200px;
+  height:300px;
   border-radius:14px;
   object-fit:cover;
   background:black;
+  margin-top:10px;
 }
 
 .bigTimer{
@@ -69,6 +70,13 @@ canvas{
   width:100%;
   height:100px;
   margin-top:10px;
+  background:#0b0b0b;
+  border-radius:12px;
+}
+
+.smallText{
+  color:#aaa;
+  font-size:14px;
 }
 </style>
 </head>
@@ -86,11 +94,10 @@ canvas{
   </div>
 
   <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="showHistory(); showScreen('history')">
-  View History
-</button>
+  <button class="btn" onclick="goToHistory()">View History</button>
 </div>
 
+<!-- SETUP -->
 <div id="setup" class="screen">
   <div class="header">Select Event</div>
 
@@ -109,12 +116,12 @@ canvas{
 
   <video id="camera" autoplay playsinline muted></video>
 
-  <canvas id="chart"></canvas>
+  <canvas id="chart" width="600" height="100"></canvas>
 
   <div class="card">
     <div id="timer" class="bigTimer">0.00s</div>
     <div id="speed">Speed: 0 mph</div>
-    <div id="split">Split: --</div>
+    <div id="splitDisplay">Split: --</div>
 
     <div class="speedBar">
       <div id="speedFill" class="speedFill"></div>
@@ -124,7 +131,7 @@ canvas{
   <button class="btn" onclick="beginMovement()">Start Movement</button>
   <button class="btn" onclick="markSplit()">Mark Split</button>
   <button class="btn" onclick="stopRun()">Finish Run</button>
-  <button class="btn" onclick="resetRun()">Reset Run</button>by
+  <button class="btn" onclick="resetRun()">Reset Run</button>
 </div>
 
 <!-- RESULTS -->
@@ -150,30 +157,36 @@ canvas{
 </div>
 
 <script>
-
 let currentUser = localStorage.getItem("currentUser") || "Default";
-let startTime;
-let timer;
-let distance=100;
-let splits=[];
-let speeds=[];
-let chartData=[];
-  // LAP TRACKING
+let startTime = null;
+let timer = null;
+let distance = 100;
+let splits = [];
+let speeds = [];
+let chartData = [];
+let isRunning = false;
+let currentStream = null;
+
+// LAP TRACKING
 let lapDistance = 400;
 let totalLaps = 1;
 let currentLap = 0;
+
 function clearHistory(){
   let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
   allData[currentUser] = [];
-
   localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
-
   showHistory();
 }
+
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+}
+
+function goToHistory(){
+  showHistory();
+  showScreen('history');
 }
 
 function startRun(d){
@@ -181,78 +194,83 @@ function startRun(d){
   splits = [];
   speeds = [];
   chartData = [];
-
   totalLaps = Math.max(1, Math.round(distance / 400));
   currentLap = 0;
-
-  isRunning = false; // 🚨 FIX
+  isRunning = false;
   startTime = null;
+
+  if(timer) clearInterval(timer);
+  timer = null;
 
   document.getElementById('timer').innerText = "0.00s";
   document.getElementById('speed').innerText = "Speed: 0 mph";
   document.getElementById('splitDisplay').innerText = "Split: --";
+  document.getElementById('speedFill').style.width = "0%";
 
+  drawChart();
   showScreen('live');
   startCamera();
 }
 
-  function saveRunToHistory(finalTime, finalSpeed) {
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
-  if (!allData[currentUser]) {
-    allData[currentUser] = [];
-  }
-
-  allData[currentUser].push({
-    distance: distance,
-    time: finalTime,
-    speed: finalSpeed,
-    date: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
-}
 async function startCamera(){
-  let stream=await navigator.mediaDevices.getUserMedia({video:true});
-  document.getElementById('camera').srcObject=stream;
+  try{
+    if(currentStream){
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    currentStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+    document.getElementById('camera').srcObject = currentStream;
+  } catch(err){
+    console.error(err);
+    alert("Camera access failed. Please allow camera permission.");
+  }
 }
 
-function beginRun(){
-  startTime=Date.now();
-  timer=setInterval(update,100);
+function beginMovement(){
+  if(isRunning) return;
+
+  isRunning = true;
+  startTime = Date.now();
+
+  if(timer) clearInterval(timer);
+  timer = setInterval(update, 100);
 }
 
 function update(){
-  let t=(Date.now()-startTime)/1000;
-  document.getElementById('timer').innerText=t.toFixed(2)+"s";
+  if(!isRunning || !startTime) return;
 
-  let speed=Math.min((distance/t)*2.237,22);
+  let t = (Date.now() - startTime) / 1000;
+  document.getElementById('timer').innerText = t.toFixed(2) + "s";
+
+  let speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
 
-  document.getElementById('speed').innerText="Speed: "+speed.toFixed(1)+" mph";
-
-  document.getElementById('speedFill').style.width=(speed/22*100)+"%";
+  document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
+  document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
 
   chartData.push(speed);
   drawChart();
-}
+
   // AUTO LAP TRACKING
-let elapsed = (Date.now() - startTime) / 1000;
+  let progress = t / (distance / 10);
+  let estimatedDistance = progress * distance;
+  let lapIndex = Math.floor(estimatedDistance / lapDistance);
 
-// estimate progress (simple but works)
-let progress = elapsed / (distance / 10);
-let estimatedDistance = progress * distance;
+  if (lapIndex > currentLap && lapIndex < totalLaps) {
+    currentLap = lapIndex;
 
-let lapIndex = Math.floor(estimatedDistance / lapDistance);
+    let splitTime = t;
+    let splitSpeed = speeds[speeds.length - 1] || 0;
 
-if (lapIndex > currentLap && lapIndex < totalLaps) {
-  currentLap = lapIndex;
+    splits.push({
+      time: splitTime,
+      speed: splitSpeed,
+      lap: currentLap
+    });
 
-  let splitTime = elapsed;
-  splits.push(splitTime);
-
-  document.getElementById('split').innerText =
-    "Lap " + currentLap + ": " + splitTime.toFixed(2) + "s";
+    document.getElementById('splitDisplay').innerText =
+      `Lap ${currentLap}: ${splitTime.toFixed(2)}s | ${splitSpeed.toFixed(1)} mph`;
+  }
 }
 
 function markSplit(){
@@ -272,20 +290,39 @@ function markSplit(){
   document.getElementById('splitDisplay').innerText =
     `Lap ${currentLap}: ${time.toFixed(2)}s | ${speed.toFixed(1)} mph`;
 }
+
+function resetRun(){
+  if(timer) clearInterval(timer);
+
+  isRunning = false;
+  startTime = null;
+  splits = [];
+  speeds = [];
+  chartData = [];
+  currentLap = 0;
+
+  document.getElementById('timer').innerText = "0.00s";
+  document.getElementById('speed').innerText = "Speed: 0 mph";
+  document.getElementById('splitDisplay').innerText = "Split: --";
+  document.getElementById('speedFill').style.width = "0%";
+
+  drawChart();
 }
 
 function stopRun(){
-  clearInterval(timer);
+  if(timer) clearInterval(timer);
 
-  let t=(Date.now()-startTime)/1000;
-  let speed=(distance/t)*2.237;
+  isRunning = false;
 
-  document.getElementById('finalTime').innerText="Time: "+t.toFixed(2);
-  document.getElementById('finalSpeed').innerText="Speed: "+speed.toFixed(2);
+  let t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  let speed = t > 0 ? (distance / t) * 2.237 : 0;
 
-  saveRun(t,speed);
+  document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
+  document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
+
   showSplits();
-saveRunToHistory(finalTime, finalSpeed);
+  saveRunToHistory(t, speed);
+
   showScreen('results');
 }
 
@@ -296,13 +333,30 @@ function showSplits(){
     html += "No splits recorded";
   } else {
     splits.forEach((s, i) => {
-      html += `Lap ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
+      html += `Lap ${i + 1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
     });
   }
 
   document.getElementById('splitsBox').innerHTML = html;
 }
+
+function saveRunToHistory(finalTime, finalSpeed) {
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
+  if (!allData[currentUser]) {
+    allData[currentUser] = [];
+  }
+
+  allData[currentUser].push({
+    distance: distance,
+    time: finalTime,
+    speed: finalSpeed,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
 }
+
 function showHistory(){
   let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
   let userRuns = allData[currentUser] || [];
@@ -314,9 +368,9 @@ function showHistory(){
   } else {
     userRuns.slice().reverse().forEach(run => {
       html += `
-        ${run.distance}m - ${run.time.toFixed(2)}s 
-        (${run.speed.toFixed(2)} mph)<br>
-        <small>${run.date}</small><br><br>
+        ${run.distance}m - ${Number(run.time).toFixed(2)}s 
+        (${Number(run.speed).toFixed(2)} mph)<br>
+        <span class="smallText">${run.date}</span><br><br>
       `;
     });
   }
@@ -324,59 +378,28 @@ function showHistory(){
   document.getElementById("historyList").innerHTML = html;
 }
 
-  
-function saveRun(time,speed){
-  let runs=JSON.parse(localStorage.getItem("runs")||"[]");
-
-  runs.unshift({
-    time:time.toFixed(2),
-    speed:speed.toFixed(2),
-    date:new Date().toLocaleDateString()
-  });
-
-  localStorage.setItem("runs",JSON.stringify(runs));
-}
-
-function showHistory(){
-  showScreen('history');
-
-  let runs=JSON.parse(localStorage.getItem("runs")||"[]");
-
-  let html="";
-  runs.forEach(r=>{
-    html+=`
-      <div style="margin-bottom:10px">
-        ${r.date}<br>
-        ${r.time}s | ${r.speed} mph
-      </div>
-    `;
-  });
-
-  document.getElementById('historyList').innerHTML=html;
-}
-
 function drawChart(){
-  let c=document.getElementById('chart');
-  let ctx=c.getContext('2d');
+  let c = document.getElementById('chart');
+  let ctx = c.getContext('2d');
 
-  ctx.clearRect(0,0,c.width,c.height);
+  ctx.clearRect(0, 0, c.width, c.height);
 
-  let max=Math.max(...chartData,1);
+  let max = Math.max(...chartData, 1);
 
   ctx.beginPath();
-  ctx.strokeStyle="red";
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 3;
 
-  chartData.forEach((v,i)=>{
-    let x=i*3;
-    let y=c.height-(v/max*c.height);
+  chartData.forEach((v, i) => {
+    let x = i * 3;
+    let y = c.height - (v / max * c.height);
 
-    if(i==0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
+    if(i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   });
 
   ctx.stroke();
 }
-
 </script>
 
 </body>
