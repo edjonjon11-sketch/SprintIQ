@@ -213,7 +213,38 @@ function goToHistory(){
 // =========================
 // RUN SETUP
 // =========================
-function startRun(d){
+function selectRunner(){
+  let savedUsers = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+
+  let list = savedUsers.length 
+    ? "Select runner:\n\n" + savedUsers.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nOr type new name:"
+    : "Enter runner name:";
+
+  let input = prompt(list);
+  if(!input) return null;
+
+  input = input.trim();
+
+  let index = parseInt(input);
+  if(!isNaN(index) && savedUsers[index-1]){
+    currentUser = savedUsers[index-1];
+  } else {
+    currentUser = input;
+
+    if(!savedUsers.includes(currentUser)){
+      savedUsers.push(currentUser);
+      localStorage.setItem("SprintIQUserList", JSON.stringify(savedUsers));
+    }
+  }
+
+  localStorage.setItem("currentUser", currentUser);
+  return currentUser;
+}
+  function startRun(d){
+
+  let user = selectRunner();
+  if(!user) return;
+
   distance = d;
   splits = [];
   speeds = [];
@@ -478,6 +509,38 @@ function drawChart(){
 
 // INIT
 updateUserLabel();
+function selectRunner(){
+
+  let savedUsers = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+
+  let list = savedUsers.length 
+    ? "Select runner:\n\n" + savedUsers.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nOr type new name:"
+    : "Enter runner name:";
+
+  let input = prompt(list);
+
+  if(!input) return null;
+
+  input = input.trim();
+
+  // If user typed number (select existing)
+  let index = parseInt(input);
+  if(!isNaN(index) && savedUsers[index-1]){
+    currentUser = savedUsers[index-1];
+  } else {
+    currentUser = input;
+
+    // Save new user if not exists
+    if(!savedUsers.includes(currentUser)){
+      savedUsers.push(currentUser);
+      localStorage.setItem("SprintIQUserList", JSON.stringify(savedUsers));
+    }
+  }
+
+  localStorage.setItem("currentUser", currentUser);
+
+  return currentUser;
+}
 </script>
 
 </body>
