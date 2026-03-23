@@ -391,14 +391,25 @@ function showHistory(){
             ${run.date}
           </div>
         </div>
-      `;
-    });
+      
   }
 
   document.getElementById("historyList").innerHTML = html;
 }
 
-  
+  function switchUser(){
+  let name = prompt("Enter athlete name:");
+
+  if(!name || name.trim() === "") return;
+
+  currentUser = name.trim();
+
+  localStorage.setItem("currentUser", currentUser);
+
+  alert("Switched to: " + currentUser);
+
+  showHistory();
+}
 
 function drawChart(){
   let c = document.getElementById('chart');
