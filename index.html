@@ -114,6 +114,14 @@ canvas{
 <!-- LIVE -->
 <div id="live" class="screen">
   <div class="header">Live Run</div>
+  <div id="liveUser" style="
+  font-size:16px;
+  color:#ff4d4d;
+  margin-top:6px;
+  font-weight:bold;
+">
+  Runner: Default
+</div>
 
   <video id="camera" autoplay playsinline muted></video>
 
@@ -176,10 +184,16 @@ let currentLap = 0;
 // =========================
 // USER LABEL
 // =========================
-function updateUserLabel(){
-  let el = document.getElementById("currentUserLabel");
-  if(el){
-    el.innerText = "Athlete: " + currentUser;
+function updateActiveUserUI(){
+  let live = document.getElementById("liveUser");
+  let results = document.getElementById("resultsUser");
+
+  if(live){
+    live.innerText = "🏃 Runner: " + currentUser;
+  }
+
+  if(results){
+    results.innerText = "🏁 Athlete: " + currentUser;
   }
 }
 
@@ -219,6 +233,7 @@ function startRun(d){
   document.getElementById('speedFill').style.width = "0%";
 
   drawChart();
+  updateActiveUserUI();
   showScreen('live');
   startCamera();
 }
@@ -339,6 +354,7 @@ function stopRun(){
 
   showSplits();
   saveRunToHistory(t, speed);
+  updateActiveUserUI();
 
   showScreen('results');
 }
