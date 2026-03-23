@@ -543,6 +543,29 @@ function selectRunner(){
 
   return currentUser;
 }
+function clearHistory(){
+
+  let confirmClear = confirm("Clear all history for " + currentUser + "?");
+  if(!confirmClear) return;
+
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
+  // If user has no history
+  if(!allData[currentUser]){
+    alert("No history to clear.");
+    return;
+  }
+
+  // Clear THIS user only
+  allData[currentUser] = [];
+
+  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
+
+  // Refresh screen
+  showHistory();
+
+  alert("History cleared for " + currentUser);
+}
 </script>
 
 </body>
