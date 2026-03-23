@@ -1,188 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprintIQ Pro</title>
-
-<style>
-body{
-  margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:linear-gradient(to bottom,#000,#111);
-  color:white;
-}
-
-.screen{display:none;padding:20px;}
-.active{display:block;}
-
-.header{font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-bottom:10px;}
-
-.card{
-  background:#111;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
-  box-shadow:0 0 20px rgba(255,0,0,.2);
-}
-
-.btn{
-  width:100%;
-  padding:16px;
-  font-size:18px;
-  border:none;
-  border-radius:14px;
-  margin-top:12px;
-  color:white;
-  font-weight:bold;
-  background:linear-gradient(to right,#ff2d2d,#ff5a5a);
-}
-
-video{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh; /* 🔥 FULL SCREEN */
-  object-fit:cover;
-  z-index:1;
-}
-.controls{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  padding:15px;
-  z-index:2;
-
-  background:linear-gradient(
-    to top,
-    rgba(0,0,0,0.9),
-    rgba(0,0,0,0)
-  );
-}
-
-.bigTimer{
-  font-size:42px;
-  font-weight:bold;
-}
-
-.speedBar{
-  height:12px;
-  border-radius:10px;
-  background:#222;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.speedFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(to right,#ff2d2d,#ff0000);
-}
-
-canvas{
-  width:100%;
-  height:100px;
-  margin-top:10px;
-  background:#0b0b0b;
-  border-radius:12px;
-}
-
-.smallText{
-  color:#aaa;
-  font-size:14px;
-}
-</style>
-</head>
-
-<body>
-
-<!-- HOME -->
-<div id="home" class="screen active">
-  <div class="header">🏃 SprintIQ Pro</div>
-  <div class="sub">Train Faster. Run Smarter.</div>
-
-  <div class="card">
-    <b>BEST TIMES</b><br>
-    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
-  </div>
-
-  <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="goToHistory()">View History</button>
-  <button class="btn" onclick="switchUser()">Switch User</button>
-</div>
-
-<!-- SETUP -->
-<div id="setup" class="screen">
-  <div class="header">Select Event</div>
-
-  <button class="btn" onclick="startRun(100)">100m</button>
-  <button class="btn" onclick="startRun(200)">200m</button>
-  <button class="btn" onclick="startRun(400)">400m</button>
-  <button class="btn" onclick="startRun(800)">800m</button>
-  <button class="btn" onclick="startRun(1600)">1600m</button>
-
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-
-<div id="live" class="screen">
-
-  <video id="camera" autoplay playsinline muted></video>
-
-  <div class="controls">
-
-    <div id="liveUser" style="
-      font-size:16px;
-      color:#ff4d4d;
-      font-weight:bold;
-      margin-bottom:10px;
-    ">
-      🏃 Runner: Default
-    </div>
-
-    <div class="card">
-      <div id="timer" class="bigTimer">0.00s</div>
-      <div id="speed">Speed: 0 mph</div>
-      <div id="splitDisplay">Split: --</div>
-
-      <div class="speedBar">
-        <div id="speedFill" class="speedFill"></div>
-      </div>
-    </div>
-
-    <button class="btn" onclick="beginMovement()">Start</button>
-    <button class="btn" onclick="markSplit()">Split</button>
-    <button class="btn" onclick="stopRun()">Finish</button>
-    <button class="btn" onclick="resetRun()">Reset</button>
-
-  </div>
-
-</div>
-
-<!-- RESULTS -->
-<div id="results" class="screen">
-  <div class="header">Results</div>
-  <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
-
-  <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
-  </div>
-
-  <div class="card" id="splitsBox"></div>
-
-  <button class="btn" onclick="showScreen('home')">Back Home</button>
-</div>
-
-<!-- HISTORY -->
-<div id="history" class="screen">
-  <div class="header">History</div>
-  <div class="card" id="historyList"></div>
-  <button class="btn" onclick="clearHistory()">Clear History</button>
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-
 <script>
 let currentUser = localStorage.getItem("currentUser") || "Default";
 let startTime = null;
@@ -203,8 +18,8 @@ let currentLap = 0;
 // USER LABEL
 // =========================
 function updateActiveUserUI(){
-  let live = document.getElementById("liveUser");
-  let results = document.getElementById("resultsUser");
+  const live = document.getElementById("liveUser");
+  const results = document.getElementById("resultsUser");
 
   if(live){
     live.innerText = "🏃 Runner: " + currentUser;
@@ -229,12 +44,12 @@ function goToHistory(){
 }
 
 // =========================
-// RUN SETUP
+// RUNNER SELECTION
 // =========================
 function selectRunner(){
-  let savedUsers = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+  const savedUsers = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
-  let list = savedUsers.length 
+  const list = savedUsers.length
     ? "Select runner:\n\n" + savedUsers.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nOr type new name:"
     : "Enter runner name:";
 
@@ -243,9 +58,9 @@ function selectRunner(){
 
   input = input.trim();
 
-  let index = parseInt(input);
-  if(!isNaN(index) && savedUsers[index-1]){
-    currentUser = savedUsers[index-1];
+  const index = parseInt(input, 10);
+  if(!isNaN(index) && savedUsers[index - 1]){
+    currentUser = savedUsers[index - 1];
   } else {
     currentUser = input;
 
@@ -258,11 +73,15 @@ function selectRunner(){
   localStorage.setItem("currentUser", currentUser);
   return currentUser;
 }
-  function startRun(d){
 
-  let user = selectRunner();
+// =========================
+// RUN SETUP
+// =========================
+function startRun(d){
+  const user = selectRunner();
   if(!user) return;
 
+  currentUser = user;
   distance = d;
   splits = [];
   speeds = [];
@@ -275,6 +94,7 @@ function selectRunner(){
   startTime = null;
 
   if(timer) clearInterval(timer);
+  timer = null;
 
   document.getElementById('timer').innerText = "0.00s";
   document.getElementById('speed').innerText = "Speed: 0 mph";
@@ -282,7 +102,6 @@ function selectRunner(){
   document.getElementById('speedFill').style.width = "0%";
 
   drawChart();
-  showScreen('live');
   updateActiveUserUI();
   showScreen('live');
   startCamera();
@@ -299,7 +118,7 @@ async function startCamera(){
 
     currentStream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: { exact: "environment" } // 🔥 BACK CAMERA
+        facingMode: { ideal: "environment" }
       },
       audio: false
     });
@@ -307,11 +126,13 @@ async function startCamera(){
     document.getElementById('camera').srcObject = currentStream;
 
   } catch(err){
-    console.warn("Back camera failed, switching to default");
-
-    // fallback (important for some phones)
-    currentStream = await navigator.mediaDevices.getUserMedia({ video:true });
-    document.getElementById('camera').srcObject = currentStream;
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      document.getElementById('camera').srcObject = currentStream;
+    } catch(err2){
+      console.error(err2);
+      alert("Camera access failed. Please allow camera permission.");
+    }
   }
 }
 
@@ -331,11 +152,10 @@ function beginMovement(){
 function update(){
   if(!isRunning || !startTime) return;
 
-  let t = (Date.now() - startTime) / 1000;
-
+  const t = (Date.now() - startTime) / 1000;
   document.getElementById('timer').innerText = t.toFixed(2) + "s";
 
-  let speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
+  const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
@@ -345,14 +165,14 @@ function update(){
   drawChart();
 
   // AUTO LAP
-  let progress = t / (distance / 10);
-  let estimatedDistance = progress * distance;
-  let lapIndex = Math.floor(estimatedDistance / lapDistance);
+  const progress = t / (distance / 10);
+  const estimatedDistance = progress * distance;
+  const lapIndex = Math.floor(estimatedDistance / lapDistance);
 
   if (lapIndex > currentLap && lapIndex < totalLaps) {
     currentLap = lapIndex;
 
-    let splitSpeed = speeds[speeds.length - 1] || 0;
+    const splitSpeed = speeds[speeds.length - 1] || 0;
 
     splits.push({
       time: t,
@@ -368,8 +188,8 @@ function update(){
 function markSplit(){
   if(!isRunning) return;
 
-  let t = (Date.now() - startTime) / 1000;
-  let speed = speeds[speeds.length - 1] || 0;
+  const t = (Date.now() - startTime) / 1000;
+  const speed = speeds[speeds.length - 1] || 0;
 
   currentLap++;
 
@@ -406,17 +226,15 @@ function stopRun(){
 
   isRunning = false;
 
-  let t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  let speed = t > 0 ? (distance / t) * 2.237 : 0;
+  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  const speed = t > 0 ? (distance / t) * 2.237 : 0;
 
   document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
   document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
 
   showSplits();
   saveRunToHistory(t, speed);
-  showScreen('results');
   updateActiveUserUI();
-
   showScreen('results');
 }
 
@@ -441,7 +259,7 @@ function showSplits(){
 // HISTORY
 // =========================
 function saveRunToHistory(time, speed){
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
   if(!allData[currentUser]){
     allData[currentUser] = [];
@@ -458,8 +276,8 @@ function saveRunToHistory(time, speed){
 }
 
 function showHistory(){
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  let userRuns = allData[currentUser] || [];
+  const allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const userRuns = allData[currentUser] || [];
 
   let html = `<b>${currentUser} Performance</b><br><br>`;
 
@@ -467,7 +285,7 @@ function showHistory(){
     html += "No runs yet";
   } else {
     userRuns.slice().reverse().forEach(run => {
-      let pace = (run.time / run.distance * 100).toFixed(2);
+      const pace = (run.time / run.distance * 100).toFixed(2);
 
       html += `
         <div style="
@@ -496,38 +314,53 @@ function showHistory(){
   document.getElementById("historyList").innerHTML = html;
 }
 
+function clearHistory(){
+  const confirmClear = confirm("Clear all history for " + currentUser + "?");
+  if(!confirmClear) return;
+
+  const allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
+  if(!allData[currentUser]){
+    alert("No history to clear.");
+    return;
+  }
+
+  allData[currentUser] = [];
+  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
+  showHistory();
+  alert("History cleared for " + currentUser);
+}
+
 // =========================
 // USER SWITCH
 // =========================
 function switchUser(){
-  let name = prompt("Enter athlete name:");
-
+  const name = prompt("Enter athlete name:");
   if(!name || name.trim() === "") return;
 
   currentUser = name.trim();
   localStorage.setItem("currentUser", currentUser);
-
-  updateUserLabel();
+  updateActiveUserUI();
 }
 
 // =========================
 // CHART
 // =========================
 function drawChart(){
-  let c = document.getElementById('chart');
-  let ctx = c.getContext('2d');
+  const c = document.getElementById('chart');
+  const ctx = c.getContext('2d');
 
   ctx.clearRect(0, 0, c.width, c.height);
 
-  let max = Math.max(...chartData, 1);
+  const max = Math.max(...chartData, 1);
 
   ctx.beginPath();
   ctx.strokeStyle = "red";
   ctx.lineWidth = 3;
 
   chartData.forEach((v, i) => {
-    let x = i * 3;
-    let y = c.height - (v / max * c.height);
+    const x = i * 3;
+    const y = c.height - (v / max * c.height);
 
     if(i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -537,63 +370,5 @@ function drawChart(){
 }
 
 // INIT
-updateUserLabel();
-function selectRunner(){
-
-  let savedUsers = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  let list = savedUsers.length 
-    ? "Select runner:\n\n" + savedUsers.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nOr type new name:"
-    : "Enter runner name:";
-
-  let input = prompt(list);
-
-  if(!input) return null;
-
-  input = input.trim();
-
-  // If user typed number (select existing)
-  let index = parseInt(input);
-  if(!isNaN(index) && savedUsers[index-1]){
-    currentUser = savedUsers[index-1];
-  } else {
-    currentUser = input;
-
-    // Save new user if not exists
-    if(!savedUsers.includes(currentUser)){
-      savedUsers.push(currentUser);
-      localStorage.setItem("SprintIQUserList", JSON.stringify(savedUsers));
-    }
-  }
-
-  localStorage.setItem("currentUser", currentUser);
-
-  return currentUser;
-}
-function clearHistory(){
-
-  let confirmClear = confirm("Clear all history for " + currentUser + "?");
-  if(!confirmClear) return;
-
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
-  // If user has no history
-  if(!allData[currentUser]){
-    alert("No history to clear.");
-    return;
-  }
-
-  // Clear THIS user only
-  allData[currentUser] = [];
-
-  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
-
-  // Refresh screen
-  showHistory();
-
-  alert("History cleared for " + currentUser);
-}
+updateActiveUserUI();
 </script>
-
-</body>
-</html>
