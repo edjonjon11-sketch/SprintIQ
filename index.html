@@ -240,10 +240,10 @@ function beginMovement(){
 function update(){
   if(!isRunning || !startTime) return;
 
-  let t = (Date.now() - startTime) / 1000;
+  const t = (Date.now() - startTime) / 1000;
   document.getElementById('timer').innerText = t.toFixed(2) + "s";
 
-  let speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
+  const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
@@ -253,15 +253,15 @@ function update(){
   drawChart();
 
   // AUTO LAP TRACKING
-  let progress = t / (distance / 10);
-  let estimatedDistance = progress * distance;
-  let lapIndex = Math.floor(estimatedDistance / lapDistance);
+  const progress = t / (distance / 10);
+  const estimatedDistance = progress * distance;
+  const lapIndex = Math.floor(estimatedDistance / lapDistance);
 
   if (lapIndex > currentLap && lapIndex < totalLaps) {
     currentLap = lapIndex;
 
-    let splitTime = t;
-    let splitSpeed = speeds[speeds.length - 1] || 0;
+    const splitTime = t;
+    const splitSpeed = speeds[speeds.length - 1] || 0;
 
     splits.push({
       time: splitTime,
@@ -277,8 +277,8 @@ function update(){
 function markSplit(){
   if(!isRunning) return;
 
-  let time = (Date.now() - startTime) / 1000;
-  let speed = speeds[speeds.length - 1] || 0;
+  const time = (Date.now() - startTime) / 1000;
+  const speed = speeds[speeds.length - 1] || 0;
 
   splits.push({
     time: time,
@@ -315,8 +315,8 @@ function stopRun(){
 
   isRunning = false;
 
-  let t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  let speed = t > 0 ? (distance / t) * 2.237 : 0;
+  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  const speed = t > 0 ? (distance / t) * 2.237 : 0;
 
   document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
   document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
@@ -359,8 +359,8 @@ function saveRunToHistory(finalTime, finalSpeed) {
 }
 
 function showHistory(){
-  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  let userRuns = allData[currentUser] || [];
+  const allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const userRuns = allData[currentUser] || [];
 
   let html = `<b>${currentUser} History</b><br><br>`;
 
@@ -368,8 +368,7 @@ function showHistory(){
     html += "No runs yet";
   } else {
     userRuns.slice().reverse().forEach(run => {
-
-      let pace = (run.time / run.distance * 100).toFixed(2);
+      const pace = (Number(run.time) / Number(run.distance) * 100).toFixed(2);
 
       html += `
         <div style="
@@ -391,41 +390,39 @@ function showHistory(){
             ${run.date}
           </div>
         </div>
-      
+      `;
+    });
   }
 
   document.getElementById("historyList").innerHTML = html;
 }
 
-  function switchUser(){
-  let name = prompt("Enter athlete name:");
+function switchUser(){
+  const name = prompt("Enter athlete name:");
 
   if(!name || name.trim() === "") return;
 
   currentUser = name.trim();
-
   localStorage.setItem("currentUser", currentUser);
 
   alert("Switched to: " + currentUser);
-
-  showHistory();
 }
 
 function drawChart(){
-  let c = document.getElementById('chart');
-  let ctx = c.getContext('2d');
+  const c = document.getElementById('chart');
+  const ctx = c.getContext('2d');
 
   ctx.clearRect(0, 0, c.width, c.height);
 
-  let max = Math.max(...chartData, 1);
+  const max = Math.max(...chartData, 1);
 
   ctx.beginPath();
   ctx.strokeStyle = "red";
   ctx.lineWidth = 3;
 
   chartData.forEach((v, i) => {
-    let x = i * 3;
-    let y = c.height - (v / max * c.height);
+    const x = i * 3;
+    const y = c.height - (v / max * c.height);
 
     if(i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
