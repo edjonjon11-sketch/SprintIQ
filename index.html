@@ -86,7 +86,9 @@ canvas{
   </div>
 
   <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="showHistory()">View History</button>
+  <button class="btn" onclick="showHistory(); showScreen('history')">
+  View History
+</button>
 </div>
 
 <div id="setup" class="screen">
@@ -142,6 +144,7 @@ canvas{
 <div id="history" class="screen">
   <div class="header">History</div>
   <div class="card" id="historyList"></div>
+  <button class="btn" onclick="clearHistory()">Clear History</button>
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
 
@@ -158,7 +161,15 @@ let chartData=[];
 let lapDistance = 400;
 let totalLaps = 1;
 let currentLap = 0;
+function clearHistory(){
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
+  allData[currentUser] = [];
+
+  localStorage.setItem("SprintIQUsers", JSON.stringify(allData));
+
+  showHistory();
+}
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -255,7 +266,7 @@ function stopRun(){
 
   saveRun(t,speed);
   showSplits();
-
+saveRunToHistory(finalTime, finalSpeed);
   showScreen('results');
 }
 
@@ -266,7 +277,28 @@ function showSplits(){
   });
   document.getElementById('splitsBox').innerHTML=html;
 }
+function showHistory(){
+  let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  let userRuns = allData[currentUser] || [];
 
+  let html = "<b>" + currentUser + " History</b><br><br>";
+
+  if(userRuns.length === 0){
+    html += "No runs yet";
+  } else {
+    userRuns.slice().reverse().forEach(run => {
+      html += `
+        ${run.distance}m - ${run.time.toFixed(2)}s 
+        (${run.speed.toFixed(2)} mph)<br>
+        <small>${run.date}</small><br><br>
+      `;
+    });
+  }
+
+  document.getElementById("historyList").innerHTML = html;
+}
+
+  
 function saveRun(time,speed){
   let runs=JSON.parse(localStorage.getItem("runs")||"[]");
 
