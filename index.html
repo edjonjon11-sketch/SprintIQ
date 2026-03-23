@@ -112,36 +112,38 @@ canvas{
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
 
-<!-- LIVE -->
 <div id="live" class="screen">
-  <div class="header">Live Run</div>
-  <div id="liveUser" style="
-  font-size:16px;
-  color:#ff4d4d;
-  margin-top:6px;
-  font-weight:bold;
-">
-  Runner: Default
-</div>
 
   <video id="camera" autoplay playsinline muted></video>
 
-  <canvas id="chart" width="600" height="100"></canvas>
+  <div class="controls">
 
-  <div class="card">
-    <div id="timer" class="bigTimer">0.00s</div>
-    <div id="speed">Speed: 0 mph</div>
-    <div id="splitDisplay">Split: --</div>
-
-    <div class="speedBar">
-      <div id="speedFill" class="speedFill"></div>
+    <div id="liveUser" style="
+      font-size:16px;
+      color:#ff4d4d;
+      font-weight:bold;
+      margin-bottom:10px;
+    ">
+      🏃 Runner: Default
     </div>
+
+    <div class="card">
+      <div id="timer" class="bigTimer">0.00s</div>
+      <div id="speed">Speed: 0 mph</div>
+      <div id="splitDisplay">Split: --</div>
+
+      <div class="speedBar">
+        <div id="speedFill" class="speedFill"></div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="beginMovement()">Start</button>
+    <button class="btn" onclick="markSplit()">Split</button>
+    <button class="btn" onclick="stopRun()">Finish</button>
+    <button class="btn" onclick="resetRun()">Reset</button>
+
   </div>
 
-  <button class="btn" onclick="beginMovement()">Start Movement</button>
-  <button class="btn" onclick="markSplit()">Mark Split</button>
-  <button class="btn" onclick="stopRun()">Finish Run</button>
-  <button class="btn" onclick="resetRun()">Reset Run</button>
 </div>
 
 <!-- RESULTS -->
