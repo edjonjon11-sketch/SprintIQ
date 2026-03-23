@@ -362,22 +362,43 @@ function showHistory(){
   let allData = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
   let userRuns = allData[currentUser] || [];
 
-  let html = "<b>" + currentUser + " History</b><br><br>";
+  let html = `<b>${currentUser} History</b><br><br>`;
 
   if(userRuns.length === 0){
     html += "No runs yet";
   } else {
     userRuns.slice().reverse().forEach(run => {
+
+      let pace = (run.time / run.distance * 100).toFixed(2);
+
       html += `
-        ${run.distance}m - ${Number(run.time).toFixed(2)}s 
-        (${Number(run.speed).toFixed(2)} mph)<br>
-        <span class="smallText">${run.date}</span><br><br>
+        <div style="
+          background:#0f0f0f;
+          padding:12px;
+          border-radius:12px;
+          margin-bottom:10px;
+          box-shadow:0 0 10px rgba(255,0,0,.2);
+        ">
+          <div style="font-size:18px;font-weight:bold;">
+            ${run.distance}m - ${Number(run.time).toFixed(2)}s
+          </div>
+
+          <div style="color:#aaa;margin-top:4px;">
+            ⚡ ${Number(run.speed).toFixed(2)} mph | 🧠 Pace: ${pace}s /100m
+          </div>
+
+          <div style="font-size:12px;color:#666;margin-top:6px;">
+            ${run.date}
+          </div>
+        </div>
       `;
     });
   }
 
   document.getElementById("historyList").innerHTML = html;
 }
+
+  
 
 function drawChart(){
   let c = document.getElementById('chart');
