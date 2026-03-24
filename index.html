@@ -227,8 +227,6 @@ function selectRunner(){
 
 // START RUN
 function startRun(d){
-  const user = selectRunner();
-  if(!user) return;
 
   distance = d;
   splits = [];
@@ -247,6 +245,7 @@ function startRun(d){
   updateActiveUserUI();
   showScreen('live');
 }
+
 
 // CAMERA
 async function startCamera(){
