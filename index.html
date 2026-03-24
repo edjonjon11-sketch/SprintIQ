@@ -372,7 +372,8 @@ function markSplit(){
     `Split ${splits.length}: ${t.toFixed(2)}s | ${speed.toFixed(1)} mph`;
 }
 
-function stopRun(){
+ function stopRun(){
+
   if(timer) clearInterval(timer);
 
   const t = startTime ? (Date.now() - startTime) / 1000 : 0;
@@ -388,23 +389,24 @@ function stopRun(){
   };
 
   if(mediaRecorder && mediaRecorder.state !== "inactive"){
-  mediaRecorder.onstop = function(){
 
-  const blob = new Blob(recordedChunks, { type: "video/webm" });
+    mediaRecorder.onstop = function(){
 
-  const reader = new FileReader();
+      const blob = new Blob(recordedChunks, { type: "video/webm" });
 
-  reader.onloadend = function(){
-    const base64Video = reader.result;
+      const reader = new FileReader();
 
-    saveRun(t, speed, base64Video); // ✅ permanent storage
-    finishUI();
-  };
+      reader.onloadend = function(){
+        const base64Video = reader.result;
+        saveRun(t, speed, base64Video);
+        finishUI();
+      };
 
-  reader.readAsDataURL(blob);
-};   
+      reader.readAsDataURL(blob);
     };
+
     mediaRecorder.stop();
+
   } else {
     saveRun(t, speed, null);
     finishUI();
