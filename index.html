@@ -173,6 +173,9 @@ video{
 </div>
 
 <script>
+let mediaRecorder;
+let recordedChunks = [];
+let lastVideoURL = null;
 let currentUser = localStorage.getItem("currentUser") || "Default";
 let startTime = null;
 let timer = null;
@@ -264,6 +267,17 @@ async function startCamera(){
     });
 
     document.getElementById('camera').srcObject = currentStream;
+   recordedChunks = [];
+
+mediaRecorder = new MediaRecorder(currentStream);
+
+mediaRecorder.ondataavailable = function(e){
+  if(e.data.size > 0){
+    recordedChunks.push(e.data);
+  }
+};
+
+mediaRecorder.start(); 
   } catch{
     currentStream = await navigator.mediaDevices.getUserMedia({video:true});
     document.getElementById('camera').srcObject = currentStream;
@@ -315,7 +329,25 @@ function stopRun(){
   document.getElementById('finalTime').innerText="Time: "+t.toFixed(2)+"s";
   document.getElementById('finalSpeed').innerText="Speed: "+speed.toFixed(2)+" mph";
 
-  saveRun(t,speed);
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+
+  mediaRecorder.stop();
+
+  mediaRecorder.onstop = function(){
+
+    let blob = new Blob(recordedChunks, { type: "video/webm" });
+
+    let videoURL = URL.createObjectURL(blob);
+
+    saveRun(t, speed, videoURL); // 🔥 pass video
+
+  };
+
+} else {
+
+  saveRun(t, speed, null);
+
+}
   showSplits();
   updateActiveUserUI();
   showScreen('results');
@@ -345,19 +377,20 @@ function showSplits(){
 }
 
 // HISTORY
-function saveRun(time,speed){
-  let data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
+function saveRun(time, speed, videoURL){
+  let data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
-  if(!data[currentUser]) data[currentUser]=[];
+  if(!data[currentUser]) data[currentUser] = [];
 
   data[currentUser].push({
-    distance:distance,
-    time:time,
-    speed:speed,
-    date:new Date().toLocaleString()
+    distance: distance,
+    time: time,
+    speed: speed,
+    video: videoURL,
+    date: new Date().toLocaleString()
   });
 
-  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 }
 
 function showHistory(){
@@ -369,7 +402,24 @@ function showHistory(){
   if(runs.length===0){
     html+="No runs yet";
   } else {
-    runs.slice().reverse().forEach(r=>{
+    runs.slice().reverse().forEach(r => {
+
+  html += `
+    <div style="margin-bottom:15px;">
+      ${r.distance}m - ${r.time.toFixed(2)}s (${r.speed.toFixed(2)} mph)<br>
+      <small>${r.date}</small><br>
+  `;
+
+  if(r.video){
+    html += `
+      <video controls style="width:100%; margin-top:8px; border-radius:10px;">
+        <source src="${r.video}" type="video/webm">
+      </video>
+    `;
+  }
+
+  html += `</div>`;
+});
       html+=`${r.distance}m - ${r.time.toFixed(2)}s (${r.speed.toFixed(2)} mph)<br><br>`;
     });
   }
