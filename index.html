@@ -78,6 +78,42 @@ body{
   font-weight:bold;
 }
 
+.subtle-label{
+  font-size:12px;
+  color:#aaa;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.metric-row{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.metric-box{
+  flex:1;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;
+  padding:10px;
+}
+
+.metric-value{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.rec-dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#ff3b30;
+  margin-right:8px;
+  box-shadow:0 0 10px rgba(255,59,48,.8);
+}
+  
 .speedBar{
   height:12px;
   border-radius:10px;
@@ -138,10 +174,43 @@ body{
       🏃 Runner: Default
     </div>
 
+    <canvas id="speedChart" width="600" height="140" style="
+  width:100%;
+  background:rgba(0,0,0,0.45);
+  border-radius:14px;
+  margin-bottom:12px;
+"></canvas>
+
     <div class="card">
-      <div id="timer" class="bigTimer">0.00s</div>
-      <div id="speed">Speed: 0 mph</div>
-      <div id="splitDisplay">Split: --</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div id="liveUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;">
+      🏃 Runner: Default
+    </div>
+    <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
+      <span class="rec-dot"></span>REC
+    </div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric-box">
+      <div class="subtle-label">Time</div>
+      <div id="timer" class="metric-value">0.00s</div>
+    </div>
+    <div class="metric-box">
+      <div class="subtle-label">Speed</div>
+      <div id="speed" class="metric-value">0 mph</div>
+    </div>
+  </div>
+
+  <div class="metric-box" style="margin-top:10px;">
+    <div class="subtle-label">Split</div>
+    <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
+
+    <div class="speedBar">
+      <div id="speedFill" class="speedFill"></div>
+    </div>
+  </div>
+</div>
 
       <div class="speedBar">
         <div id="speedFill" class="speedFill"></div>
@@ -408,6 +477,43 @@ function showSplits(){
 
   document.getElementById('splitsBox').innerHTML = html;
 }
+
+function drawSpeedChart(){
+  const c = document.getElementById("speedChart");
+  if(!c) return;
+
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, c.width, c.height);
+
+  if(chartData.length < 2) return;
+
+  const max = Math.max(...chartData, 1);
+
+  ctx.beginPath();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#ff3b30";
+
+  chartData.forEach((v, i) => {
+    const x = (i / Math.max(chartData.length - 1, 1)) * c.width;
+    const y = c.height - (v / max) * (c.height - 10);
+
+    if(i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+
+  ctx.stroke();
+
+  splits.forEach((s) => {
+    const splitIndex = Math.min(chartData.length - 1, Math.floor((s.time / Math.max((Date.now() - startTime) / 1000, 0.1)) * chartData.length));
+    const x = (splitIndex / Math.max(chartData.length - 1, 1)) * c.width;
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, c.height);
+    ctx.stroke();
+  });
+}
+  
 
 // HISTORY
 function saveRun(time, speed, videoURL){
