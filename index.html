@@ -469,36 +469,37 @@ function showHistory(){
   if(runs.length === 0){
     html += "No runs yet";
   } else {
-    runs.slice().reverse().forEach(r => {
-      html += `
-        <div style="
-          background:#111;
-          padding:12px;
-          border-radius:12px;
-          margin-bottom:15px;
-          box-shadow:0 0 10px rgba(255,0,0,.2);
-        ">
-          <div style="font-size:18px;font-weight:bold;">
-            ${r.distance}m - ${Number(r.time).toFixed(2)}s
-          </div>
+   runs.slice().reverse().forEach(r => {
 
-          <div style="color:#aaa;margin-top:4px;">
-            ⚡ ${Number(r.speed).toFixed(2)} mph
-          </div>
-
-          <div style="font-size:12px;color:#666;margin-top:6px;">
-            ${r.date}
-          </div>
-      `;
-
-      if(r.video){
   html += `
-    <video controls class="history-video" playsinline src="${r.video}"></video>
-  `;
-}
-      }
+    <div style="
+      background:#111;
+      padding:12px;
+      border-radius:12px;
+      margin-bottom:15px;
+      box-shadow:0 0 10px rgba(255,0,0,.2);
+    ">
+      <div style="font-size:18px;font-weight:bold;">
+        ${r.distance}m - ${Number(r.time).toFixed(2)}s
+      </div>
 
-      html += `</div>`;
+      <div style="color:#aaa;margin-top:4px;">
+        ⚡ ${Number(r.speed).toFixed(2)} mph
+      </div>
+
+      <div style="font-size:12px;color:#666;margin-top:6px;">
+        ${r.date}
+      </div>
+  `;
+
+  if(r.video){
+    html += `
+      <video controls class="history-video" playsinline src="${r.video}"></video>
+    `;
+  }
+
+  html += `</div>`; //
+}); 
     });
   }
 
