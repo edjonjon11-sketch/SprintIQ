@@ -259,7 +259,6 @@ function startRun(d){
 
   updateActiveUserUI();
   showScreen('live');
-  startCamera();
 }
 
 // CAMERA
@@ -334,9 +333,14 @@ async function startCamera(){
 
 // RUN
 function beginMovement(){
+
   if(isRunning) return;
 
   isRunning = true;
+
+  // 🔥 START CAMERA HERE (USER ACTION)
+  startCamera();
+
   startTime = Date.now();
 
   if(timer) clearInterval(timer);
