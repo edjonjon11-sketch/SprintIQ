@@ -445,10 +445,10 @@ function selectRunner(){
 
 // START RUN
 function startRun(d){
-
   distance = d;
   splits = [];
   speeds = [];
+  chartData = [];
   isRunning = false;
   startTime = null;
 
@@ -462,6 +462,7 @@ function startRun(d){
 
   updateActiveUserUI();
   showScreen('live');
+  drawSpeedChart();
 }
 
 
@@ -535,9 +536,12 @@ function update(){
 
   const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
+  chartData.push(speed);
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
   document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
+
+  drawSpeedChart();
 }
 
 function markSplit(){
