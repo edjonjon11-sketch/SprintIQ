@@ -388,11 +388,21 @@ function stopRun(){
   };
 
   if(mediaRecorder && mediaRecorder.state !== "inactive"){
-    mediaRecorder.onstop = function(){
-      const blob = new Blob(recordedChunks, { type: "video/webm" });
-      const videoURL = URL.createObjectURL(blob);
-      saveRun(t, speed, videoURL);
-      finishUI();
+  mediaRecorder.onstop = function(){
+
+  const blob = new Blob(recordedChunks, { type: "video/webm" });
+
+  const reader = new FileReader();
+
+  reader.onloadend = function(){
+    const base64Video = reader.result;
+
+    saveRun(t, speed, base64Video); // ✅ permanent storage
+    finishUI();
+  };
+
+  reader.readAsDataURL(blob);
+};   
     };
     mediaRecorder.stop();
   } else {
