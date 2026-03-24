@@ -276,52 +276,58 @@ async function startCamera(){
 
     document.getElementById('camera').srcObject = currentStream;
 
+    // 🎥 SAFE RECORDING
     recordedChunks = [];
-    // 🎥 SAFE RECORDING (FIX)
-recordedChunks = [];
 
-try {
-  if (typeof MediaRecorder !== "undefined") {
-    mediaRecorder = new MediaRecorder(currentStream);
+    try {
+      if (typeof MediaRecorder !== "undefined") {
+        mediaRecorder = new MediaRecorder(currentStream);
 
-    mediaRecorder.ondataavailable = function(e){
-      if(e.data.size > 0){
-        recordedChunks.push(e.data);
+        mediaRecorder.ondataavailable = function(e){
+          if(e.data.size > 0){
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.start();
+      } else {
+        mediaRecorder = null;
       }
-    };
-
-    mediaRecorder.start();
-  } else {
-    mediaRecorder = null;
-    console.warn("MediaRecorder not supported on this device");
-  }
-} catch (err) {
-  console.warn("Recording failed:", err);
-  mediaRecorder = null;
-}
-      }
-    };
-
-    mediaRecorder.start();
+    } catch (err) {
+      console.warn("Recording failed:", err);
+      mediaRecorder = null;
+    }
 
   } catch(err){
     try{
-      currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      currentStream = await navigator.mediaDevices.getUserMedia({ video:true });
       document.getElementById('camera').srcObject = currentStream;
 
+      // 🎥 fallback recording
       recordedChunks = [];
-      mediaRecorder = new MediaRecorder(currentStream);
 
-      mediaRecorder.ondataavailable = function(e){
-        if(e.data.size > 0){
-          recordedChunks.push(e.data);
+      try {
+        if (typeof MediaRecorder !== "undefined") {
+          mediaRecorder = new MediaRecorder(currentStream);
+
+          mediaRecorder.ondataavailable = function(e){
+            if(e.data.size > 0){
+              recordedChunks.push(e.data);
+            }
+          };
+
+          mediaRecorder.start();
+        } else {
+          mediaRecorder = null;
         }
-      };
+      } catch (err2) {
+        console.warn("Recording failed:", err2);
+        mediaRecorder = null;
+      }
 
-      mediaRecorder.start();
-    } catch(err2){
-      console.error(err2);
-      alert("Camera access failed. Please allow camera permission.");
+    } catch(finalErr){
+      console.error(finalErr);
+      alert("Camera access failed.");
     }
   }
 }
