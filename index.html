@@ -490,11 +490,10 @@ function showHistory(){
       `;
 
       if(r.video){
-        html += `
-          <video controls class="history-video">
-            <source src="${r.video}" type="video/webm">
-          </video>
-        `;
+  html += `
+    <video controls class="history-video" playsinline src="${r.video}"></video>
+  `;
+}
       }
 
       html += `</div>`;
