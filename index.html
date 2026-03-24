@@ -433,22 +433,19 @@ function selectRunner(){
     currentUser = users[index - 1];
   } else {
     currentUser = input;
-    if(!users.includes(currentUser)){
-      users.push(currentUser);
-      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-    }
-  }
-
-  localStorage.setItem("currentUser", currentUser);
-  return currentUser;
-}
+    
 
 // START RUN
 function startRun(d){
+
+  const user = selectRunner();   // 🔥 THIS WAS MISSING
+  if(!user) return;
+
   distance = d;
   splits = [];
   speeds = [];
   chartData = [];
+
   isRunning = false;
   startTime = null;
 
@@ -464,6 +461,7 @@ function startRun(d){
   showScreen('live');
   drawSpeedChart();
 }
+  
 
 
 // CAMERA
