@@ -212,29 +212,16 @@ function goToHistory(){
 
 // SELECT USER
 function selectRunner(){
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
-  const list = users.length
-    ? "Select runner:\n\n" + users.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nOr type new name:"
-    : "Enter runner name:";
+  let name = prompt("Enter runner name:");
 
-  let input = prompt(list);
-  if(!input) return null;
-
-  input = input.trim();
-
-  const index = parseInt(input, 10);
-  if(!isNaN(index) && users[index - 1]){
-    currentUser = users[index - 1];
-  } else {
-    currentUser = input;
-    if(!users.includes(currentUser)){
-      users.push(currentUser);
-      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-    }
+  if(!name || name.trim() === ""){
+    name = "Runner";
   }
 
+  currentUser = name.trim();
   localStorage.setItem("currentUser", currentUser);
+
   return currentUser;
 }
 
