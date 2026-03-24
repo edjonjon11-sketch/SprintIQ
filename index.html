@@ -167,13 +167,15 @@ body{
   <video id="camera" autoplay playsinline muted></video>
 
   <div class="controls">
-      font-size:16px;
-      color:#ff4d4d;
-      font-weight:bold;
-      margin-bottom:10px;
-    ">
-      🏃 Runner: Default
-    </div>
+
+  <div id="liveUser" style="
+    font-size:16px;
+    color:#ff4d4d;
+    font-weight:bold;
+    margin-bottom:10px;
+  ">
+    🏃 Runner: Default
+  </div>
 
     <canvas id="speedChart" width="600" height="140" style="
   width:100%;
@@ -433,12 +435,21 @@ function selectRunner(){
     currentUser = users[index - 1];
   } else {
     currentUser = input;
+
+    if(!users.includes(currentUser)){
+      users.push(currentUser);
+      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+    }
+  }
+
+  localStorage.setItem("currentUser", currentUser);
+  return currentUser;
+}
     
 
 // START RUN
 function startRun(d){
-
-  const user = selectRunner();   // 🔥 THIS WAS MISSING
+  const user = selectRunner();
   if(!user) return;
 
   distance = d;
@@ -450,7 +461,6 @@ function startRun(d){
   startTime = null;
 
   if(timer) clearInterval(timer);
-  timer = null;
 
   document.getElementById('timer').innerText = "0.00s";
   document.getElementById('speed').innerText = "Speed: 0 mph";
@@ -459,6 +469,8 @@ function startRun(d){
 
   updateActiveUserUI();
   showScreen('live');
+
+  startCamera(); // 🔥 REQUIRED
   drawSpeedChart();
 }
   
