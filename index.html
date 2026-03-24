@@ -279,9 +279,21 @@ mediaRecorder.ondataavailable = function(e){
 
 mediaRecorder.start(); 
   } catch{
-    currentStream = await navigator.mediaDevices.getUserMedia({video:true});
-    document.getElementById('camera').srcObject = currentStream;
-  }
+  currentStream = await navigator.mediaDevices.getUserMedia({video:true});
+  document.getElementById('camera').srcObject = currentStream;
+
+  // 🎥 ALSO START RECORDING HERE
+  recordedChunks = [];
+
+  mediaRecorder = new MediaRecorder(currentStream);
+
+  mediaRecorder.ondataavailable = function(e){
+    if(e.data.size > 0){
+      recordedChunks.push(e.data);
+    }
+  };
+
+  mediaRecorder.start();
 }
 
 // RUN
@@ -394,37 +406,52 @@ function saveRun(time, speed, videoURL){
 }
 
 function showHistory(){
-  let data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
-  let runs=data[currentUser]||[];
+  let data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  let runs = data[currentUser] || [];
 
-  let html=`<b>${currentUser} History</b><br><br>`;
+  let html = `<b>${currentUser} History</b><br><br>`;
 
-  if(runs.length===0){
-    html+="No runs yet";
+  if(runs.length === 0){
+    html += "No runs yet";
   } else {
+
     runs.slice().reverse().forEach(r => {
 
-  html += `
-    <div style="margin-bottom:15px;">
-      ${r.distance}m - ${r.time.toFixed(2)}s (${r.speed.toFixed(2)} mph)<br>
-      <small>${r.date}</small><br>
-  `;
+      html += `
+        <div style="
+          background:#111;
+          padding:12px;
+          border-radius:12px;
+          margin-bottom:15px;
+          box-shadow:0 0 10px rgba(255,0,0,.2);
+        ">
+          <div style="font-size:18px;font-weight:bold;">
+            ${r.distance}m - ${Number(r.time).toFixed(2)}s
+          </div>
 
-  if(r.video){
-    html += `
-      <video controls style="width:100%; margin-top:8px; border-radius:10px;">
-        <source src="${r.video}" type="video/webm">
-      </video>
-    `;
-  }
+          <div style="color:#aaa;margin-top:4px;">
+            ⚡ ${Number(r.speed).toFixed(2)} mph
+          </div>
 
-  html += `</div>`;
-});
-      html+=`${r.distance}m - ${r.time.toFixed(2)}s (${r.speed.toFixed(2)} mph)<br><br>`;
+          <div style="font-size:12px;color:#666;margin-top:6px;">
+            ${r.date}
+          </div>
+      `;
+
+      // 🎥 VIDEO
+      if(r.video){
+        html += `
+          <video controls style="width:100%; margin-top:10px; border-radius:10px;">
+            <source src="${r.video}" type="video/webm">
+          </video>
+        `;
+      }
+
+      html += `</div>`;
     });
   }
 
-  document.getElementById("historyList").innerHTML=html;
+  document.getElementById("historyList").innerHTML = html;
 }
 
 function clearHistory(){
