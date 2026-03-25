@@ -151,6 +151,25 @@ body{
 <!-- SETUP -->
 <div id="setup" class="screen">
   <div class="header">Select Event</div>
+  <div style="margin-top:15px;">
+  <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
+
+  <select onchange="selectedLane = this.value" style="
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+    background:#222;
+    color:white;
+  ">
+    <option value="1">Lane 1</option>
+    <option value="2">Lane 2</option>
+    <option value="3">Lane 3</option>
+    <option value="4">Lane 4</option>
+    <option value="5">Lane 5</option>
+  </select>
+</div>
 
 
   <button class="btn" onclick="startRun(100)">100m</button>
@@ -177,6 +196,14 @@ body{
     🏃 Runner: Default
   </div>
 
+    <div id="laneDisplay" style="
+  font-size:14px;
+  color:#aaa;
+  margin-bottom:10px;
+">
+  Lane: 1
+</div>
+    
     <canvas id="speedChart" width="600" height="140" style="
   width:100%;
   background:rgba(0,0,0,0.45);
@@ -291,6 +318,7 @@ let splits = [];
 let speeds = [];
 let isRunning = false;
 let currentStream = null;
+let selectedLane = 1;
 
 // USER UI
 function updateActiveUserUI(){
