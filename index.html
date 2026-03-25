@@ -375,7 +375,7 @@ function updateActiveUserUI(){
   const liveUser = document.getElementById("liveUserText");
   const resultsUser = document.getElementById("resultsUser");
 
-  if (liveUser) liveUser.innerText = "🏃 Runner: " + currentUser;
+  if (liveUser) liveUser.innerText = currentUser; // ✅ FIXED
   if (resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
 }
 
@@ -411,6 +411,13 @@ function openReplay(index){
   showScreen("replay");
 }
 
+function updateLaneUI(){
+  const laneDisplay = document.getElementById("laneDisplay");
+  if(laneDisplay){
+    laneDisplay.innerText = "Lane: " + selectedLane;
+  }
+}
+  
 function showProfiles(){
   const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
@@ -688,26 +695,41 @@ function markSplit(){
     showScreen('results');
   };
 
-  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+  try{
 
-    mediaRecorder.onstop = function(){
+    if(mediaRecorder && mediaRecorder.state !== "inactive"){
 
-      const blob = new Blob(recordedChunks, { type: "video/webm" });
+      mediaRecorder.onstop = function(){
 
-      const reader = new FileReader();
+        try{
+          const blob = new Blob(recordedChunks, { type: "video/webm" });
 
-      reader.onloadend = function(){
-        const base64Video = reader.result;
-        saveRun(t, speed, base64Video);
-        finishUI();
+          if(blob.size === 0){
+            saveRun(t, speed, null);
+            finishUI();
+            return;
+          }
+
+          const videoURL = URL.createObjectURL(blob); // ✅ SAFE
+          saveRun(t, speed, videoURL);
+          finishUI();
+
+        } catch(err){
+          console.error("Video error:", err);
+          saveRun(t, speed, null);
+          finishUI();
+        }
       };
 
-      reader.readAsDataURL(blob);
-    };
+      mediaRecorder.stop();
 
-    mediaRecorder.stop();
+    } else {
+      saveRun(t, speed, null);
+      finishUI();
+    }
 
-  } else {
+  } catch(err){
+    console.error("Stop error:", err);
     saveRun(t, speed, null);
     finishUI();
   }
