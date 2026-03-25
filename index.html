@@ -179,11 +179,22 @@ body{
   <button class="btn" onclick="startRun(1600)">1600m</button>
 
   <button class="btn" onclick="showScreen('home')">Back</button>
+
 </div>
 
 <!-- LIVE -->
 <div id="live" class="screen">
   <video id="camera" autoplay playsinline muted></video>
+
+  <canvas id="laneOverlay" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100vh;
+  z-index:2;
+  pointer-events:none;
+"></canvas>
 
   <div class="controls">
 
@@ -577,11 +588,36 @@ function beginMovement(){
   timer = setInterval(update, 100);
 }
 
+function drawRunnerBox(){
+
+  const canvas = document.getElementById("laneOverlay");
+  const ctx = canvas.getContext("2d");
+
+  const lanes = 5;
+  const laneWidth = canvas.width / lanes;
+
+  const laneIndex = selectedLane - 1;
+  const x = laneIndex * laneWidth + laneWidth/2 - 40;
+  const y = canvas.height/2 - 60;
+
+  // Box
+  ctx.strokeStyle = "#ff3b30";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, 80, 120);
+
+  // Label
+  ctx.fillStyle = "#ff3b30";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("TRACKING", x, y - 10);
+}
+  
 function update(){
   if(!isRunning || !startTime) return;
 
   const t = (Date.now() - startTime) / 1000;
   document.getElementById('timer').innerText = t.toFixed(2) + "s";
+
+  drawLanes();
 
   const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
   speeds.push(speed);
@@ -589,6 +625,9 @@ function update(){
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
   document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
+
+  drawLanes();
+  drawRunnerBox();
 
   drawSpeedChart();
 }
@@ -790,6 +829,39 @@ function flipCamera(){
   startCamera();
 }
 
+  function drawLanes(){
+
+  const canvas = document.getElementById("laneOverlay");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const lanes = 5;
+  const laneWidth = canvas.width / lanes;
+
+  for(let i = 0; i < lanes; i++){
+
+    const x = i * laneWidth;
+
+    // Lane lines
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+
+    // Highlight selected lane
+    if((i + 1) == selectedLane){
+      ctx.fillStyle = "rgba(255,0,0,0.12)";
+      ctx.fillRect(x, 0, laneWidth, canvas.height);
+    }
+  }
+}
+  
 // SWITCH USER
 function switchUser(){
   const name = prompt("Enter athlete name:");
