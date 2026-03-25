@@ -187,71 +187,82 @@ body{
 
   <div class="controls">
 
-  <div id="liveUser" style="
-    font-size:16px;
-    color:#ff4d4d;
-    font-weight:bold;
-    margin-bottom:10px;
-  ">
-    🏃 Runner: Default
-  </div>
-
-    <div id="laneDisplay" style="
-  font-size:14px;
-  color:#aaa;
-  margin-bottom:10px;
-">
-  Lane: 1
-</div>
-    
-    <canvas id="speedChart" width="600" height="140" style="
-  width:100%;
-  background:rgba(0,0,0,0.45);
-  border-radius:14px;
-  margin-bottom:12px;
-"></canvas>
-
-    <div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <div id="liveUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;">
+    <div id="liveUser" style="
+      font-size:16px;
+      color:#ff4d4d;
+      font-weight:bold;
+      margin-bottom:10px;
+    ">
       🏃 Runner: Default
     </div>
-    <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
-      <span class="rec-dot"></span>REC
-    </div>
-  </div>
 
-  <div class="metric-row">
-    <div class="metric-box">
-      <div class="subtle-label">Time</div>
-      <div id="timer" class="metric-value">0.00s</div>
+    <div id="laneDisplay" style="
+      font-size:14px;
+      color:#aaa;
+      margin-bottom:10px;
+    ">
+      Lane: 1
     </div>
-    <div class="metric-box">
-      <div class="subtle-label">Speed</div>
-      <div id="speed" class="metric-value">0 mph</div>
-    </div>
-  </div>
 
-  <div class="metric-box" style="margin-top:10px;">
-    <div class="subtle-label">Split</div>
-    <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
+    <canvas id="speedChart" width="600" height="140" style="
+      width:100%;
+      background:rgba(0,0,0,0.45);
+      border-radius:14px;
+      margin-bottom:12px;
+    "></canvas>
 
-    <div class="speedBar">
-      <div id="speedFill" class="speedFill"></div>
-    </div>
-  </div>
-</div>
+    <div class="card">
 
-      <div class="speedBar">
-        <div id="speedFill" class="speedFill"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:16px;color:#ff4d4d;font-weight:bold;">
+          🏃 Runner: <span id="liveUserText">Default</span>
+        </div>
+        <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
+          <span class="rec-dot"></span>REC
+        </div>
       </div>
+
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="subtle-label">Time</div>
+          <div id="timer" class="metric-value">0.00s</div>
+        </div>
+        <div class="metric-box">
+          <div class="subtle-label">Speed</div>
+          <div id="speed" class="metric-value">0 mph</div>
+        </div>
+      </div>
+
+      <div class="metric-box" style="margin-top:10px;">
+        <div class="subtle-label">Split</div>
+        <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
+
+        <div class="speedBar">
+          <div id="speedFill" class="speedFill"></div>
+        </div>
+      </div>
+
     </div>
 
-    <button class="btn" onclick="beginMovement()">Start</button>
-    <button class="btn" onclick="markSplit()">Split</button>
-    <button class="btn" onclick="stopRun()">Finish</button>
-    <button class="btn" onclick="resetRun()">Reset</button>
-    <button class="btn" onclick="flipCamera()">Flip Camera</button>
+    <!-- ✅ SIDE BUTTONS -->
+    <div style="
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    ">
+
+      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="beginMovement()">Start</button>
+      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="markSplit()">Split</button>
+      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="stopRun()">Finish</button>
+      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="resetRun()">Reset</button>
+      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="flipCamera()">Flip</button>
+
+    </div>
+
   </div>
 </div>
 
