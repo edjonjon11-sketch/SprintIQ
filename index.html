@@ -358,6 +358,14 @@ body{
 <div id="replay" class="screen">
   <div class="header">Coach Replay</div>
 
+  <div class="card">
+  <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
+
+  <div style="overflow:hidden;border-radius:12px;">
+    <video id="replayVideo" class="history-video" controls playsinline></video>
+  </div>
+</div>
+
   <div style="margin-top:15px;">
   <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
 
@@ -637,10 +645,12 @@ function startRun(d){
 async function startCamera(){
   try{
 
+    // stop old stream
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
     }
 
+    // ✅ PROPER camera constraints
     currentStream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: useBackCamera ? "environment" : "user",
@@ -659,6 +669,7 @@ async function startCamera(){
 
     recordedChunks = [];
 
+    // ✅ RECORDING
     if (typeof MediaRecorder !== "undefined") {
 
       let options = {};
