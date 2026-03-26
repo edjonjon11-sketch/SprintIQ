@@ -891,6 +891,11 @@ function showHistory(){
       html += "No runs yet";
     } else {
   runs.slice().reverse().forEach((r, index) => {
+
+  const runTime = Number(r.time || 0);
+  const runSpeed = Number(r.speed || 0);
+  const runDistance = r.distance || "-";
+  const runDate = r.date || "";
       html += `
   <div style="
     background:#111;
