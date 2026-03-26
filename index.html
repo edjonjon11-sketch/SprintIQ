@@ -610,25 +610,35 @@ currentTrack = track;
     recordedChunks = [];
 
     try {
-      let options = {};
 
-if (MediaRecorder.isTypeSupported("video/mp4")) {
-  options.mimeType = "video/mp4";
-} else if (MediaRecorder.isTypeSupported("video/webm")) {
-  options.mimeType = "video/webm";
-}
+  if (typeof MediaRecorder !== "undefined") {
 
-mediaRecorder = new MediaRecorder(currentStream, options);
-        };
+    let options = {};
 
-        mediaRecorder.start();
-      } else {
-        mediaRecorder = null;
-      }
-    } catch (err) {
-      console.warn("Recording failed:", err);
-      mediaRecorder = null;
+    if (MediaRecorder.isTypeSupported("video/mp4")) {
+      options.mimeType = "video/mp4";
+    } else if (MediaRecorder.isTypeSupported("video/webm")) {
+      options.mimeType = "video/webm";
     }
+
+    mediaRecorder = new MediaRecorder(currentStream, options);
+
+    mediaRecorder.ondataavailable = function(e){
+      if(e.data.size > 0){
+        recordedChunks.push(e.data);
+      }
+    };
+
+    mediaRecorder.start();
+
+  } else {
+    mediaRecorder = null;
+  }
+
+} catch (err) {
+  console.warn("Recording failed:", err);
+  mediaRecorder = null;
+}
 
   } catch(err){
     try{
