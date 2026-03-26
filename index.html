@@ -750,6 +750,15 @@ function markSplit(){
     `Split ${splits.length}: ${t.toFixed(2)}s | ${speed.toFixed(1)} mph`;
 }
 
+function zoomReplay(level){
+  const video = document.getElementById("replayVideo");
+
+  zoomLevel = Math.max(1, Math.min(level, 5));
+
+  video.style.transform = `scale(${zoomLevel})`;
+  video.style.transformOrigin = "center center";
+}
+  
  function stopRun(){
 
   if(timer) clearInterval(timer);
