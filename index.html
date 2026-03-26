@@ -422,6 +422,19 @@ function openReplay(index){
   const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
   const runs = data[currentUser] || [];
   const run = runs[index];
+  const splitsBox = document.getElementById("splitsBox");
+
+if(run.splits && run.splits.length){
+  let html = "<b>Splits</b><br>";
+
+  run.splits.forEach((s,i)=>{
+    html += `Split ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
+  });
+
+  splitsBox.innerHTML = html;
+} else {
+  splitsBox.innerHTML = "No splits recorded";
+}
 
   if(!run || !run.video){
     alert("No video saved for this run.");
