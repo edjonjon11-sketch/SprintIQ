@@ -354,6 +354,8 @@ body{
     <button class="btn" onclick="setReplaySpeed(1.5)">1.5x</button>
     <button class="btn" onclick="jumpReplay(-2)">-2 sec</button>
     <button class="btn" onclick="jumpReplay(2)">+2 sec</button>
+    <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel + 0.5)">Zoom +</button>
+<button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel - 0.5)">Zoom -</button>
   </div>
 
   <button class="btn" onclick="goToHistory()">Back to History</button>
@@ -374,6 +376,8 @@ let speeds = [];
 let isRunning = false;
 let currentStream = null;
 let selectedLane = 1;
+let zoomLevel = 1;
+let currentTrack = null;
 
 // USER UI
 function updateActiveUserUI(){
@@ -597,7 +601,11 @@ async function startCamera(){
       audio: false
     });
 
-    document.getElementById('camera').srcObject = currentStream;
+   const video = document.getElementById('camera');
+video.srcObject = currentStream;
+
+const track = currentStream.getVideoTracks()[0];
+currentTrack = track; 
 
     recordedChunks = [];
 
@@ -647,6 +655,23 @@ function beginMovement(){
   timer = setInterval(update, 100);
 }
 
+function setZoom(level){
+  if(!currentTrack) return;
+
+  const capabilities = currentTrack.getCapabilities();
+
+  if(!capabilities.zoom){
+    console.warn("Zoom not supported on this device");
+    return;
+  }
+
+  zoomLevel = Math.max(capabilities.zoom.min, Math.min(level, capabilities.zoom.max));
+
+  currentTrack.applyConstraints({
+    advanced: [{ zoom: zoomLevel }]
+  });
+}
+  
 function drawRunnerBox(){
 
   const canvas = document.getElementById("laneOverlay");
