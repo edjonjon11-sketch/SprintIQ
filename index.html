@@ -46,6 +46,8 @@ body{
   height:100vh;
   object-fit:cover;
   z-index:1;
+
+  filter: contrast(1.1) brightness(1.1) saturate(1.1);
 }
 
 .history-video{
@@ -638,16 +640,21 @@ async function startCamera(){
       currentStream.getTracks().forEach(track => track.stop());
     }
 
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: useBackCamera ? "environment" : "user" },
-      audio: false
-    });
+    video: {
+  facingMode: useBackCamera ? "environment" : "user",
+  width: { ideal: 1920 },
+  height: { ideal: 1080 },
+  frameRate: { ideal: 60 }
+}
 
    const video = document.getElementById('camera');
 video.srcObject = currentStream;
 
 const track = currentStream.getVideoTracks()[0];
 currentTrack = track; 
+
+const track = currentStream.getVideoTracks()[0];
+currentTrack = track;
 
     recordedChunks = [];
 
