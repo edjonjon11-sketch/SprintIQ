@@ -890,31 +890,32 @@ function showHistory(){
     if(runs.length === 0){
       html += "No runs yet";
     } else {
-      runs.slice().reverse().forEach((r) => {
-        const runTime = Number(r.time || 0);
-        const runSpeed = Number(r.speed || 0);
-        const runDistance = r.distance || "-";
-        const runDate = r.date || "";
+      html += `
+  <div style="
+    background:#111;
+    padding:12px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 0 10px rgba(255,0,0,.2);
+  ">
 
-        html += `
-          <div style="
-            background:#111;
-            padding:12px;
-            border-radius:12px;
-            margin-bottom:15px;
-            box-shadow:0 0 10px rgba(255,0,0,.2);
-          ">
-            <div style="font-size:18px;font-weight:bold;">
-              ${runDistance}m - ${runTime.toFixed(2)}s
-            </div>
+    <div style="font-size:18px;font-weight:bold;">
+      ${runDistance}m - ${runTime.toFixed(2)}s
+    </div>
 
-            <div style="color:#aaa;margin-top:4px;">
-              ⚡ ${runSpeed.toFixed(2)} mph
-            </div>
+    <div style="color:#aaa;margin-top:4px;">
+      ⚡ ${runSpeed.toFixed(2)} mph
+    </div>
 
-            <div style="font-size:12px;color:#666;margin-top:6px;">
-              ${runDate}
-            </div>
+    <div style="font-size:12px;color:#666;margin-top:6px;">
+      ${runDate}
+    </div>
+
+    <!-- ✅ REPLAY BUTTON -->
+    <button class="btn" style="margin-top:10px;" onclick="openReplay(${runs.length - 1 - index})">
+      ▶️ Replay
+    </button>
+`;
         `;
 
         // Safer video handling
