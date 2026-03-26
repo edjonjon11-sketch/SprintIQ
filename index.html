@@ -762,7 +762,7 @@ function markSplit(){
     mediaRecorder.onstop = function(){
 
       try{
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
 
         // 🔥 CRITICAL FIX: avoid crash if empty
         if(blob.size === 0){
