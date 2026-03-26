@@ -756,6 +756,11 @@ function markSplit(){
     finishUI();
   }
 
+   if(currentStream){
+  currentStream.getTracks().forEach(track => track.stop());
+  currentStream = null;
+}
+   
   isRunning = false;
 }
 
