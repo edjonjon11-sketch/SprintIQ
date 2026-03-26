@@ -906,6 +906,11 @@ function showHistory(){
   ">
 
     <div style="font-size:18px;font-weight:bold;">
+    html += `
+  <button class="btn" style="margin-top:10px;" onclick="openReplay(${runs.length - 1 - index})">
+    ▶️ Replay
+  </button>
+`;
       ${runDistance}m - ${runTime.toFixed(2)}s
     </div>
 
