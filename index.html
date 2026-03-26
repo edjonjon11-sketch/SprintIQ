@@ -890,6 +890,7 @@ function showHistory(){
     if(runs.length === 0){
       html += "No runs yet";
     } else {
+  runs.slice().reverse().forEach((r, index) => {
       html += `
   <div style="
     background:#111;
