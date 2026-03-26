@@ -377,11 +377,15 @@ let selectedLane = 1;
 
 // USER UI
 function updateActiveUserUI(){
-  const liveUser = document.getElementById("liveUserText");
+  const liveUserText = document.getElementById("liveUserText");
+  const liveUserTop = document.getElementById("liveUser");
   const resultsUser = document.getElementById("resultsUser");
+  const laneDisplay = document.getElementById("laneDisplay");
 
-  if (liveUser) liveUser.innerText = currentUser; // ✅ FIXED
+  if (liveUserText) liveUserText.innerText = currentUser;
+  if (liveUserTop) liveUserTop.innerText = "🏃 Runner: " + currentUser;
   if (resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
+  if (laneDisplay) laneDisplay.innerText = "Lane: " + selectedLane;
 }
 
 // NAV
@@ -406,8 +410,8 @@ function toggleFocus(){
 }
   
 function goToHistory(){
-  showHistory();
   showScreen('history');
+  showHistory();
 }
 
 function openReplay(index){
@@ -918,10 +922,16 @@ function showHistory(){
 
 
 function clearHistory(){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  data[currentUser] = [];
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-  showHistory();
+  try{
+    const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+    data[currentUser] = [];
+    localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+    showHistory();
+  } catch(err){
+    console.error("clearHistory error:", err);
+    localStorage.removeItem("SprintIQUsers");
+    document.getElementById("historyList").innerHTML = "No runs yet";
+  }
 }
 
 function flipCamera(){
