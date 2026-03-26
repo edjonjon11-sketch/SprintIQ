@@ -709,39 +709,49 @@ function markSplit(){
 
   try{
 
-    if(mediaRecorder && mediaRecorder.state !== "inactive"){
-
-      mediaRecorder.onstop = function(){
-
-        try{
-          const blob = new Blob(recordedChunks, { type: "video/webm" });
-
-          if(blob.size === 0){
-            saveRun(t, speed, null);
-            finishUI();
-            return;
-          }
-
-          const videoURL = URL.createObjectURL(blob); // ✅ SAFE
-          saveRun(t, speed, videoURL);
-          finishUI();
-
-        } catch(err){
-          console.error("Video error:", err);
-          saveRun(t, speed, null);
-          finishUI();
-        }
-      };
-
-      mediaRecorder.stop();
-
-    } else {
+    // 🔥 SAFETY: If no recorder, just finish
+    if(!mediaRecorder){
       saveRun(t, speed, null);
       finishUI();
+      return;
     }
 
+    // 🔥 SAFETY: If recorder already stopped
+    if(mediaRecorder.state === "inactive"){
+      saveRun(t, speed, null);
+      finishUI();
+      return;
+    }
+
+    mediaRecorder.onstop = function(){
+
+      try{
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+
+        // 🔥 CRITICAL FIX: avoid crash if empty
+        if(blob.size === 0){
+          saveRun(t, speed, null);
+          finishUI();
+          return;
+        }
+
+        // ✅ USE THIS (NOT FileReader)
+        const videoURL = URL.createObjectURL(blob);
+
+        saveRun(t, speed, videoURL);
+        finishUI();
+
+      } catch(err){
+        console.error("Video processing failed:", err);
+        saveRun(t, speed, null);
+        finishUI();
+      }
+    };
+
+    mediaRecorder.stop();
+
   } catch(err){
-    console.error("Stop error:", err);
+    console.error("StopRun crashed:", err);
     saveRun(t, speed, null);
     finishUI();
   }
