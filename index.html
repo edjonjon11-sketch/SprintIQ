@@ -636,67 +636,56 @@ function startRun(d){
 // CAMERA
 async function startCamera(){
   try{
+
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
     }
 
-    video: {
-  facingMode: useBackCamera ? "environment" : "user",
-  width: { ideal: 1920 },
-  height: { ideal: 1080 },
-  frameRate: { ideal: 60 }
-}
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: useBackCamera ? "environment" : "user",
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 60 }
+      },
+      audio: false
+    });
 
-   const video = document.getElementById('camera');
-video.srcObject = currentStream;
+    const video = document.getElementById('camera');
+    video.srcObject = currentStream;
 
-const track = currentStream.getVideoTracks()[0];
-currentTrack = track; 
-
-const track = currentStream.getVideoTracks()[0];
-currentTrack = track;
+    const track = currentStream.getVideoTracks()[0];
+    currentTrack = track;
 
     recordedChunks = [];
 
-    try {
+    if (typeof MediaRecorder !== "undefined") {
 
-  if (typeof MediaRecorder !== "undefined") {
+      let options = {};
 
-    let options = {};
-
-    if (MediaRecorder.isTypeSupported("video/mp4")) {
-      options.mimeType = "video/mp4";
-    } else if (MediaRecorder.isTypeSupported("video/webm")) {
-      options.mimeType = "video/webm";
-    }
-
-    mediaRecorder = new MediaRecorder(currentStream, options);
-
-    mediaRecorder.ondataavailable = function(e){
-      if(e.data.size > 0){
-        recordedChunks.push(e.data);
+      if (MediaRecorder.isTypeSupported("video/mp4")) {
+        options.mimeType = "video/mp4";
+      } else if (MediaRecorder.isTypeSupported("video/webm")) {
+        options.mimeType = "video/webm";
       }
-    };
 
-    mediaRecorder.start();
+      mediaRecorder = new MediaRecorder(currentStream, options);
 
-  } else {
-    mediaRecorder = null;
-  }
+      mediaRecorder.ondataavailable = function(e){
+        if(e.data.size > 0){
+          recordedChunks.push(e.data);
+        }
+      };
 
-} catch (err) {
-  console.warn("Recording failed:", err);
-  mediaRecorder = null;
-}
+      mediaRecorder.start();
+
+    } else {
+      mediaRecorder = null;
+    }
 
   } catch(err){
-    try{
-      currentStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-      document.getElementById('camera').srcObject = currentStream;
-    } catch(finalErr){
-      console.error(finalErr);
-      alert("Camera access failed.");
-    }
+    console.error(err);
+    alert("Camera access failed.");
   }
 }
 
