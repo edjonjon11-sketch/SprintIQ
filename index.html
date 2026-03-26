@@ -99,6 +99,19 @@ body{
   padding:10px;
 }
 
+.history-video{
+  width:100%;
+  margin-top:10px;
+  border-radius:10px;
+  display:block;
+  position:static;
+  height:auto;
+  object-fit:contain;
+
+  transition: transform 0.2s ease;   /* ✅ smooth zoom */
+  transform-origin: center center;   /* ✅ zoom from center */
+}
+  
 .metric-value{
   font-size:22px;
   font-weight:bold;
@@ -343,10 +356,17 @@ body{
 <div id="replay" class="screen">
   <div class="header">Coach Replay</div>
 
-  <div class="card">
-    <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
-    <video id="replayVideo" class="history-video" controls playsinline></video>
-  </div>
+  <div style="margin-top:15px;">
+  <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
+
+  <input type="range"
+    min="1"
+    max="5"
+    step="0.1"
+    value="1"
+    oninput="zoomReplay(this.value)"
+    style="width:100%;">
+</div>
 
   <div class="card">
     <button class="btn" onclick="setReplaySpeed(0.5)">0.5x</button>
@@ -359,6 +379,15 @@ body{
   </div>
 
   <button class="btn" onclick="goToHistory()">Back to History</button>
+</div>
+
+  <div style="margin-top:15px;">
+  <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
+
+  <input type="range" min="1" max="5" step="0.1" value="1"
+    oninput="zoomReplay(this.value)"
+    style="width:100%;">
+
 </div>
   
 <script>
