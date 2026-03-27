@@ -475,7 +475,7 @@ if(run.splits && run.splits.length){
   splitsBox.innerHTML = "No splits recorded";
 }
 
-  if(!run || !run.video){
+  if(!run || !run.video || run.video === "null"){
     alert("No video saved for this run.");
     return;
   }
