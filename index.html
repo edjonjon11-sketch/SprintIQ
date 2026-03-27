@@ -840,10 +840,16 @@ function zoomReplay(level){
         }
 
         // ✅ USE THIS (NOT FileReader)
-        const videoURL = URL.createObjectURL(blob);
+        const reader = new FileReader();
 
-        saveRun(t, speed, videoURL);
-        finishUI();
+reader.onloadend = function(){
+  const base64Video = reader.result; // ✅ permanent
+
+  saveRun(t, speed, base64Video);
+  finishUI();
+};
+
+reader.readAsDataURL(blob);
 
       } catch(err){
         console.error("Video processing failed:", err);
