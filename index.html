@@ -382,6 +382,19 @@ function openReplay(index){
   showScreen("replay");
 }
 
+function resetRun(){
+  if(timer) clearInterval(timer);
+
+  isRunning = false;
+  startTime = null;
+  splits = [];
+  speeds = [];
+
+  document.getElementById("timer").innerText = "0.00s";
+  document.getElementById("speed").innerText = "0 mph";
+  document.getElementById("splitDisplay").innerText = "Split: --";
+}
+  
 // CLEAR
 function clearHistory(){
   localStorage.removeItem("runs");
