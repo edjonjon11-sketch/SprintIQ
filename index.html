@@ -699,15 +699,11 @@ function beginMovement(){
 
   isRunning = true;
 
-  // 🔥 START CAMERA HERE (USER ACTION)
-  startCamera();
-
   startTime = Date.now();
 
   if(timer) clearInterval(timer);
   timer = setInterval(update, 100);
 }
-
 function setZoom(level){
   if(!currentTrack) return;
 
