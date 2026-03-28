@@ -779,23 +779,23 @@ function markSplit(){
 
   const t = (Date.now() - startTime) / 1000;
 
-  let prevTime = splits.length ? splits[splits.length - 1].time : 0;
-  let segmentTime = t - prevTime;
+  const prevTime = splits.length ? splits[splits.length - 1].time : 0;
+  const segmentTime = t - prevTime;
 
-  const segmentDistance = distance / 4; // adjust (100m → 25m splits)
-
+  const segmentDistance = distance / 4; // adjust if needed
   const segmentSpeed = (segmentDistance / segmentTime) * 2.237;
 
   splits.push({
-    time: t,
-    segmentTime: segmentTime,
+    time: t,               // total time
+    segmentTime: segmentTime, // ✅ THIS is what you want
     speed: segmentSpeed
   });
 
   document.getElementById('splitDisplay').innerText =
     `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
 }
-function zoomReplay(level){
+  
+  function zoomReplay(level){
   const video = document.getElementById("replayVideo");
 
   zoomLevel = Math.max(1, Math.min(level, 5));
