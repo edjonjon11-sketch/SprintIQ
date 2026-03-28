@@ -1005,6 +1005,15 @@ function showHistory(){
               ${runDate}
             </div>
 
+            if(r.splits && r.splits.length){
+  html += `<div style="margin-top:8px;font-size:13px;color:#ccc;">`;
+
+  r.splits.forEach((s,i)=>{
+    html += `Split ${i+1}: ${s.time.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+  });
+
+  html += `</div>`;
+}
             <!-- ✅ REPLAY BUTTON -->
             <button class="btn" style="margin-top:10px;" onclick="openReplay(${runs.length - 1 - index})">
               ▶️ Replay
