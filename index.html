@@ -478,8 +478,10 @@ if(run.splits && run.splits.length){
     `${run.distance}m • ${Number(run.time).toFixed(2)}s • ${run.date}`;
 
   const video = document.getElementById("replayVideo");
-  video.src = run.video;
-  video.playbackRate = 1;
+  video.pause();
+video.src = run.video;
+video.load();
+video.play().catch(()=>{});  video.playbackRate = 1;
   showScreen("replay");
 }
 
