@@ -83,6 +83,7 @@ body{
   <button class="btn" onclick="startRun(200)">200m</button>
   <button class="btn" onclick="startRun(400)">400m</button>
   <button class="btn" onclick="showScreen('home')">Back</button>
+  <button onclick="checkData()">Check Data</button>
 </div>
 
 <div id="live" class="screen">
@@ -114,7 +115,8 @@ body{
   <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="resetRun()">Reset</button>
 
   <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="flipCamera()">Flip</button>
-
+  <button class="miniBtn" onclick="backupData()">Backup Data</button>
+  
 </div>
 </div>
 
@@ -157,6 +159,8 @@ function goToHistory(){
   showScreen('history');
 }
 
+<button onclick="backupData()">Backup Data</button>
+  
 // CAMERA (SAFE)
 async function startCamera(){
   try{
@@ -194,6 +198,27 @@ function flipCamera(){
   startCamera();
 }
 
+function backupData(){
+  const data =
+    localStorage.getItem("SprintIQUsers") ||
+    localStorage.getItem("runs") ||
+    "No data found";
+
+  console.log("BACKUP:", data);
+
+  // Copy to clipboard (mobile friendly)
+  navigator.clipboard.writeText(data).then(()=>{
+    alert("Backup copied to clipboard ✅");
+  }).catch(()=>{
+    alert(data); // fallback
+  });
+}
+  
+function checkData(){
+  console.log("runs:", localStorage.getItem("runs"));
+  console.log("SprintIQUsers:", localStorage.getItem("SprintIQUsers"));
+}
+  
 // START RUN
 function startRun(d){
   distance = d;
@@ -349,7 +374,7 @@ function showSplits(){
 
 // SAVE RUN
 function saveRun(time,speed,video){
-  let data = JSON.parse(localStorage.getItem("runs")||"[]");
+  let data = JSON.parse(localStorage.getItem("runs") || "[]");
 
   data.push({
     distance,
@@ -357,39 +382,31 @@ function saveRun(time,speed,video){
     speed,
     splits,
     video,
-    date:new Date().toLocaleString()
+    date: new Date().toLocaleString()
   });
 
-  localStorage.setItem("runs",JSON.stringify(data));
+  localStorage.setItem("runs", JSON.stringify(data));
 }
 
 // HISTORY (CLEAN — NO DUPLICATES)
 function showHistory(){
-  let data = JSON.parse(localStorage.getItem("runs")||"[]");
+  let data = JSON.parse(localStorage.getItem("runs") || "[]");
 
   let html = "";
 
   if(data.length === 0){
     html = "No runs yet";
-  }else{
-    data.slice().reverse().forEach((r,index)=>{
+  } else {
+    data.slice().reverse().forEach((r,i)=>{
       html += `
         <div class="card">
-          <b>${r.distance}m - ${r.time.toFixed(2)}s</b><br>
+          ${r.distance}m - ${r.time.toFixed(2)}s<br>
           ⚡ ${r.speed.toFixed(2)} mph<br>
-          <div style="font-size:12px;color:#aaa;">${r.date}</div>
+          ${r.date}
       `;
 
-      if(r.splits){
-        r.splits.forEach((s,i)=>{
-          html += `Split ${i+1}: ${s.segmentTime.toFixed(2)}s<br>`;
-        });
-      }
-
-      html += `<button class="btn" onclick="openReplay(${data.length-1-index})">Replay</button>`;
-
       if(r.video){
-        html += `<video class="history-video" controls src="${r.video}"></video>`;
+        html += `<video controls class="history-video" src="${r.video}"></video>`;
       }
 
       html += `</div>`;
