@@ -258,41 +258,74 @@ function markSplit(){
 
 // STOP RUN (SAFE + RECORDING)
 function stopRun(){
-  clearInterval(timer);
 
-  let t = (Date.now() - startTime)/1000;
-  let speed = (distance / t) * 2.237;
+  if(timer) clearInterval(timer);
 
-  document.getElementById("finalTime").innerText = "Time: "+t.toFixed(2);
-  document.getElementById("finalSpeed").innerText = "Speed: "+speed.toFixed(2);
+  let t = startTime ? (Date.now() - startTime)/1000 : 0;
+  let speed = t > 0 ? (distance / t) * 2.237 : 0;
 
-  const finish = ()=>{
+  document.getElementById("finalTime").innerText = "Time: " + t.toFixed(2);
+  document.getElementById("finalSpeed").innerText = "Speed: " + speed.toFixed(2);
+
+  const finish = () => {
     showSplits();
     showScreen("results");
   };
 
-  if(mediaRecorder && mediaRecorder.state !== "inactive"){
-    mediaRecorder.onstop = ()=>{
-      try{
-        let blob = new Blob(recordedChunks,{type:"video/webm"});
-        let reader = new FileReader();
+  try{
 
-        reader.onloadend = ()=>{
-          saveRun(t,speed,reader.result);
+    // ✅ If no recorder → still finish
+    if(!mediaRecorder){
+      saveRun(t, speed, null);
+      finish();
+      return;
+    }
+
+    // ✅ If already stopped → still finish
+    if(mediaRecorder.state === "inactive"){
+      saveRun(t, speed, null);
+      finish();
+      return;
+    }
+
+    mediaRecorder.onstop = function(){
+      try{
+
+        if(!recordedChunks || recordedChunks.length === 0){
+          saveRun(t, speed, null);
+          finish();
+          return;
+        }
+
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+
+        if(blob.size === 0){
+          saveRun(t, speed, null);
+          finish();
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onloadend = function(){
+          saveRun(t, speed, reader.result);
           finish();
         };
 
         reader.readAsDataURL(blob);
 
-      }catch(e){
-        saveRun(t,speed,null);
+      }catch(err){
+        console.error("Video fail:", err);
+        saveRun(t, speed, null);
         finish();
       }
     };
 
     mediaRecorder.stop();
-  }else{
-    saveRun(t,speed,null);
+
+  }catch(err){
+    console.error("StopRun crash:", err);
+    saveRun(t, speed, null);
     finish();
   }
 
