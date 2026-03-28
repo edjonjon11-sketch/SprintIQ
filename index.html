@@ -904,13 +904,17 @@ function showSplits(){
     html += "No splits recorded";
   } else {
     splits.forEach((s,i)=>{
-      html += `Split ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
+      html += `
+        Split ${i+1}: 
+        ${s.segmentTime.toFixed(2)}s 
+        (${s.speed.toFixed(1)} mph)<br>
+      `;
     });
   }
 
   document.getElementById('splitsBox').innerHTML = html;
 }
-
+  
 function drawSpeedChart(){
   const c = document.getElementById("speedChart");
   if(!c) return;
