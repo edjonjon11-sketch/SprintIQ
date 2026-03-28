@@ -93,11 +93,29 @@ body{
     <div id="speed" class="metric">0 mph</div>
     <div id="splitDisplay">Split: --</div>
 
-    <button class="btn" onclick="beginMovement()">Start</button>
-    <button class="btn" onclick="markSplit()">Split</button>
-    <button class="btn" onclick="stopRun()">Finish</button>
-    <button class="btn" onclick="flipCamera()">Flip Camera</button>
-  </div>
+    <!-- SIDE CONTROL PANEL -->
+<div style="
+  position:fixed;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:5;
+">
+
+  <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="beginMovement()">Start</button>
+
+  <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="markSplit()">Split</button>
+
+  <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="stopRun()">Finish</button>
+
+  <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="resetRun()">Reset</button>
+
+  <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="flipCamera()">Flip</button>
+
+</div>
 </div>
 
 <div id="results" class="screen">
@@ -116,11 +134,21 @@ body{
 </div>
 
 <script>
-let distance=100,startTime,timer,splits=[],speeds=[];
-let stream,useBackCamera=true,mediaRecorder,chunks=[];
+let useBackCamera = true;
+let currentStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
 
+let distance = 100;
+let startTime = null;
+let timer = null;
+let splits = [];
+let speeds = [];
+let isRunning = false;
+
+// NAV
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
@@ -129,127 +157,232 @@ function goToHistory(){
   showScreen('history');
 }
 
+// CAMERA (SAFE)
 async function startCamera(){
-  if(stream) stream.getTracks().forEach(t=>t.stop());
+  try{
+    if(currentStream){
+      currentStream.getTracks().forEach(t=>t.stop());
+    }
 
-  stream = await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:useBackCamera?"environment":"user"},
-    audio:false
-  });
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:useBackCamera?"environment":"user"},
+      audio:false
+    });
 
-  document.getElementById("camera").srcObject=stream;
+    document.getElementById("camera").srcObject = currentStream;
 
-  chunks=[];
+    recordedChunks = [];
 
-  if(MediaRecorder){
-    mediaRecorder=new MediaRecorder(stream);
-    mediaRecorder.ondataavailable=e=>{
-      if(e.data.size>0) chunks.push(e.data);
-    };
-    mediaRecorder.start();
+    if(typeof MediaRecorder !== "undefined"){
+      mediaRecorder = new MediaRecorder(currentStream);
+
+      mediaRecorder.ondataavailable = e=>{
+        if(e.data.size>0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.start();
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("Camera failed — tap Start again.");
   }
 }
 
 function flipCamera(){
-  useBackCamera=!useBackCamera;
+  useBackCamera = !useBackCamera;
   startCamera();
 }
 
+// START RUN
 function startRun(d){
-  distance=d;
-  splits=[];
-  speeds=[];
-  showScreen('live');
-  startCamera();
+  distance = d;
+  splits = [];
+  speeds = [];
+  isRunning = false;
+  startTime = null;
+
+  document.getElementById("timer").innerText = "0.00s";
+  document.getElementById("speed").innerText = "0 mph";
+  document.getElementById("splitDisplay").innerText = "Split: --";
+
+  showScreen("live");
 }
 
+// START (USER TAP REQUIRED)
 function beginMovement(){
-  startTime=Date.now();
-  timer=setInterval(update,100);
+  if(isRunning) return;
+
+  startCamera(); // 🔥 must be here for iPhone
+
+  isRunning = true;
+  startTime = Date.now();
+
+  if(timer) clearInterval(timer);
+  timer = setInterval(update,100);
 }
 
+// UPDATE
 function update(){
-  let t=(Date.now()-startTime)/1000;
-  document.getElementById("timer").innerText=t.toFixed(2)+"s";
+  if(!isRunning) return;
 
-  let speed=(distance/Math.max(t,0.1))*2.237;
+  let t = (Date.now() - startTime)/1000;
+
+  document.getElementById("timer").innerText = t.toFixed(2)+"s";
+
+  let speed = Math.min((distance / Math.max(t,0.1))*2.237,22);
   speeds.push(speed);
-  document.getElementById("speed").innerText=speed.toFixed(1)+" mph";
+
+  document.getElementById("speed").innerText = speed.toFixed(1)+" mph";
 }
 
+// SPLIT (ELITE VERSION)
 function markSplit(){
-  let t=(Date.now()-startTime)/1000;
-  let prev=splits.length?splits[splits.length-1].time:0;
-  let seg=t-prev;
+  if(!isRunning) return;
 
-  let speed=speeds[speeds.length-1]||0;
+  let t = (Date.now() - startTime)/1000;
+  let prev = splits.length ? splits[splits.length-1].time : 0;
+  let segment = t - prev;
 
-  splits.push({time:t,segmentTime:seg,speed});
+  let speed = speeds[speeds.length-1] || 0;
 
-  document.getElementById("splitDisplay").innerText=
-    `Split ${splits.length}: ${seg.toFixed(2)}s`;
+  splits.push({
+    time: t,
+    segmentTime: segment,
+    speed: speed
+  });
+
+  document.getElementById("splitDisplay").innerText =
+    `Split ${splits.length}: ${segment.toFixed(2)}s (${speed.toFixed(1)} mph)`;
 }
 
+// STOP RUN (SAFE + RECORDING)
 function stopRun(){
   clearInterval(timer);
 
-  let t=(Date.now()-startTime)/1000;
-  let speed=(distance/t)*2.237;
+  let t = (Date.now() - startTime)/1000;
+  let speed = (distance / t) * 2.237;
 
-  document.getElementById("finalTime").innerText="Time: "+t.toFixed(2);
-  document.getElementById("finalSpeed").innerText="Speed: "+speed.toFixed(2);
+  document.getElementById("finalTime").innerText = "Time: "+t.toFixed(2);
+  document.getElementById("finalSpeed").innerText = "Speed: "+speed.toFixed(2);
 
-  if(mediaRecorder){
-    mediaRecorder.onstop=()=>{
-      let blob=new Blob(chunks,{type:"video/webm"});
-      let reader=new FileReader();
-      reader.onloadend=()=>{
-        saveRun(t,speed,reader.result);
-        showSplits();
-        showScreen('results');
-      };
-      reader.readAsDataURL(blob);
+  const finish = ()=>{
+    showSplits();
+    showScreen("results");
+  };
+
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    mediaRecorder.onstop = ()=>{
+      try{
+        let blob = new Blob(recordedChunks,{type:"video/webm"});
+        let reader = new FileReader();
+
+        reader.onloadend = ()=>{
+          saveRun(t,speed,reader.result);
+          finish();
+        };
+
+        reader.readAsDataURL(blob);
+
+      }catch(e){
+        saveRun(t,speed,null);
+        finish();
+      }
     };
+
     mediaRecorder.stop();
+  }else{
+    saveRun(t,speed,null);
+    finish();
   }
+
+  isRunning = false;
 }
 
+// SPLITS DISPLAY
 function showSplits(){
-  let html="<b>Splits</b><br>";
-  splits.forEach((s,i)=>{
-    html+=`Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
-  });
-  document.getElementById("splitsBox").innerHTML=html;
+  let html = "<b>Splits</b><br>";
+
+  if(splits.length === 0){
+    html += "No splits recorded";
+  }else{
+    splits.forEach((s,i)=>{
+      html += `Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+    });
+  }
+
+  document.getElementById("splitsBox").innerHTML = html;
 }
 
+// SAVE RUN
 function saveRun(time,speed,video){
-  let data=JSON.parse(localStorage.getItem("runs")||"[]");
-  data.push({distance,time,speed,splits,video,date:new Date().toLocaleString()});
+  let data = JSON.parse(localStorage.getItem("runs")||"[]");
+
+  data.push({
+    distance,
+    time,
+    speed,
+    splits,
+    video,
+    date:new Date().toLocaleString()
+  });
+
   localStorage.setItem("runs",JSON.stringify(data));
 }
 
+// HISTORY (CLEAN — NO DUPLICATES)
 function showHistory(){
-  let data=JSON.parse(localStorage.getItem("runs")||"[]");
+  let data = JSON.parse(localStorage.getItem("runs")||"[]");
 
-  let html="";
-  data.slice().reverse().forEach(r=>{
-    html+=`
-      <div class="card">
-        ${r.distance}m - ${r.time.toFixed(2)}s<br>
-        ⚡ ${r.speed.toFixed(2)} mph<br>
-        ${r.date}
-    `;
+  let html = "";
 
-    if(r.video){
-      html+=`<video class="history-video" controls src="${r.video}"></video>`;
-    }
+  if(data.length === 0){
+    html = "No runs yet";
+  }else{
+    data.slice().reverse().forEach((r,index)=>{
+      html += `
+        <div class="card">
+          <b>${r.distance}m - ${r.time.toFixed(2)}s</b><br>
+          ⚡ ${r.speed.toFixed(2)} mph<br>
+          <div style="font-size:12px;color:#aaa;">${r.date}</div>
+      `;
 
-    html+="</div>";
-  });
+      if(r.splits){
+        r.splits.forEach((s,i)=>{
+          html += `Split ${i+1}: ${s.segmentTime.toFixed(2)}s<br>`;
+        });
+      }
 
-  document.getElementById("historyList").innerHTML=html;
+      html += `<button class="btn" onclick="openReplay(${data.length-1-index})">Replay</button>`;
+
+      if(r.video){
+        html += `<video class="history-video" controls src="${r.video}"></video>`;
+      }
+
+      html += `</div>`;
+    });
+  }
+
+  document.getElementById("historyList").innerHTML = html;
 }
 
+// REPLAY
+function openReplay(index){
+  let data = JSON.parse(localStorage.getItem("runs")||"[]");
+  let run = data[index];
+
+  if(!run || !run.video){
+    alert("No video available");
+    return;
+  }
+
+  let video = document.getElementById("replayVideo");
+  video.src = run.video;
+
+  showScreen("replay");
+}
+
+// CLEAR
 function clearHistory(){
   localStorage.removeItem("runs");
   showHistory();
