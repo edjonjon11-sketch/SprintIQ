@@ -778,14 +778,23 @@ function markSplit(){
   if(!isRunning || !startTime) return;
 
   const t = (Date.now() - startTime) / 1000;
-  const speed = speeds[speeds.length - 1] || 0;
 
-  splits.push({ time: t, speed: speed });
+  let prevTime = splits.length ? splits[splits.length - 1].time : 0;
+  let segmentTime = t - prevTime;
+
+  const segmentDistance = distance / 4; // adjust (100m → 25m splits)
+
+  const segmentSpeed = (segmentDistance / segmentTime) * 2.237;
+
+  splits.push({
+    time: t,
+    segmentTime: segmentTime,
+    speed: segmentSpeed
+  });
 
   document.getElementById('splitDisplay').innerText =
-    `Split ${splits.length}: ${t.toFixed(2)}s | ${speed.toFixed(1)} mph`;
+    `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
 }
-
 function zoomReplay(level){
   const video = document.getElementById("replayVideo");
 
