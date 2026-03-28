@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track Star</title>
+<title>SprintIQ Pro</title>
 
 <style>
 body{
@@ -11,2084 +11,267 @@ body{
   background:linear-gradient(to bottom,#000,#111);
   color:white;
 }
-
 .screen{display:none;padding:20px;}
 .active{display:block;}
-
 .header{font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-bottom:10px;}
-
-.card{
-  background:#111;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
-  box-shadow:0 0 20px rgba(255,0,0,.2);
-}
-
+.card{background:#111;padding:16px;border-radius:16px;margin-top:15px;}
 .btn{
-  width:100%;
-  padding:16px;
-  font-size:18px;
-  border:none;
-  border-radius:14px;
-  margin-top:12px;
-  color:white;
-  font-weight:bold;
-  background:linear-gradient(to right,#ff2d2d,#ff5a5a);
+  width:100%;padding:14px;margin-top:10px;
+  border:none;border-radius:12px;
+  background:#ff2d2d;color:white;font-weight:bold;
 }
-
 #camera{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  object-fit:cover;
-  z-index:1;
-
-  filter: contrast(1.1) brightness(1.1) saturate(1.1);
+  position:fixed;top:0;left:0;width:100%;height:100vh;object-fit:cover;
 }
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-}
-
 .controls{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  padding:15px;
-  z-index:2;
-  box-sizing:border-box;
-  background:linear-gradient(
-    to top,
-    rgba(0,0,0,0.9),
-    rgba(0,0,0,0)
-  );
+  position:fixed;bottom:0;width:100%;padding:15px;
+  background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);
 }
-
-.bigTimer{
-  font-size:42px;
-  font-weight:bold;
-}
-
-.subtle-label{
-  font-size:12px;
-  color:#aaa;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.metric-row{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-.metric-box{
-  flex:1;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:12px;
-  padding:10px;
-}
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-
-  transition: transform 0.2s ease;   /* ✅ smooth zoom */
-  transform-origin: center center;   /* ✅ zoom from center */
-}
-  
-.metric-value{
-  font-size:22px;
-  font-weight:bold;
-}
-
-.rec-dot{
-  display:inline-block;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#ff3b30;
-  margin-right:8px;
-  box-shadow:0 0 10px rgba(255,59,48,.8);
-}
-  
-.speedBar{
-  height:12px;
-  border-radius:10px;
-  background:#222;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.speedFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(to right,#ff2d2d,#ff0000);
-}
-  .miniBtn{
-  padding:8px 12px;
-  font-size:13px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  font-weight:600;
-
-  background:rgba(255,45,45,0.5);
-  backdrop-filter:blur(8px);
-
-  box-shadow:0 0 12px rgba(255,0,0,0.35);
-
-  width:auto;
-  display:inline-block;
-
-  transition:all 0.2s ease;
-}
-
-.miniBtn:active{
-  transform:scale(0.95);
-  background:rgba(255,45,45,0.8);
-}
+.history-video{width:100%;margin-top:10px;border-radius:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- HOME -->
 <div id="home" class="screen active">
-  <div class="header">🏃 Track Star</div>
-  <div class="sub">Train Faster. Run Smarter.</div>
-
-  <div class="card">
-    <b>BEST TIMES</b><br>
-    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
-  </div>
-
-  <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="goToHistory()">View History</button>
-  <button class="btn" onclick="switchUser()">Switch User</button>
-  <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
+  <div class="header">🏃 SprintIQ Pro</div>
+  <button class="btn" onclick="startRun(100)">Start Run</button>
+  <button class="btn" onclick="goToHistory()">History</button>
 </div>
 
-<!-- SETUP -->
-<div id="setup" class="screen">
-  <div class="header">Select Event</div>
-  <div style="margin-top:15px;">
-  <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
-
-  <select onchange="selectedLane = this.value; updateLaneUI();" style="
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  font-size:16px;
-  background:#222;
-  color:white;
-">
-    <option value="1">Lane 1</option>
-    <option value="2">Lane 2</option>
-    <option value="3">Lane 3</option>
-    <option value="4">Lane 4</option>
-    <option value="5">Lane 5</option>
-  </select>
-</div>
-
-
-  <button class="btn" onclick="startRun(100)">100m</button>
-  <button class="btn" onclick="startRun(200)">200m</button>
-  <button class="btn" onclick="startRun(400)">400m</button>
-  <button class="btn" onclick="startRun(800)">800m</button>
-  <button class="btn" onclick="startRun(1600)">1600m</button>
-
-  <button class="btn" onclick="showScreen('home')">Back</button>
-
-</div>
-
-<!-- LIVE -->
 <div id="live" class="screen">
   <video id="camera" autoplay playsinline muted></video>
 
-  <canvas id="laneOverlay" style="
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  z-index:2;
-  pointer-events:none;
-"></canvas>
-
   <div class="controls">
+    <div id="timer">0.00s</div>
+    <div id="speed">0 mph</div>
+    <div id="splitDisplay">Split: --</div>
 
-    <div id="liveUser" style="
-      font-size:16px;
-      color:#ff4d4d;
-      font-weight:bold;
-      margin-bottom:10px;
-    ">
-      🏃 Runner: Default
-    </div>
-    <button class="miniBtn" onclick="toggleFocus()">Focus</button>
-    
-    
-
-    <div id="laneDisplay" style="
-      font-size:14px;
-      color:#aaa;
-      margin-bottom:10px;
-    ">
-      Lane: 1
-    </div>
-
-    <canvas id="speedChart" width="600" height="140" style="
-      width:100%;
-      background:rgba(0,0,0,0.45);
-      border-radius:14px;
-      margin-bottom:12px;
-    "></canvas>
-
-  <div>
-
-    <div class="card">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:16px;color:#ff4d4d;font-weight:bold;">
-          🏃 Runner: <span id="liveUserText">Default</span>
-        </div>
-        <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
-          <span class="rec-dot"></span>REC
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="subtle-label">Time</div>
-          <div id="timer" class="metric-value">0.00s</div>
-        </div>
-        <div class="metric-box">
-          <div class="subtle-label">Speed</div>
-          <div id="speed" class="metric-value">0 mph</div>
-        </div>
-      </div>
-
-      <div class="metric-box" style="margin-top:10px;">
-        <div class="subtle-label">Split</div>
-        <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
-
-        <div class="speedBar">
-          <div id="speedFill" class="speedFill"></div>
-            </div> <!-- side buttons -->
-
-  </div> <!-- inner wrapper -->
-
-</div> <!-- controls -->
-
-</div> <!-- live -->
-
-<!-- RESULTS -->
-
-    <!-- ✅ SIDE BUTTONS -->
-    <div style="
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    ">
-
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="beginMovement()">Start</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="markSplit()">Split</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="stopRun()">Finish</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="resetRun()">Reset</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="flipCamera()">Flip</button>
-
-    </div>
-
+    <button class="btn" onclick="beginMovement()">Start</button>
+    <button class="btn" onclick="markSplit()">Split</button>
+    <button class="btn" onclick="stopRun()">Finish</button>
+    <button class="btn" onclick="flipCamera()">Flip Camera</button>
   </div>
 </div>
 
-<!-- RESULTS -->
 <div id="results" class="screen">
-  <div class="header">Results</div>
-  <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
-
-  <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
-  </div>
-
-  <div class="card" id="splitsBox"></div>
-
-  <button class="btn" onclick="showScreen('home')">Back Home</button>
-</div>
-
-<div id="profiles" class="screen">
-  <div class="header">Athlete Profiles</div>
-  <div id="profilesList" class="card"></div>
-  <button class="btn" onclick="addAthlete()">Add Athlete</button>
+  <div id="finalTime"></div>
+  <div id="finalSpeed"></div>
+  <div id="splitsBox"></div>
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
-  
-<!-- HISTORY -->
+
 <div id="history" class="screen">
-  <div class="header">History</div>
-  <div class="card" id="historyList"></div>
-  <button class="btn" onclick="clearHistory()">Clear History</button>
+  <div id="historyList"></div>
+  <button class="btn" onclick="clearHistory()">Clear</button>
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
 
 <div id="replay" class="screen">
-  <div class="header">Coach Replay</div>
-
-  <div class="card">
-  <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
-
-  <div style="overflow:hidden;border-radius:12px;">
-    <video id="replayVideo" class="history-video" controls playsinline></video>
-  </div>
+  <div id="replayTitle"></div>
+  <video id="replayVideo" class="history-video" controls></video>
+  <button class="btn" onclick="goToHistory()">Back</button>
 </div>
 
-  <div style="margin-top:15px;">
-  <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
-
-  <input type="range"
-    min="1"
-    max="5"
-    step="0.1"
-    value="1"
-    oninput="zoomReplay(this.value)"
-    style="width:100%;">
-</div>
-
-  <div class="card">
-    <button class="btn" onclick="setReplaySpeed(0.5)">0.5x</button>
-    <button class="btn" onclick="setReplaySpeed(1)">1x</button>
-    <button class="btn" onclick="setReplaySpeed(1.5)">1.5x</button>
-    <button class="btn" onclick="jumpReplay(-2)">-2 sec</button>
-    <button class="btn" onclick="jumpReplay(2)">+2 sec</button>
-    <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel + 0.5)">Zoom +</button>
-<button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel - 0.5)">Zoom -</button>
-  </div>
-
-  <button class="btn" onclick="goToHistory()">Back to History</button>
-</div>
-
-  
 <script>
-let useBackCamera = true;
-let chartData = [];
-let selectedRunIndex = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-let currentUser = localStorage.getItem("currentUser") || "Default";
-let startTime = null;
-let timer = null;
-let distance = 100;
-let splits = [];
-let speeds = [];
-let isRunning = false;
-let currentStream = null;
-let selectedLane = 1;
-let zoomLevel = 1;
-let currentTrack = null;
+let useBackCamera=true;
+let currentUser="Default";
+let startTime=null;
+let timer=null;
+let distance=100;
+let splits=[];
+let speeds=[];
+let isRunning=false;
+let currentStream=null;
 
-// USER UI
-function updateActiveUserUI(){
-  const liveUserText = document.getElementById("liveUserText");
-  const liveUserTop = document.getElementById("liveUser");
-  const resultsUser = document.getElementById("resultsUser");
-  const laneDisplay = document.getElementById("laneDisplay");
-
-  if (liveUserText) liveUserText.innerText = currentUser;
-  if (liveUserTop) liveUserTop.innerText = "🏃 Runner: " + currentUser;
-  if (resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
-  if (laneDisplay) laneDisplay.innerText = "Lane: " + selectedLane;
-}
+// 🎥 RECORDING
+let mediaRecorder=null;
+let recordedChunks=[];
 
 // NAV
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-let focusMode = false;
-
-function toggleFocus(){
-
-  focusMode = !focusMode;
-
-  const controls = document.querySelector(".controls");
-
-  if(focusMode){
-    controls.style.opacity = "0.3";
-  } else {
-    controls.style.opacity = "1";
-  }
-}
-  
-function goToHistory(){
-  showScreen('history');
-  showHistory();
-}
-
-function openReplay(index){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = data[currentUser] || [];
-  const run = runs[index];
-  const splitsBox = document.getElementById("splitsBox");
-
-if(run.splits && run.splits.length){
-  let html = "<b>Splits</b><br>";
-
-  run.splits.forEach((s,i)=>{
-    html += `Split ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
-  });
-
-  splitsBox.innerHTML = html;
-} else {
-  splitsBox.innerHTML = "No splits recorded";
-}
-
-  if(!run || !run.video || run.video === "null"){
-    alert("No video saved for this run.");
-    return;
-  }
-
-  selectedRunIndex = index;
-
-  document.getElementById("replayTitle").innerText =
-    `${run.distance}m • ${Number(run.time).toFixed(2)}s • ${run.date}`;
-
-  const video = document.getElementById("replayVideo");
-  video.pause();
-video.src = run.video;
-video.load();
-video.play().catch(()=>{});  video.playbackRate = 1;
-  showScreen("replay");
-}
-
-function updateLaneUI(){
-  const laneDisplay = document.getElementById("laneDisplay");
-  if(laneDisplay){
-    laneDisplay.innerText = "Lane: " + selectedLane;
-  }
-}
-  
-function showProfiles(){
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  let html = "";
-
-  if(users.length === 0){
-    html = "No athletes yet";
-  } else {
-    users.forEach(user => {
-      html += `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          padding:10px 0;
-          border-bottom:1px solid rgba(255,255,255,0.08);
-        ">
-          <div style="font-weight:bold;">${user}</div>
-          <div>
-            <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="chooseProfile('${user.replace(/'/g, "\\'")}')">Use</button>
-            <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="deleteProfile('${user.replace(/'/g, "\\'")}')">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  document.getElementById("profilesList").innerHTML = html;
-  showScreen("profiles");
-}
-
-function addAthlete(){
-  const name = prompt("Enter athlete name:");
-  if(!name || !name.trim()) return;
-
-  const clean = name.trim();
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  if(!users.includes(clean)){
-    users.push(clean);
-    localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-  }
-
-  currentUser = clean;
-  localStorage.setItem("currentUser", currentUser);
-  updateActiveUserUI();
-  showProfiles();
-}
-
-function chooseProfile(name){
-  currentUser = name;
-  localStorage.setItem("currentUser", currentUser);
-  updateActiveUserUI();
-  showScreen("home");
-}
-
-function deleteProfile(name){
-  let users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-  users = users.filter(u => u !== name);
-  localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  delete data[name];
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-
-  if(currentUser === name){
-    currentUser = users[0] || "Default";
-    localStorage.setItem("currentUser", currentUser);
-    updateActiveUserUI();
-  }
-
-  showProfiles();
-}
-  
-function setReplaySpeed(rate){
-  const video = document.getElementById("replayVideo");
-  video.playbackRate = rate;
-}
-
-function jumpReplay(seconds){
-  const video = document.getElementById("replayVideo");
-  video.currentTime = Math.max(0, video.currentTime + seconds);
-}
-  
-// SELECT USER
-function selectRunner(){
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  const list = users.length
-    ? "Select runner:\n\n" + users.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nType number or new name:"
-    : "Enter runner name:";
-
-  let input = prompt(list);
-  if(!input) return null;
-
-  input = input.trim();
-
-  const index = parseInt(input, 10);
-  if(!isNaN(index) && users[index - 1]){
-    currentUser = users[index - 1];
-  } else {
-    currentUser = input;
-
-    if(!users.includes(currentUser)){
-      users.push(currentUser);
-      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-    }
-  }
-
-  localStorage.setItem("currentUser", currentUser);
-  return currentUser;
-}
-    
-
-// START RUN
-function startRun(d){
-  const user = selectRunner();
-  if(!user) return;
-
-  distance = d;
-  splits = [];
-  speeds = [];
-  chartData = [];
-
-  isRunning = false;
-  startTime = null;
-
-  if(timer) clearInterval(timer);
-
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-  document.getElementById('speedFill').style.width = "0%";
-
-  updateActiveUserUI();
-  showScreen('live');
-
-  startCamera(); // 🔥 REQUIRED
-  drawSpeedChart();
-}
-  
-
-
-// CAMERA
+// CAMERA + RECORD
 async function startCamera(){
-  try{
-
-    // stop old stream
-    if(currentStream){
-      currentStream.getTracks().forEach(track => track.stop());
-    }
-
-    // ✅ PROPER camera constraints
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: useBackCamera ? "environment" : "user",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 60 }
-      },
-      audio: false
-    });
-
-    const video = document.getElementById('camera');
-    video.srcObject = currentStream;
-
-    const track = currentStream.getVideoTracks()[0];
-    currentTrack = track;
-
-    recordedChunks = [];
-
-    // ✅ RECORDING
-    if (typeof MediaRecorder !== "undefined") {
-
-      let options = {};
-
-      if (MediaRecorder.isTypeSupported("video/mp4")) {
-        options.mimeType = "video/mp4";
-      } else if (MediaRecorder.isTypeSupported("video/webm")) {
-        options.mimeType = "video/webm";
-      }
-
-      mediaRecorder = new MediaRecorder(currentStream, options);
-
-      mediaRecorder.ondataavailable = function(e){
-        if(e.data.size > 0){
-          recordedChunks.push(e.data);
-        }
-      };
-
-      mediaRecorder.start();
-
-    } else {
-      mediaRecorder = null;
-    }
-
-  } catch(err){
-    console.error(err);
-    alert("Camera access failed.");
-  }
-}
-
-// RUN
-function beginMovement(){
-
-  if(isRunning) return;
-
-  isRunning = true;
-
-  startTime = Date.now();
-
-  if(timer) clearInterval(timer);
-  timer = setInterval(update, 100);
-}
-  
-function setZoom(level){
-  if(!currentTrack) return;
-
-  const capabilities = currentTrack.getCapabilities();
-
-  if(!capabilities.zoom){
-    console.warn("Zoom not supported on this device");
-    return;
+  if(currentStream){
+    currentStream.getTracks().forEach(t=>t.stop());
   }
 
-  zoomLevel = Math.max(capabilities.zoom.min, Math.min(level, capabilities.zoom.max));
-
-  currentTrack.applyConstraints({
-    advanced: [{ zoom: zoomLevel }]
-  });
-}
-  
-function drawRunnerBox(){
-
-  const canvas = document.getElementById("laneOverlay");
-  const ctx = canvas.getContext("2d");
-
-  const lanes = 5;
-  const laneWidth = canvas.width / lanes;
-
-  const laneIndex = selectedLane - 1;
-  const x = laneIndex * laneWidth + laneWidth/2 - 40;
-  const y = canvas.height/2 - 60;
-
-  // Box
-  ctx.strokeStyle = "#ff3b30";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x, y, 80, 120);
-
-  // Label
-  ctx.fillStyle = "#ff3b30";
-  ctx.font = "14px sans-serif";
-  ctx.fillText("TRACKING", x, y - 10);
-}
-  
-function update(){
-  if(!isRunning || !startTime) return;
-
-  const t = (Date.now() - startTime) / 1000;
-  document.getElementById('timer').innerText = t.toFixed(2) + "s";
-
-  const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
-  speeds.push(speed);
-  chartData.push(speed);
-
-  document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
-  document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
-
-  drawLanes();        // ✅ once
-  drawRunnerBox();    // ✅ once
-  drawSpeedChart();
-}
-
-function markSplit(){
-  if(!isRunning || !startTime) return;
-
-  const t = (Date.now() - startTime) / 1000;
-
-  const prevTime = splits.length ? splits[splits.length - 1].time : 0;
-  const segmentTime = t - prevTime;
-
-  const segmentDistance = distance / 4; // adjust if needed
-  const segmentSpeed = (segmentDistance / segmentTime) * 2.237;
-
-  splits.push({
-    time: t,               // total time
-    segmentTime: segmentTime, // ✅ THIS is what you want
-    speed: segmentSpeed
+  currentStream = await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:useBackCamera?"environment":"user"},
+    audio:false
   });
 
-  document.getElementById('splitDisplay').innerText =
-    `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
-}
-  
-  function zoomReplay(level){
-  const video = document.getElementById("replayVideo");
+  const video = document.getElementById('camera');
+  video.srcObject=currentStream;
 
-  zoomLevel = Math.max(1, Math.min(level, 5));
+  recordedChunks=[];
 
-  video.style.transform = `scale(${zoomLevel})`;
-  video.style.transformOrigin = "center center";
-}
-  
- function stopRun(){
+  if(typeof MediaRecorder !== "undefined"){
+    mediaRecorder = new MediaRecorder(currentStream);
 
-  if(timer) clearInterval(timer);
-
-  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  const speed = t > 0 ? (distance / t) * 2.237 : 0;
-
-  document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
-  document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
-
-  const finishUI = () => {
-    showSplits();
-    updateActiveUserUI();
-    showScreen('results');
-  };
-
-  try{
-
-    // 🔥 SAFETY: If no recorder, just finish
-    if(!mediaRecorder){
-      saveRun(t, speed, null);
-      finishUI();
-      return;
-    }
-
-    // 🔥 SAFETY: If recorder already stopped
-    if(mediaRecorder.state === "inactive"){
-      saveRun(t, speed, null);
-      finishUI();
-      return;
-    }
-
-    mediaRecorder.onstop = function(){
-
-      try{
-        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
-
-        // 🔥 CRITICAL FIX: avoid crash if empty
-        if(blob.size === 0){
-          saveRun(t, speed, null);
-          finishUI();
-          return;
-        }
-
-        // ✅ USE THIS (NOT FileReader)
-        const reader = new FileReader();
-
-reader.onloadend = function(){
-  const base64Video = reader.result; // ✅ permanent
-
-  saveRun(t, speed, base64Video);
-  finishUI();
-};
-
-reader.readAsDataURL(blob);
-
-      } catch(err){
-        console.error("Video processing failed:", err);
-        saveRun(t, speed, null);
-        finishUI();
-      }
+    mediaRecorder.ondataavailable = e=>{
+      if(e.data.size>0) recordedChunks.push(e.data);
     };
 
-    mediaRecorder.stop();
-
-  } catch(err){
-    console.error("StopRun crashed:", err);
-    saveRun(t, speed, null);
-    finishUI();
-  }
-
-   if(currentStream){
-  currentStream.getTracks().forEach(track => track.stop());
-  currentStream = null;
-}
-   
-  isRunning = false;
-}
-
-function resetRun(){
-  if(timer) clearInterval(timer);
-  isRunning = false;
-  startTime = null;
-  splits = [];
-  speeds = [];
-
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-  document.getElementById('speedFill').style.width = "0%";
-}
-
-// SPLITS
-function showSplits(){
-  let html = "<b>Splits</b><br>";
-
-  if (splits.length === 0) {
-    html += "No splits recorded";
-  } else {
-    splits.forEach((s,i)=>{
-      html += `
-        Split ${i+1}: 
-        ${s.segmentTime.toFixed(2)}s 
-        (${s.speed.toFixed(1)} mph)<br>
-      `;
-    });
-  }
-
-  document.getElementById('splitsBox').innerHTML = html;
-}
-  
-function drawSpeedChart(){
-  const c = document.getElementById("speedChart");
-  if(!c) return;
-
-  const ctx = c.getContext("2d");
-  ctx.clearRect(0, 0, c.width, c.height);
-
-  if(chartData.length < 2) return;
-
-  const max = Math.max(...chartData, 1);
-
-  ctx.beginPath();
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "#ff3b30";
-
-  chartData.forEach((v, i) => {
-    const x = (i / Math.max(chartData.length - 1, 1)) * c.width;
-    const y = c.height - (v / max) * (c.height - 10);
-
-    if(i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-
-  ctx.stroke();
-
-  splits.forEach((s) => {
-    const splitIndex = Math.min(chartData.length - 1, Math.floor((s.time / Math.max((Date.now() - startTime) / 1000, 0.1)) * chartData.length));
-    const x = (splitIndex / Math.max(chartData.length - 1, 1)) * c.width;
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, c.height);
-    ctx.stroke();
-  });
-}
-  
-
-// HISTORY
-function saveRun(time, speed, videoURL){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
-  if(!data[currentUser]) data[currentUser] = [];
-
-  data[currentUser].push({
-    distance: distance,
-    time: time,
-    speed: speed,
-    splits: splits, // ✅ ADD THIS
-    video: videoURL,
-    date: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-}
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track Star</title>
-
-<style>
-body{
-  margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:linear-gradient(to bottom,#000,#111);
-  color:white;
-}
-
-.screen{display:none;padding:20px;}
-.active{display:block;}
-
-.header{font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-bottom:10px;}
-
-.card{
-  background:#111;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
-  box-shadow:0 0 20px rgba(255,0,0,.2);
-}
-
-.btn{
-  width:100%;
-  padding:16px;
-  font-size:18px;
-  border:none;
-  border-radius:14px;
-  margin-top:12px;
-  color:white;
-  font-weight:bold;
-  background:linear-gradient(to right,#ff2d2d,#ff5a5a);
-}
-
-#camera{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  object-fit:cover;
-  z-index:1;
-
-  filter: contrast(1.1) brightness(1.1) saturate(1.1);
-}
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-}
-
-.controls{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  padding:15px;
-  z-index:2;
-  box-sizing:border-box;
-  background:linear-gradient(
-    to top,
-    rgba(0,0,0,0.9),
-    rgba(0,0,0,0)
-  );
-}
-
-.bigTimer{
-  font-size:42px;
-  font-weight:bold;
-}
-
-.subtle-label{
-  font-size:12px;
-  color:#aaa;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.metric-row{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-.metric-box{
-  flex:1;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:12px;
-  padding:10px;
-}
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-
-  transition: transform 0.2s ease;   /* ✅ smooth zoom */
-  transform-origin: center center;   /* ✅ zoom from center */
-}
-  
-.metric-value{
-  font-size:22px;
-  font-weight:bold;
-}
-
-.rec-dot{
-  display:inline-block;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#ff3b30;
-  margin-right:8px;
-  box-shadow:0 0 10px rgba(255,59,48,.8);
-}
-  
-.speedBar{
-  height:12px;
-  border-radius:10px;
-  background:#222;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.speedFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(to right,#ff2d2d,#ff0000);
-}
-  .miniBtn{
-  padding:8px 12px;
-  font-size:13px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  font-weight:600;
-
-  background:rgba(255,45,45,0.5);
-  backdrop-filter:blur(8px);
-
-  box-shadow:0 0 12px rgba(255,0,0,0.35);
-
-  width:auto;
-  display:inline-block;
-
-  transition:all 0.2s ease;
-}
-
-.miniBtn:active{
-  transform:scale(0.95);
-  background:rgba(255,45,45,0.8);
-}
-</style>
-</head>
-
-<body>
-
-<!-- HOME -->
-<div id="home" class="screen active">
-  <div class="header">🏃 Track Star</div>
-  <div class="sub">Train Faster. Run Smarter.</div>
-
-  <div class="card">
-    <b>BEST TIMES</b><br>
-    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
-  </div>
-
-  <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="goToHistory()">View History</button>
-  <button class="btn" onclick="switchUser()">Switch User</button>
-  <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
-</div>
-
-<!-- SETUP -->
-<div id="setup" class="screen">
-  <div class="header">Select Event</div>
-  <div style="margin-top:15px;">
-  <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
-
-  <select onchange="selectedLane = this.value; updateLaneUI();" style="
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  font-size:16px;
-  background:#222;
-  color:white;
-">
-    <option value="1">Lane 1</option>
-    <option value="2">Lane 2</option>
-    <option value="3">Lane 3</option>
-    <option value="4">Lane 4</option>
-    <option value="5">Lane 5</option>
-  </select>
-</div>
-
-
-  <button class="btn" onclick="startRun(100)">100m</button>
-  <button class="btn" onclick="startRun(200)">200m</button>
-  <button class="btn" onclick="startRun(400)">400m</button>
-  <button class="btn" onclick="startRun(800)">800m</button>
-  <button class="btn" onclick="startRun(1600)">1600m</button>
-
-  <button class="btn" onclick="showScreen('home')">Back</button>
-
-</div>
-
-<!-- LIVE -->
-<div id="live" class="screen">
-  <video id="camera" autoplay playsinline muted></video>
-
-  <canvas id="laneOverlay" style="
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  z-index:2;
-  pointer-events:none;
-"></canvas>
-
-  <div class="controls">
-
-    <div id="liveUser" style="
-      font-size:16px;
-      color:#ff4d4d;
-      font-weight:bold;
-      margin-bottom:10px;
-    ">
-      🏃 Runner: Default
-    </div>
-    <button class="miniBtn" onclick="toggleFocus()">Focus</button>
-    
-    
-
-    <div id="laneDisplay" style="
-      font-size:14px;
-      color:#aaa;
-      margin-bottom:10px;
-    ">
-      Lane: 1
-    </div>
-
-    <canvas id="speedChart" width="600" height="140" style="
-      width:100%;
-      background:rgba(0,0,0,0.45);
-      border-radius:14px;
-      margin-bottom:12px;
-    "></canvas>
-
-  <div>
-
-    <div class="card">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:16px;color:#ff4d4d;font-weight:bold;">
-          🏃 Runner: <span id="liveUserText">Default</span>
-        </div>
-        <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
-          <span class="rec-dot"></span>REC
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="subtle-label">Time</div>
-          <div id="timer" class="metric-value">0.00s</div>
-        </div>
-        <div class="metric-box">
-          <div class="subtle-label">Speed</div>
-          <div id="speed" class="metric-value">0 mph</div>
-        </div>
-      </div>
-
-      <div class="metric-box" style="margin-top:10px;">
-        <div class="subtle-label">Split</div>
-        <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
-
-        <div class="speedBar">
-          <div id="speedFill" class="speedFill"></div>
-            </div> <!-- side buttons -->
-
-  </div> <!-- inner wrapper -->
-
-</div> <!-- controls -->
-
-</div> <!-- live -->
-
-<!-- RESULTS -->
-
-    <!-- ✅ SIDE BUTTONS -->
-    <div style="
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    ">
-
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="beginMovement()">Start</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="markSplit()">Split</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="stopRun()">Finish</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="resetRun()">Reset</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="flipCamera()">Flip</button>
-
-    </div>
-
-  </div>
-</div>
-
-<!-- RESULTS -->
-<div id="results" class="screen">
-  <div class="header">Results</div>
-  <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
-
-  <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
-  </div>
-
-  <div class="card" id="splitsBox"></div>
-
-  <button class="btn" onclick="showScreen('home')">Back Home</button>
-</div>
-
-<div id="profiles" class="screen">
-  <div class="header">Athlete Profiles</div>
-  <div id="profilesList" class="card"></div>
-  <button class="btn" onclick="addAthlete()">Add Athlete</button>
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-  
-<!-- HISTORY -->
-<div id="history" class="screen">
-  <div class="header">History</div>
-  <div class="card" id="historyList"></div>
-  <button class="btn" onclick="clearHistory()">Clear History</button>
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-
-<div id="replay" class="screen">
-  <div class="header">Coach Replay</div>
-
-  <div class="card">
-  <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
-
-  <div style="overflow:hidden;border-radius:12px;">
-    <video id="replayVideo" class="history-video" controls playsinline></video>
-  </div>
-</div>
-
-  <div style="margin-top:15px;">
-  <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
-
-  <input type="range"
-    min="1"
-    max="5"
-    step="0.1"
-    value="1"
-    oninput="zoomReplay(this.value)"
-    style="width:100%;">
-</div>
-
-  <div class="card">
-    <button class="btn" onclick="setReplaySpeed(0.5)">0.5x</button>
-    <button class="btn" onclick="setReplaySpeed(1)">1x</button>
-    <button class="btn" onclick="setReplaySpeed(1.5)">1.5x</button>
-    <button class="btn" onclick="jumpReplay(-2)">-2 sec</button>
-    <button class="btn" onclick="jumpReplay(2)">+2 sec</button>
-    <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel + 0.5)">Zoom +</button>
-<button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel - 0.5)">Zoom -</button>
-  </div>
-
-  <button class="btn" onclick="goToHistory()">Back to History</button>
-</div>
-
-  
-<script>
-let useBackCamera = true;
-let chartData = [];
-let selectedRunIndex = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-let currentUser = localStorage.getItem("currentUser") || "Default";
-let startTime = null;
-let timer = null;
-let distance = 100;
-let splits = [];
-let speeds = [];
-let isRunning = false;
-let currentStream = null;
-let selectedLane = 1;
-let zoomLevel = 1;
-let currentTrack = null;
-
-// USER UI
-function updateActiveUserUI(){
-  const liveUserText = document.getElementById("liveUserText");
-  const liveUserTop = document.getElementById("liveUser");
-  const resultsUser = document.getElementById("resultsUser");
-  const laneDisplay = document.getElementById("laneDisplay");
-
-  if (liveUserText) liveUserText.innerText = currentUser;
-  if (liveUserTop) liveUserTop.innerText = "🏃 Runner: " + currentUser;
-  if (resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
-  if (laneDisplay) laneDisplay.innerText = "Lane: " + selectedLane;
-}
-
-// NAV
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-let focusMode = false;
-
-function toggleFocus(){
-
-  focusMode = !focusMode;
-
-  const controls = document.querySelector(".controls");
-
-  if(focusMode){
-    controls.style.opacity = "0.3";
-  } else {
-    controls.style.opacity = "1";
-  }
-}
-  
-function goToHistory(){
-  showScreen('history');
-  showHistory();
-}
-
-function openReplay(index){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = data[currentUser] || [];
-  const run = runs[index];
-  const splitsBox = document.getElementById("splitsBox");
-
-if(run.splits && run.splits.length){
-  let html = "<b>Splits</b><br>";
-
-  run.splits.forEach((s,i)=>{
-    html += `Split ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
-  });
-
-  splitsBox.innerHTML = html;
-} else {
-  splitsBox.innerHTML = "No splits recorded";
-}
-
-  if(!run || !run.video || run.video === "null"){
-    alert("No video saved for this run.");
-    return;
-  }
-
-  selectedRunIndex = index;
-
-  document.getElementById("replayTitle").innerText =
-    `${run.distance}m • ${Number(run.time).toFixed(2)}s • ${run.date}`;
-
-  const video = document.getElementById("replayVideo");
-  video.src = run.video;
-  video.playbackRate = 1;
-  showScreen("replay");
-}
-
-function updateLaneUI(){
-  const laneDisplay = document.getElementById("laneDisplay");
-  if(laneDisplay){
-    laneDisplay.innerText = "Lane: " + selectedLane;
-  }
-}
-  
-function showProfiles(){
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  let html = "";
-
-  if(users.length === 0){
-    html = "No athletes yet";
-  } else {
-    users.forEach(user => {
-      html += `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          padding:10px 0;
-          border-bottom:1px solid rgba(255,255,255,0.08);
-        ">
-          <div style="font-weight:bold;">${user}</div>
-          <div>
-            <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="chooseProfile('${user.replace(/'/g, "\\'")}')">Use</button>
-            <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="deleteProfile('${user.replace(/'/g, "\\'")}')">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  document.getElementById("profilesList").innerHTML = html;
-  showScreen("profiles");
-}
-
-function addAthlete(){
-  const name = prompt("Enter athlete name:");
-  if(!name || !name.trim()) return;
-
-  const clean = name.trim();
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  if(!users.includes(clean)){
-    users.push(clean);
-    localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-  }
-
-  currentUser = clean;
-  localStorage.setItem("currentUser", currentUser);
-  updateActiveUserUI();
-  showProfiles();
-}
-
-function chooseProfile(name){
-  currentUser = name;
-  localStorage.setItem("currentUser", currentUser);
-  updateActiveUserUI();
-  showScreen("home");
-}
-
-function deleteProfile(name){
-  let users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-  users = users.filter(u => u !== name);
-  localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  delete data[name];
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-
-  if(currentUser === name){
-    currentUser = users[0] || "Default";
-    localStorage.setItem("currentUser", currentUser);
-    updateActiveUserUI();
-  }
-
-  showProfiles();
-}
-  
-function setReplaySpeed(rate){
-  const video = document.getElementById("replayVideo");
-  video.playbackRate = rate;
-}
-
-function jumpReplay(seconds){
-  const video = document.getElementById("replayVideo");
-  video.currentTime = Math.max(0, video.currentTime + seconds);
-}
-  
-// SELECT USER
-function selectRunner(){
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-
-  const list = users.length
-    ? "Select runner:\n\n" + users.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nType number or new name:"
-    : "Enter runner name:";
-
-  let input = prompt(list);
-  if(!input) return null;
-
-  input = input.trim();
-
-  const index = parseInt(input, 10);
-  if(!isNaN(index) && users[index - 1]){
-    currentUser = users[index - 1];
-  } else {
-    currentUser = input;
-
-    if(!users.includes(currentUser)){
-      users.push(currentUser);
-      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-    }
-  }
-
-  localStorage.setItem("currentUser", currentUser);
-  return currentUser;
-}
-    
-
-// START RUN
-function startRun(d){
-  const user = selectRunner();
-  if(!user) return;
-
-  distance = d;
-  splits = [];
-  speeds = [];
-  chartData = [];
-
-  isRunning = false;
-  startTime = null;
-
-  if(timer) clearInterval(timer);
-
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-  document.getElementById('speedFill').style.width = "0%";
-
-  updateActiveUserUI();
-  showScreen('live');
-
-  startCamera(); // 🔥 REQUIRED
-  drawSpeedChart();
-}
-  
-
-
-// CAMERA
-async function startCamera(){
-  try{
-
-    // stop old stream
-    if(currentStream){
-      currentStream.getTracks().forEach(track => track.stop());
-    }
-
-    // ✅ PROPER camera constraints
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: useBackCamera ? "environment" : "user",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 60 }
-      },
-      audio: false
-    });
-
-    const video = document.getElementById('camera');
-    video.srcObject = currentStream;
-
-    const track = currentStream.getVideoTracks()[0];
-    currentTrack = track;
-
-    recordedChunks = [];
-
-    // ✅ RECORDING
-    if (typeof MediaRecorder !== "undefined") {
-
-      let options = {};
-
-      if (MediaRecorder.isTypeSupported("video/mp4")) {
-        options.mimeType = "video/mp4";
-      } else if (MediaRecorder.isTypeSupported("video/webm")) {
-        options.mimeType = "video/webm";
-      }
-
-      mediaRecorder = new MediaRecorder(currentStream, options);
-
-      mediaRecorder.ondataavailable = function(e){
-        if(e.data.size > 0){
-          recordedChunks.push(e.data);
-        }
-      };
-
-      mediaRecorder.start();
-
-    } else {
-      mediaRecorder = null;
-    }
-
-  } catch(err){
-    console.error(err);
-    alert("Camera access failed.");
-  }
-}
-
-// RUN
-function beginMovement(){
-
-  if(isRunning) return;
-
-  isRunning = true;
-
-  // 🔥 START CAMERA HERE (USER ACTION)
-  startCamera();
-
-  startTime = Date.now();
-
-  if(timer) clearInterval(timer);
-  timer = setInterval(update, 100);
-}
-
-function setZoom(level){
-  if(!currentTrack) return;
-
-  const capabilities = currentTrack.getCapabilities();
-
-  if(!capabilities.zoom){
-    console.warn("Zoom not supported on this device");
-    return;
-  }
-
-  zoomLevel = Math.max(capabilities.zoom.min, Math.min(level, capabilities.zoom.max));
-
-  currentTrack.applyConstraints({
-    advanced: [{ zoom: zoomLevel }]
-  });
-}
-  
-function drawRunnerBox(){
-
-  const canvas = document.getElementById("laneOverlay");
-  const ctx = canvas.getContext("2d");
-
-  const lanes = 5;
-  const laneWidth = canvas.width / lanes;
-
-  const laneIndex = selectedLane - 1;
-  const x = laneIndex * laneWidth + laneWidth/2 - 40;
-  const y = canvas.height/2 - 60;
-
-  // Box
-  ctx.strokeStyle = "#ff3b30";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x, y, 80, 120);
-
-  // Label
-  ctx.fillStyle = "#ff3b30";
-  ctx.font = "14px sans-serif";
-  ctx.fillText("TRACKING", x, y - 10);
-}
-  
-function update(){
-  if(!isRunning || !startTime) return;
-
-  const t = (Date.now() - startTime) / 1000;
-  document.getElementById('timer').innerText = t.toFixed(2) + "s";
-
-  const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
-  speeds.push(speed);
-  chartData.push(speed);
-
-  document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
-  document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
-
-  drawLanes();        // ✅ once
-  drawRunnerBox();    // ✅ once
-  drawSpeedChart();
-}
-
-function markSplit(){
-  if(!isRunning || !startTime) return;
-
-  const t = (Date.now() - startTime) / 1000;
-
-  const prevTime = splits.length ? splits[splits.length - 1].time : 0;
-  const segmentTime = t - prevTime;
-
-  const segmentDistance = distance / 4; // adjust if needed
-  const segmentSpeed = (segmentDistance / segmentTime) * 2.237;
-
-  splits.push({
-    time: t,               // total time
-    segmentTime: segmentTime, // ✅ THIS is what you want
-    speed: segmentSpeed
-  });
-
-  document.getElementById('splitDisplay').innerText =
-    `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
-}
-  
-  function zoomReplay(level){
-  const video = document.getElementById("replayVideo");
-
-  zoomLevel = Math.max(1, Math.min(level, 5));
-
-  video.style.transform = `scale(${zoomLevel})`;
-  video.style.transformOrigin = "center center";
-}
-  
- function stopRun(){
-
-  if(timer) clearInterval(timer);
-
-  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  const speed = t > 0 ? (distance / t) * 2.237 : 0;
-
-  document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
-  document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
-
-  const finishUI = () => {
-    showSplits();
-    updateActiveUserUI();
-    showScreen('results');
-  };
-
-  try{
-
-    // 🔥 SAFETY: If no recorder, just finish
-    if(!mediaRecorder){
-      saveRun(t, speed, null);
-      finishUI();
-      return;
-    }
-
-    // 🔥 SAFETY: If recorder already stopped
-    if(mediaRecorder.state === "inactive"){
-      saveRun(t, speed, null);
-      finishUI();
-      return;
-    }
-
-    mediaRecorder.onstop = function(){
-
-      try{
-        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
-
-        // 🔥 CRITICAL FIX: avoid crash if empty
-        if(blob.size === 0){
-          saveRun(t, speed, null);
-          finishUI();
-          return;
-        }
-
-        // ✅ USE THIS (NOT FileReader)
-        const reader = new FileReader();
-
-reader.onloadend = function(){
-  const base64Video = reader.result; // ✅ permanent
-
-  saveRun(t, speed, base64Video);
-  finishUI();
-};
-
-reader.readAsDataURL(blob);
-
-      } catch(err){
-        console.error("Video processing failed:", err);
-        saveRun(t, speed, null);
-        finishUI();
-      }
-    };
-
-    mediaRecorder.stop();
-
-  } catch(err){
-    console.error("StopRun crashed:", err);
-    saveRun(t, speed, null);
-    finishUI();
-  }
-
-   if(currentStream){
-  currentStream.getTracks().forEach(track => track.stop());
-  currentStream = null;
-}
-   
-  isRunning = false;
-}
-
-function resetRun(){
-  if(timer) clearInterval(timer);
-  isRunning = false;
-  startTime = null;
-  splits = [];
-  speeds = [];
-
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-  document.getElementById('speedFill').style.width = "0%";
-}
-
-// SPLITS
-function showSplits(){
-  let html = "<b>Splits</b><br>";
-
-  if (splits.length === 0) {
-    html += "No splits recorded";
-  } else {
-    splits.forEach((s,i)=>{
-      html += `
-        Split ${i+1}: 
-        ${s.segmentTime.toFixed(2)}s 
-        (${s.speed.toFixed(1)} mph)<br>
-      `;
-    });
-  }
-
-  document.getElementById('splitsBox').innerHTML = html;
-}
-  
-function drawSpeedChart(){
-  const c = document.getElementById("speedChart");
-  if(!c) return;
-
-  const ctx = c.getContext("2d");
-  ctx.clearRect(0, 0, c.width, c.height);
-
-  if(chartData.length < 2) return;
-
-  const max = Math.max(...chartData, 1);
-
-  ctx.beginPath();
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "#ff3b30";
-
-  chartData.forEach((v, i) => {
-    const x = (i / Math.max(chartData.length - 1, 1)) * c.width;
-    const y = c.height - (v / max) * (c.height - 10);
-
-    if(i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-
-  ctx.stroke();
-
-  splits.forEach((s) => {
-    const splitIndex = Math.min(chartData.length - 1, Math.floor((s.time / Math.max((Date.now() - startTime) / 1000, 0.1)) * chartData.length));
-    const x = (splitIndex / Math.max(chartData.length - 1, 1)) * c.width;
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, c.height);
-    ctx.stroke();
-  });
-}
-  
-
-// HISTORY
-function saveRun(time, speed, videoURL){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
-  if(!data[currentUser]) data[currentUser] = [];
-
-  data[currentUser].push({
-    distance: distance,
-    time: time,
-    speed: speed,
-    splits: splits, // ✅ ADD THIS
-    video: videoURL,
-    date: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-}
-
-function showHistory(){
-  try {
-    const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-    const runs = Array.isArray(data[currentUser]) ? data[currentUser] : [];
-
-    let html = `<b>${currentUser} History</b><br><br>`;
-
-    if(runs.length === 0){
-      html += "No runs yet";
-    } else {
-
-      runs.slice().reverse().forEach((r, index) => {
-
-        const runTime = Number(r.time || 0);
-        const runSpeed = Number(r.speed || 0);
-        const runDistance = r.distance || "-";
-        const runDate = r.date || "";
-
-        html += `
-          <div style="
-            background:#111;
-            padding:12px;
-            border-radius:12px;
-            margin-bottom:15px;
-            box-shadow:0 0 10px rgba(255,0,0,.2);
-          ">
-
-            <div style="font-size:18px;font-weight:bold;">
-              ${runDistance}m - ${runTime.toFixed(2)}s
-            </div>
-
-            <div style="color:#aaa;margin-top:4px;">
-              ⚡ ${runSpeed.toFixed(2)} mph
-            </div>
-
-            html += `
-  <div style="
-    background:#111;
-    padding:12px;
-    border-radius:12px;
-    margin-bottom:15px;
-    box-shadow:0 0 10px rgba(255,0,0,.2);
-  ">
-
-    <div style="font-size:18px;font-weight:bold;">
-      ${runDistance}m - ${runTime.toFixed(2)}s
-    </div>
-
-    <div style="color:#aaa;margin-top:4px;">
-      ⚡ ${runSpeed.toFixed(2)} mph
-    </div>
-
-    <div style="font-size:12px;color:#666;margin-top:6px;">
-      ${runDate}
-    </div>
-`;
-
-if(r.splits && r.splits.length){
-  html += `<div style="margin-top:8px;font-size:13px;color:#ccc;">`;
-
-  r.splits.forEach((s,i)=>{
-    html += `
-      Split ${i+1}: 
-      ${(s.segmentTime || s.time).toFixed(2)}s 
-      (${s.speed.toFixed(1)} mph)<br>
-    `;
-  });
-
-  html += `</div>`;
-}
-
-html += `
-  <button class="btn" style="margin-top:10px;" onclick="openReplay(${runs.length - 1 - index})">
-    ▶️ Replay
-  </button>
-`;
-        if(r.video){
-          html += `<video controls class="history-video" src="${r.video}"></video>`;
-        }
-
-        html += `</div>`;
-      });
-    }
-
-    document.getElementById("historyList").innerHTML = html;
-
-  } catch(err) {
-    console.error("showHistory error:", err);
-    document.getElementById("historyList").innerHTML =
-      `<div style="color:#ff8080;">Error loading history</div>`;
-  }
-}
-
-
-function clearHistory(){
-  try{
-    const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-    data[currentUser] = [];
-    localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-    showHistory();
-  } catch(err){
-    console.error("clearHistory error:", err);
-    localStorage.removeItem("SprintIQUsers");
-    document.getElementById("historyList").innerHTML = "No runs yet";
+    mediaRecorder.start();
   }
 }
 
 function flipCamera(){
-  useBackCamera = !useBackCamera;
+  useBackCamera=!useBackCamera;
   startCamera();
 }
 
-  function drawLanes(){
+// RUN
+function startRun(d){
+  distance=d;
+  splits=[];
+  speeds=[];
+  startTime=null;
+  showScreen('live');
+  startCamera();
+}
 
-  const canvas = document.getElementById("laneOverlay");
-  const ctx = canvas.getContext("2d");
+function beginMovement(){
+  if(isRunning) return;
+  isRunning=true;
+  startTime=Date.now();
+  timer=setInterval(update,100);
+}
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+function update(){
+  const t=(Date.now()-startTime)/1000;
+  document.getElementById('timer').innerText=t.toFixed(2)+"s";
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const speed=(distance/t)*2.237;
+  speeds.push(speed);
 
-  const lanes = 5;
-  const laneWidth = canvas.width / lanes;
+  document.getElementById('speed').innerText=speed.toFixed(1)+" mph";
+}
 
-  for(let i = 0; i < lanes; i++){
+function markSplit(){
+  const t=(Date.now()-startTime)/1000;
+  const speed=speeds[speeds.length-1]||0;
 
-    const x = i * laneWidth;
+  splits.push({time:t,speed:speed});
 
-    // Lane lines
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
+  document.getElementById('splitDisplay').innerText=
+    `Split ${splits.length}: ${t.toFixed(2)}s | ${speed.toFixed(1)} mph`;
+}
 
-    // Highlight selected lane
-    if((i + 1) == selectedLane){
-      ctx.fillStyle = "rgba(255,0,0,0.12)";
-      ctx.fillRect(x, 0, laneWidth, canvas.height);
-    }
+// STOP + SAVE VIDEO
+function stopRun(){
+  clearInterval(timer);
+
+  const t=(Date.now()-startTime)/1000;
+  const speed=(distance/t)*2.237;
+
+  document.getElementById('finalTime').innerText="Time: "+t.toFixed(2);
+  document.getElementById('finalSpeed').innerText="Speed: "+speed.toFixed(2);
+
+  const finish = (videoData)=>{
+    saveRun(t,speed,videoData);
+    showSplits();
+    showScreen('results');
+  };
+
+  if(mediaRecorder && mediaRecorder.state!=="inactive"){
+
+    mediaRecorder.onstop = function(){
+      const blob = new Blob(recordedChunks,{type:"video/webm"});
+
+      const reader = new FileReader();
+      reader.onloadend = ()=>{
+        finish(reader.result); // BASE64 SAVE
+      };
+      reader.readAsDataURL(blob);
+    };
+
+    mediaRecorder.stop();
+
+  } else {
+    finish(null);
   }
-}
-  
-// SWITCH USER
-function switchUser(){
-  const name = prompt("Enter athlete name:");
-  if(!name) return;
-  currentUser = name.trim();
-  localStorage.setItem("currentUser", currentUser);
-  updateActiveUserUI();
+
+  isRunning=false;
 }
 
-// INIT
-updateActiveUserUI();
-</script>
+// SPLITS
+function showSplits(){
+  let html="<b>Splits</b><br>";
+  splits.forEach((s,i)=>{
+    html+=`Split ${i+1}: ${s.time.toFixed(2)}s | ${s.speed.toFixed(1)} mph<br>`;
+  });
+  document.getElementById('splitsBox').innerHTML=html;
+}
 
-</body>
-</html>
+// STORAGE
+function saveRun(time,speed,video){
+  const data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
 
+  if(!data[currentUser]) data[currentUser]=[];
 
-// INIT
-updateActiveUserUI();
+  data[currentUser].push({
+    distance,time,speed,splits,video,
+    date:new Date().toLocaleString()
+  });
+
+  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+}
+
+// HISTORY
+function showHistory(){
+  const data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
+  const runs=data[currentUser]||[];
+
+  let html=`<b>${currentUser} History</b><br><br>`;
+
+  runs.slice().reverse().forEach((r,i)=>{
+    html+=`
+      <div style="margin-bottom:15px;">
+        ${r.distance}m - ${r.time.toFixed(2)}s (${r.speed.toFixed(2)} mph)<br>
+        ${r.date}<br>
+        <button onclick="openReplay(${runs.length-1-i})">Replay</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("historyList").innerHTML=html;
+}
+
+function openReplay(index){
+  const data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
+  const run=data[currentUser][index];
+
+  if(!run.video){
+    alert("No video saved");
+    return;
+  }
+
+  document.getElementById("replayTitle").innerText=
+    `${run.distance}m - ${run.time.toFixed(2)}s`;
+
+  const video=document.getElementById("replayVideo");
+  video.src=run.video;
+
+  showScreen("replay");
+}
+
+function clearHistory(){
+  const data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
+  data[currentUser]=[];
+  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+  showHistory();
+}
+
+function goToHistory(){
+  showHistory();
+  showScreen('history');
+}
 </script>
 
 </body>
