@@ -1,26 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprintIQ Pro Elite</title>
+<title>Track Star Elite</title>
 
 <style>
+:root{
+  --bg:#050505;
+  --panel:#121212;
+  --text:#fff;
+  --muted:#aaa;
+  --accent:#ff3b30;
+  --accent2:#ff6b60;
+}
+
 body{
   margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:linear-gradient(to bottom,#000,#111);
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(#000,#111);
   color:white;
 }
+
 .screen{display:none;padding:20px;}
 .active{display:block;}
-.header{font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-bottom:10px;}
 
+.header{font-size:28px;font-weight:800;}
 .card{
   background:#111;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
+  padding:15px;
+  border-radius:14px;
+  margin-top:10px;
 }
 
 .btn{
@@ -29,15 +38,14 @@ body{
   margin-top:10px;
   border:none;
   border-radius:12px;
-  background:#ff2d2d;
+  background:linear-gradient(to right,var(--accent),var(--accent2));
   color:white;
   font-weight:bold;
 }
 
 #camera{
   position:fixed;
-  top:0;
-  left:0;
+  inset:0;
   width:100%;
   height:100%;
   object-fit:cover;
@@ -48,18 +56,15 @@ body{
   bottom:0;
   width:100%;
   padding:15px;
-  background:rgba(0,0,0,0.8);
+  background:rgba(0,0,0,0.9);
 }
 
-.metric-value{
-  font-size:22px;
-  font-weight:bold;
-}
+.metric{font-size:22px;font-weight:bold;}
 
 .history-video{
   width:100%;
-  margin-top:10px;
   border-radius:10px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -67,7 +72,7 @@ body{
 <body>
 
 <div id="home" class="screen active">
-  <div class="header">🏃 SprintIQ Elite</div>
+  <div class="header">🏃 Track Star Elite</div>
   <button class="btn" onclick="showScreen('setup')">Start Run</button>
   <button class="btn" onclick="goToHistory()">History</button>
 </div>
@@ -84,8 +89,8 @@ body{
   <video id="camera" autoplay playsinline muted></video>
 
   <div class="controls">
-    <div id="timer" class="metric-value">0.00s</div>
-    <div id="speed" class="metric-value">0 mph</div>
+    <div id="timer" class="metric">0.00s</div>
+    <div id="speed" class="metric">0 mph</div>
     <div id="splitDisplay">Split: --</div>
 
     <button class="btn" onclick="beginMovement()">Start</button>
@@ -111,18 +116,9 @@ body{
 </div>
 
 <script>
-let distance = 100;
-let startTime = null;
-let timer = null;
-let splits = [];
-let speeds = [];
-let currentStream = null;
-let useBackCamera = true;
-let mediaRecorder = null;
-let recordedChunks = [];
-let currentUser = "Default";
+let distance=100,startTime,timer,splits=[],speeds=[];
+let stream,useBackCamera=true,mediaRecorder,chunks=[];
 
-// NAV
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -133,140 +129,111 @@ function goToHistory(){
   showScreen('history');
 }
 
-// CAMERA + RECORDING
 async function startCamera(){
-  if(currentStream){
-    currentStream.getTracks().forEach(t=>t.stop());
-  }
+  if(stream) stream.getTracks().forEach(t=>t.stop());
 
-  currentStream = await navigator.mediaDevices.getUserMedia({
-    video:{ facingMode: useBackCamera ? "environment":"user" },
+  stream = await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:useBackCamera?"environment":"user"},
     audio:false
   });
 
-  document.getElementById("camera").srcObject = currentStream;
+  document.getElementById("camera").srcObject=stream;
 
-  recordedChunks = [];
+  chunks=[];
 
-  if(typeof MediaRecorder !== "undefined"){
-    mediaRecorder = new MediaRecorder(currentStream);
-
-    mediaRecorder.ondataavailable = e=>{
-      if(e.data.size>0) recordedChunks.push(e.data);
+  if(MediaRecorder){
+    mediaRecorder=new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>{
+      if(e.data.size>0) chunks.push(e.data);
     };
-
     mediaRecorder.start();
   }
 }
 
 function flipCamera(){
-  useBackCamera = !useBackCamera;
+  useBackCamera=!useBackCamera;
   startCamera();
 }
 
-// RUN
 function startRun(d){
-  distance = d;
-  splits = [];
-  speeds = [];
-
+  distance=d;
+  splits=[];
+  speeds=[];
   showScreen('live');
   startCamera();
 }
 
 function beginMovement(){
-  startTime = Date.now();
-  timer = setInterval(update,100);
+  startTime=Date.now();
+  timer=setInterval(update,100);
 }
 
 function update(){
-  const t = (Date.now()-startTime)/1000;
-  document.getElementById("timer").innerText = t.toFixed(2)+"s";
+  let t=(Date.now()-startTime)/1000;
+  document.getElementById("timer").innerText=t.toFixed(2)+"s";
 
-  const speed = (distance/Math.max(t,0.1))*2.237;
+  let speed=(distance/Math.max(t,0.1))*2.237;
   speeds.push(speed);
-
-  document.getElementById("speed").innerText = speed.toFixed(1)+" mph";
+  document.getElementById("speed").innerText=speed.toFixed(1)+" mph";
 }
 
 function markSplit(){
-  const t = (Date.now()-startTime)/1000;
-  const last = splits.length ? splits[splits.length-1].time : 0;
-  const segment = t-last;
+  let t=(Date.now()-startTime)/1000;
+  let prev=splits.length?splits[splits.length-1].time:0;
+  let seg=t-prev;
 
-  const speed = speeds[speeds.length-1] || 0;
+  let speed=speeds[speeds.length-1]||0;
 
-  splits.push({time:t,segmentTime:segment,speed:speed});
+  splits.push({time:t,segmentTime:seg,speed});
 
-  document.getElementById("splitDisplay").innerText =
-    `Split ${splits.length}: ${segment.toFixed(2)}s`;
+  document.getElementById("splitDisplay").innerText=
+    `Split ${splits.length}: ${seg.toFixed(2)}s`;
 }
 
 function stopRun(){
   clearInterval(timer);
 
-  const t = (Date.now()-startTime)/1000;
-  const speed = (distance/t)*2.237;
+  let t=(Date.now()-startTime)/1000;
+  let speed=(distance/t)*2.237;
 
-  document.getElementById("finalTime").innerText = "Time: "+t.toFixed(2);
-  document.getElementById("finalSpeed").innerText = "Speed: "+speed.toFixed(2);
+  document.getElementById("finalTime").innerText="Time: "+t.toFixed(2);
+  document.getElementById("finalSpeed").innerText="Speed: "+speed.toFixed(2);
 
   if(mediaRecorder){
-    mediaRecorder.onstop = ()=>{
-      const blob = new Blob(recordedChunks,{type:"video/webm"});
-      const reader = new FileReader();
-
-      reader.onloadend = ()=>{
+    mediaRecorder.onstop=()=>{
+      let blob=new Blob(chunks,{type:"video/webm"});
+      let reader=new FileReader();
+      reader.onloadend=()=>{
         saveRun(t,speed,reader.result);
         showSplits();
         showScreen('results');
       };
-
       reader.readAsDataURL(blob);
     };
-
     mediaRecorder.stop();
-  } else {
-    saveRun(t,speed,null);
-    showSplits();
-    showScreen('results');
   }
 }
 
-// SPLITS DISPLAY
 function showSplits(){
-  let html = "<b>Splits</b><br>";
-
+  let html="<b>Splits</b><br>";
   splits.forEach((s,i)=>{
-    html += `Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+    html+=`Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
   });
-
-  document.getElementById("splitsBox").innerHTML = html;
+  document.getElementById("splitsBox").innerHTML=html;
 }
 
-// STORAGE
 function saveRun(time,speed,video){
-  let data = JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
-
-  if(!data[currentUser]) data[currentUser]=[];
-
-  data[currentUser].push({
-    distance,time,speed,splits,video,
-    date:new Date().toLocaleString()
-  });
-
-  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+  let data=JSON.parse(localStorage.getItem("runs")||"[]");
+  data.push({distance,time,speed,splits,video,date:new Date().toLocaleString()});
+  localStorage.setItem("runs",JSON.stringify(data));
 }
 
-// HISTORY
 function showHistory(){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
-  const runs = data[currentUser]||[];
+  let data=JSON.parse(localStorage.getItem("runs")||"[]");
 
-  let html = `<b>${currentUser} History</b><br><br>`;
-
-  runs.slice().reverse().forEach(r=>{
-    html += `
+  let html="";
+  data.slice().reverse().forEach(r=>{
+    html+=`
       <div class="card">
         ${r.distance}m - ${r.time.toFixed(2)}s<br>
         ⚡ ${r.speed.toFixed(2)} mph<br>
@@ -274,19 +241,17 @@ function showHistory(){
     `;
 
     if(r.video){
-      html += `<video class="history-video" controls src="${r.video}"></video>`;
+      html+=`<video class="history-video" controls src="${r.video}"></video>`;
     }
 
-    html += "</div>";
+    html+="</div>";
   });
 
-  document.getElementById("historyList").innerHTML = html;
+  document.getElementById("historyList").innerHTML=html;
 }
 
 function clearHistory(){
-  let data = JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
-  data[currentUser]=[];
-  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+  localStorage.removeItem("runs");
   showHistory();
 }
 </script>
