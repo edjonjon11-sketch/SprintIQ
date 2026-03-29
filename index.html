@@ -225,14 +225,14 @@ body{
   <video id="camera" autoplay playsinline muted></video>
 
   <canvas id="laneOverlay" style="
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  z-index:2;
-  pointer-events:none;
-"></canvas>
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100vh;
+    z-index:2;
+    pointer-events:none;
+  "></canvas>
 
   <div class="controls">
 
@@ -244,9 +244,8 @@ body{
     ">
       🏃 Runner: Default
     </div>
+
     <button class="miniBtn" onclick="toggleFocus()">Focus</button>
-    
-    
 
     <div id="laneDisplay" style="
       font-size:14px;
@@ -263,15 +262,13 @@ body{
       margin-bottom:12px;
     "></canvas>
 
-  <div>
-
     <div class="card">
 
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:16px;color:#ff4d4d;font-weight:bold;">
+      <div style="display:flex;justify-content:space-between;">
+        <div style="color:#ff4d4d;font-weight:bold;">
           🏃 Runner: <span id="liveUserText">Default</span>
         </div>
-        <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
+        <div id="recordingBadge" style="display:none;">
           <span class="rec-dot"></span>REC
         </div>
       </div>
@@ -289,43 +286,32 @@ body{
 
       <div class="metric-box" style="margin-top:10px;">
         <div class="subtle-label">Split</div>
-        <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
+        <div id="splitDisplay" class="metric-value">Split: --</div>
 
         <div class="speedBar">
           <div id="speedFill" class="speedFill"></div>
-            </div> <!-- side buttons -->
-
-  </div> <!-- inner wrapper -->
-
-</div> <!-- controls -->
-
-</div> <!-- live -->
-
-<!-- RESULTS -->
-
-    <!-- ✅ SIDE BUTTONS -->
-    <div style="
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    ">
-
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="beginMovement()">Start</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="markSplit()">Split</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="stopRun()">Finish</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="resetRun()">Reset</button>
-      <button class="btn" style="width:120px;padding:10px;font-size:14px;opacity:0.8;" onclick="flipCamera()">Flip</button>
+        </div>
+      </div>
 
     </div>
 
-  </div>
-</div>
+    <!-- ✅ SIDE BUTTONS (NOW INSIDE CONTROLS) -->
+    <div style="
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:15px;
+    ">
+      <button class="btn" onclick="beginMovement()">Start</button>
+      <button class="btn" onclick="markSplit()">Split</button>
+      <button class="btn" onclick="stopRun()">Finish</button>
+      <button class="btn" onclick="resetRun()">Reset</button>
+      <button class="btn" onclick="flipCamera()">Flip</button>
+    </div>
 
-<!-- RESULTS -->
+  </div>
+  
+</div><!-- RESULTS -->
 <div id="results" class="screen">
   <div class="header">Results</div>
   <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
