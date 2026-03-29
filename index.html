@@ -295,14 +295,16 @@ body{
 
     </div>
 
-    <!-- ✅ SIDE BUTTONS (NOW INSIDE CONTROLS) -->
+    <!-- ✅ SIDE BUTTONS -->
     <div style="
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
       display:flex;
       flex-direction:column;
       gap:10px;
-      margin-top:15px;
-    ">
-      <button class="btn" onclick="beginMovement()">Start</button>
+    ">      <button class="btn" onclick="beginMovement()">Start</button>
       <button class="btn" onclick="markSplit()">Split</button>
       <button class="btn" onclick="stopRun()">Finish</button>
       <button class="btn" onclick="resetRun()">Reset</button>
