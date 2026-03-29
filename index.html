@@ -941,7 +941,28 @@ function drawSpeedChart(){
   });
 }
   
+function showHistory(){
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const runs = data[currentUser] || [];
 
+  let html = "";
+
+  if(runs.length === 0){
+    html = "No runs yet";
+  } else {
+    runs.slice().reverse().forEach((r,i)=>{
+      html += `
+        <div class="card" onclick="openReplay(${i})">
+          ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
+          ⚡ ${Number(r.speed).toFixed(2)} mph<br>
+          ${r.date}
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("historyList").innerHTML = html;
+}  
 // HISTORY
 function saveRun(time, speed, videoURL){
   const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
