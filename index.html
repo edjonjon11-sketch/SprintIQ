@@ -422,10 +422,26 @@ function updateActiveUserUI(){
 
 // NAV
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+  try{
+    const screens = document.querySelectorAll('.screen');
 
+    screens.forEach(screen => {
+      screen.classList.remove('active');
+    });
+
+    const target = document.getElementById(id);
+
+    if(!target){
+      console.error("Screen not found:", id);
+      return;
+    }
+
+    target.classList.add('active');
+
+  } catch(err){
+    console.error("showScreen crashed:", err);
+  }
+}
 let focusMode = false;
 
 function toggleFocus(){
