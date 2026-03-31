@@ -193,11 +193,16 @@
       100m: 11.2s | 200m: 24.5s | 400m: 58.2s
     </div>
 
+    <div class="card">
+  <b>PR CLIPS</b>
+  <div id="prClipsList" style="margin-top:10px;">No PR clips yet</div>
+</div>
     <button class="btn" onclick="showScreen('setup')">Start New Run</button>
     <button class="btn" onclick="goToHistory()">View History</button>
     <button class="btn" onclick="switchUser()">Switch User</button>
     <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
-  </div>
+    <button class="btn" onclick="quickLogin()">Login</button>
+<button class="btn" onclick="quickLogout()">Logout</button>  </div>
 
   <!-- SETUP -->
   <div id="setup" class="screen">
@@ -393,6 +398,14 @@
     let currentTrack = null;
     let focusMode = false;
 
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+let supabaseClient = null;
+
+if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}    
     function updateActiveUserUI(){
       const liveUserText = document.getElementById("liveUserText");
       const liveUserTop = document.getElementById("liveUser");
@@ -424,6 +437,47 @@
       showHistory();
     }
 
+    async function quickLogin(){
+  if(!supabaseClient){
+    alert("Add your Supabase URL and anon key first.");
+    return;
+  }
+
+  const email = prompt("Enter email:");
+  if(!email) return;
+
+  const password = prompt("Enter password:");
+  if(!password) return;
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    console.error(error);
+    alert("Login failed");
+    return;
+  }
+
+  alert("Logged in");
+}
+
+async function quickLogout(){
+  if(!supabaseClient){
+    alert("Supabase is not connected.");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.signOut();
+  if(error){
+    console.error(error);
+    alert("Logout failed");
+    return;
+  }
+
+  alert("Logged out");
+}    
     function updateLaneUI(){
       const laneDisplay = document.getElementById("laneDisplay");
       if(laneDisplay){
@@ -558,6 +612,52 @@
       return currentUser;
     }
 
+    function renderPRClips(){
+  const container = document.getElementById("prClipsList");
+  if(!container) return;
+
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const runs = Array.isArray(data[currentUser]) ? data[currentUser] : [];
+
+  if(runs.length === 0){
+    container.innerHTML = "No PR clips yet";
+    return;
+  }
+
+  const bestByDistance = {};
+
+  runs.forEach((run, index) => {
+    if(!run.video) return;
+
+    const d = run.distance;
+    const time = Number(run.time || 999999);
+
+    if(!bestByDistance[d] || time < Number(bestByDistance[d].time)){
+      bestByDistance[d] = { ...run, _index: index };
+    }
+  });
+
+  const prs = Object.values(bestByDistance).sort((a, b) => Number(a.distance) - Number(b.distance));
+
+  if(prs.length === 0){
+    container.innerHTML = "No PR clips yet";
+    return;
+  }
+
+  let html = "";
+  prs.forEach(pr => {
+    html += `
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:bold;margin-bottom:6px;">
+          ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
+        </div>
+        <button class="btn" style="margin-top:0;margin-bottom:8px;" onclick="openReplay(${pr._index})">▶️ Watch PR Clip</button>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
     function startRun(d){
       try{
         const user = selectRunner();
@@ -767,69 +867,68 @@
     }
 
     function stopRun(){
-      if(timer) clearInterval(timer);
+  if(timer) clearInterval(timer);
 
-      const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-      const speed = t > 0 ? (distance / t) * 2.237 : 0;
+  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  const speed = t > 0 ? (distance / t) * 2.237 : 0;
 
-      document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
-      document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
+  document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
+  document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
 
-      const finishUI = () => {
-        showSplits();
-        updateActiveUserUI();
-        showScreen('results');
-      };
+  const finishUI = () => {
+    showSplits();
+    updateActiveUserUI();
+    showScreen('results');
+  };
 
-      try{
-        if(!mediaRecorder || mediaRecorder.state === "inactive"){
+  try{
+    if(!mediaRecorder || mediaRecorder.state === "inactive"){
+      saveRun(t, speed, null);
+      finishUI();
+    } else {
+      mediaRecorder.onstop = function(){
+        try{
+          const mimeType = mediaRecorder.mimeType || "video/webm";
+          const blob = new Blob(recordedChunks, { type: mimeType });
+
+          if(blob.size === 0){
+            saveRun(t, speed, null);
+            finishUI();
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onloadend = function(){
+            const base64Video = reader.result;
+            saveRun(t, speed, base64Video);
+            finishUI();
+          };
+          reader.readAsDataURL(blob);
+        } catch(err){
+          console.error("Video processing failed:", err);
           saveRun(t, speed, null);
           finishUI();
-        } else {
-          mediaRecorder.onstop = function(){
-            try{
-              const mimeType = mediaRecorder.mimeType || "video/webm";
-              const blob = new Blob(recordedChunks, { type: mimeType });
-
-              if(blob.size === 0){
-                saveRun(t, speed, null);
-                finishUI();
-                return;
-              }
-
-              const reader = new FileReader();
-              reader.onloadend = function(){
-                const base64Video = reader.result;
-                saveRun(t, speed, base64Video);
-                finishUI();
-              };
-              reader.readAsDataURL(blob);
-            } catch(err){
-              console.error("Video processing failed:", err);
-              saveRun(t, speed, null);
-              finishUI();
-            }
-          };
-
-          mediaRecorder.stop();
         }
-      } catch(err){
-        console.error("StopRun crashed:", err);
-        saveRun(t, speed, null);
-        finishUI();
-      }
+      };
 
-      if(currentStream){
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-      }
-
-      const rec = document.getElementById("recordingBadge");
-      if(rec) rec.style.display = "none";
-
-      isRunning = false;
+      mediaRecorder.stop();
     }
+  } catch(err){
+    console.error("StopRun crashed:", err);
+    saveRun(t, speed, null);
+    finishUI();
+  }
 
+  if(currentStream){
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+
+  const rec = document.getElementById("recordingBadge");
+  if(rec) rec.style.display = "none";
+
+  isRunning = false;
+}
     function resetRun(){
       if(timer) clearInterval(timer);
       isRunning = false;
@@ -902,75 +1001,24 @@
     }
 
     function saveRun(time, speed, videoURL){
-      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
-      if(!data[currentUser]) data[currentUser] = [];
+  if(!data[currentUser]) data[currentUser] = [];
 
-      data[currentUser].push({
-        distance: distance,
-        time: time,
-        speed: speed,
-        splits: splits,
-        video: videoURL,
-        date: new Date().toLocaleString()
-      });
+  data[currentUser].push({
+    distance: distance,
+    time: time,
+    speed: speed,
+    splits: splits,
+    video: videoURL,
+    date: new Date().toLocaleString()
+  });
 
-      localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-    }
+  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
-    function showHistory(){
-      try {
-        const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-        const runs = Array.isArray(data[currentUser]) ? data[currentUser] : [];
-
-        let html = `<b>${currentUser} History</b><br><br>`;
-
-        if(runs.length === 0){
-          html += "No runs yet";
-        } else {
-          runs.slice().reverse().forEach((r, index) => {
-            const realIndex = runs.length - 1 - index;
-            html += `
-              <div class="card">
-                <div style="font-size:18px;font-weight:bold;">
-                  ${r.distance}m - ${Number(r.time).toFixed(2)}s
-                </div>
-
-                <div style="color:#aaa;margin-top:4px;">
-                  ⚡ ${Number(r.speed).toFixed(2)} mph
-                </div>
-
-                <div style="font-size:12px;color:#666;margin-top:6px;">
-                  ${r.date}
-                </div>
-            `;
-
-            if(r.splits && r.splits.length){
-              html += `<div style="margin-top:8px;font-size:13px;color:#ccc;">`;
-              r.splits.forEach((s,i)=>{
-                html += `Split ${i+1}: ${(s.segmentTime || s.time).toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
-              });
-              html += `</div>`;
-            }
-
-            html += `<button class="btn" style="margin-top:10px;" onclick="openReplay(${realIndex})">▶️ Replay</button>`;
-
-            if(r.video){
-              html += `<video controls class="history-video" src="${r.video}"></video>`;
-            }
-
-            html += `</div>`;
-          });
-        }
-
-        document.getElementById("historyList").innerHTML = html;
-
-      } catch(err) {
-        console.error("showHistory error:", err);
-        document.getElementById("historyList").innerHTML = "Error loading history";
-      }
-    }
-
+  renderPRClips();
+}
+    
     function openReplay(index){
       const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
       const runs = data[currentUser] || [];
@@ -1023,7 +1071,7 @@
     }
 
     updateActiveUserUI();
+renderPRClips();
   </script>
-
 </body>
 </html>
