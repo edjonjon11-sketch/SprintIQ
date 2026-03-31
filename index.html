@@ -386,6 +386,10 @@ const supabase = window.supabase.createClient(
   "YOUR_SUPABASE_URL",
   "YOUR_SUPABASE_ANON_KEY"
 );
+window.onerror = function(msg, url, line){
+  console.error("GLOBAL ERROR:", msg, "Line:", line);
+  alert("App error detected — check console");
+};
 let useBackCamera = true;
 let chartData = [];
 let selectedRunIndex = null;
@@ -617,92 +621,82 @@ function selectRunner(){
 
 // START RUN
 function startRun(d){
-  const user = selectRunner();
-  if(!user) return;
+  try{
 
-  distance = d;
-  splits = [];
-  speeds = [];
-  chartData = [];
+    const user = selectRunner();
+    if(!user){
+      currentUser = "Default";
+    }
 
-  isRunning = false;
-  startTime = null;
+    distance = d;
+    splits = [];
+    speeds = [];
+    chartData = [];
 
-  if(timer) clearInterval(timer);
+    isRunning = false;
+    startTime = null;
 
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "Speed: 0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-  document.getElementById('speedFill').style.width = "0%";
+    if(timer) clearInterval(timer);
 
-  updateActiveUserUI();
-  showScreen('live');
+    document.getElementById('timer').innerText = "0.00s";
+    document.getElementById('speed').innerText = "0 mph";
+    document.getElementById('splitDisplay').innerText = "Split: --";
 
-  startCamera(); // 🔥 REQUIRED
-  drawSpeedChart();
-}
-  
+    updateActiveUserUI();
+    showScreen('live');
+
+    startCamera();
+    drawSpeedChart();
+
+  } catch(err){
+    console.error("startRun crashed:", err);
+    alert("Start failed");
+  }
+}  
 
 
 // CAMERA
+// 🔥 CLEAN CAMERA SYSTEM (REPLACEMENT)
+
+let currentStream = null;
+let useBackCamera = true;
+
 async function startCamera(){
+
   try{
 
-    // stop old stream
+    // Stop any existing stream
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
     }
 
-    // ✅ PROPER camera constraints
+    // Start camera
     currentStream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: useBackCamera ? "environment" : "user",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 60 }
+        facingMode: useBackCamera ? "environment" : "user"
       },
       audio: false
     });
 
-    const video = document.getElementById('camera');
-    video.srcObject = currentStream;
+    const video = document.getElementById("camera");
 
-    const track = currentStream.getVideoTracks()[0];
-    currentTrack = track;
-
-    recordedChunks = [];
-
-    // ✅ RECORDING
-    if (typeof MediaRecorder !== "undefined") {
-
-      let options = {};
-
-      if (MediaRecorder.isTypeSupported("video/mp4")) {
-        options.mimeType = "video/mp4";
-      } else if (MediaRecorder.isTypeSupported("video/webm")) {
-        options.mimeType = "video/webm";
-      }
-
-      mediaRecorder = new MediaRecorder(currentStream, options);
-
-      mediaRecorder.ondataavailable = function(e){
-        if(e.data.size > 0){
-          recordedChunks.push(e.data);
-        }
-      };
-
-      mediaRecorder.start();
-
-    } else {
-      mediaRecorder = null;
+    if(video){
+      video.srcObject = currentStream;
+      await video.play().catch(()=>{});
     }
 
   } catch(err){
-    console.error(err);
-    alert("Camera access failed.");
+    console.error("Camera error:", err);
+    alert("Camera failed or permission blocked");
   }
 }
 
+// 🔄 Flip Camera
+function flipCamera(){
+  useBackCamera = !useBackCamera;
+  startCamera();
+}
 // RUN
 function beginMovement(){
 
@@ -754,7 +748,7 @@ function drawRunnerBox(){
   ctx.font = "14px sans-serif";
   ctx.fillText("TRACKING", x, y - 10);
 }
-  
+            
 function update(){
   if(!isRunning || !startTime) return;
 
@@ -767,11 +761,10 @@ function update(){
 
   document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
   document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
-
-  drawLanes();        // ✅ once
-  drawRunnerBox();    // ✅ once
+                        
+  drawRunnerBox();    // ✅ once            
   drawSpeedChart();
-}
+}                  
 
 function markSplit(){
   if(!isRunning || !startTime) return;
