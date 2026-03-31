@@ -532,14 +532,7 @@ async function quickLogout(){
       localStorage.setItem("currentUser", currentUser);
       updateActiveUserUI();
       showProfiles();
-    }
-
-    function chooseProfile(name){
-      currentUser = name;
-      localStorage.setItem("currentUser", currentUser);
-      updateActiveUserUI();
-      showScreen("home");
-    }
+      }
 
     function deleteProfile(name){
       let users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
@@ -559,21 +552,29 @@ async function quickLogout(){
       showProfiles();
     }
 
-    function switchUser(){
-      const name = prompt("Enter athlete name:");
-      if(!name || !name.trim()) return;
-      currentUser = name.trim();
-      localStorage.setItem("currentUser", currentUser);
+    function chooseProfile(name){
+  currentUser = name;
+  localStorage.setItem("currentUser", currentUser);
+  updateActiveUserUI();
+  renderPRClips();
+  showScreen("home");
+}
 
-      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-      if(!users.includes(currentUser)){
-        users.push(currentUser);
-        localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-      }
+function switchUser(){
+  const name = prompt("Enter athlete name:");
+  if(!name || !name.trim()) return;
+  currentUser = name.trim();
+  localStorage.setItem("currentUser", currentUser);
 
-      updateActiveUserUI();
-    }
+  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+  if(!users.includes(currentUser)){
+    users.push(currentUser);
+    localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+  }
 
+  updateActiveUserUI();
+  renderPRClips();
+}
     function setReplaySpeed(rate){
       const video = document.getElementById("replayVideo");
       if(video) video.playbackRate = rate;
