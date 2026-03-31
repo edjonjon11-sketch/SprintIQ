@@ -382,6 +382,9 @@ body{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+window.onerror = function(msg, url, line){
+  alert("Error on line " + line + ": " + msg);
+};
 const supabase = window.supabase.createClient(
   "YOUR_SUPABASE_URL",
   "YOUR_SUPABASE_ANON_KEY"
