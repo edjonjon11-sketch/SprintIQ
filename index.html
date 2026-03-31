@@ -498,6 +498,10 @@ video.play().catch(()=>{});  video.playbackRate = 1;
   showScreen("replay");
 }
 
+function flipCamera(){
+  useBackCamera = !useBackCamera;
+  startCamera();
+}  
 function updateLaneUI(){
   const laneDisplay = document.getElementById("laneDisplay");
   if(laneDisplay){
@@ -682,10 +686,13 @@ async function startCamera(){
     const video = document.getElementById("camera");
 
     if(video){
-      video.srcObject = currentStream;
-      await video.play().catch(()=>{});
-    }
+  video.srcObject = currentStream;
 
+  video.onloadedmetadata = () => {
+    video.play().catch(()=>{});
+  };
+}
+  
   } catch(err){
     console.error("Camera error:", err);
     alert("Camera failed or permission blocked");
