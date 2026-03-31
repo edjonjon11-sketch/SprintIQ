@@ -454,11 +454,10 @@ async function quickLogin(){
   }
 }
   
-function goToHistory(){
+async function goToHistory(){
   showScreen('history');
-  showHistory();
+  await showHistory();
 }
-
 function openReplay(index){
   const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
   const runs = data[currentUser] || [];
@@ -1017,40 +1016,63 @@ async function saveRunToCloud(time, speed, videoURL){
 }  
 async function showHistory(){
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const container = document.getElementById("historyList");
+  if(!container) return;
 
-  if(!user){
-    alert("Login first");
-    return;
+  // Show loading so screen doesn’t look frozen
+  container.innerHTML = "Loading...";
+
+  try {
+
+    // Get logged in user
+    const result = await supabase.auth.getUser();
+    const user = result?.data?.user;
+
+    if(!user){
+      container.innerHTML = "Please login first";
+      return;
+    }
+
+    // Get runs from database
+    const response = await supabase
+      .from("runs")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false });
+
+    if(response.error){
+      console.error(response.error);
+      container.innerHTML = "Error loading history";
+      return;
+    }
+
+    const data = response.data;
+
+    if(!data || data.length === 0){
+      container.innerHTML = "No runs yet";
+      return;
+    }
+
+    let html = "";
+
+    data.forEach((r)=>{
+      html += `
+        <div class="card">
+          ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
+          ⚡ ${Number(r.speed).toFixed(2)} mph<br>
+          ${new Date(r.date).toLocaleString()}
+          ${r.video_url ? `<video class="history-video" controls src="${r.video_url}"></video>` : ""}
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+  } catch(err){
+    console.error("History crash:", err);
+    container.innerHTML = "Something went wrong";
   }
-
-  const { data, error } = await supabase
-    .from("runs")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("date", { ascending: false });
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  let html = "";
-
-  data.forEach((r,i)=>{
-    html += `
-      <div class="card">
-        ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
-        ⚡ ${Number(r.speed).toFixed(2)} mph<br>
-        ${new Date(r.date).toLocaleString()}
-        ${r.video_url ? `<video class="history-video" controls src="${r.video_url}"></video>` : ""}
-      </div>
-    `;
-  });
-
-  document.getElementById("historyList").innerHTML = html;
-}
-   
+}   
 // HISTORY
 async function uploadVideo(blob){
 
