@@ -184,6 +184,7 @@ body{
   <button class="btn" onclick="goToHistory()">View History</button>
   <button class="btn" onclick="switchUser()">Switch User</button>
   <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
+  <button class="btn" onclick="quickLogin()">Login</button>
 </div>
 
 <!-- SETUP -->
@@ -379,8 +380,12 @@ body{
   <button class="btn" onclick="goToHistory()">Back to History</button>
 </div>
 
-  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const supabase = window.supabase.createClient(
+  "YOUR_SUPABASE_URL",
+  "YOUR_SUPABASE_ANON_KEY"
+);
 let useBackCamera = true;
 let chartData = [];
 let selectedRunIndex = null;
@@ -429,6 +434,23 @@ function toggleFocus(){
     controls.style.opacity = "0.3";
   } else {
     controls.style.opacity = "1";
+  }
+}
+
+async function quickLogin(){
+
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    alert("Login failed");
+  } else {
+    alert("Logged in");
   }
 }
   
