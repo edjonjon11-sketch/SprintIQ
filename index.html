@@ -1,351 +1,1029 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Track Star</title>
 
-// 🔥 GLOBAL ERROR HANDLER
-window.onerror = function(msg, url, line){
-  console.error("ERROR:", msg, "Line:", line);
-};
-
-// 🔥 SAFE SUPABASE INIT (NO CRASH)
-let supabase = null;
-
-if(window.supabase){
-  try{
-    supabase = window.supabase.createClient(
-      "YOUR_SUPABASE_URL",
-      "YOUR_SUPABASE_ANON_KEY"
-    );
-  }catch(e){
-    console.warn("Supabase not connected");
-  }
-}
-
-// 🔥 STATE
-let useBackCamera = true;
-let currentStream = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-
-let currentUser = localStorage.getItem("currentUser") || "Default";
-
-let startTime = null;
-let timer = null;
-let distance = 100;
-let splits = [];
-let speeds = [];
-let chartData = [];
-let isRunning = false;
-let selectedLane = 1;
-let zoomLevel = 1;
-
-// ---------------- NAV ----------------
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if(el) el.classList.add('active');
-}
-
-// ---------------- USER ----------------
-function updateActiveUserUI(){
-  const liveUserText = document.getElementById("liveUserText");
-  const liveUser = document.getElementById("liveUser");
-  const resultsUser = document.getElementById("resultsUser");
-
-  if(liveUserText) liveUserText.innerText = currentUser;
-  if(liveUser) liveUser.innerText = "🏃 Runner: " + currentUser;
-  if(resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
-}
-
-// ---------------- LOGIN ----------------
-async function quickLogin(){
-  if(!supabase){
-    alert("Supabase not connected");
-    return;
-  }
-
-  let email = prompt("Email:");
-  let password = prompt("Password:");
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if(error) alert("Login failed");
-  else alert("Logged in");
-}
-
-// ---------------- START RUN ----------------
-function startRun(d){
-  distance = d;
-  splits = [];
-  speeds = [];
-  chartData = [];
-  isRunning = false;
-  startTime = null;
-
-  clearInterval(timer);
-
-  document.getElementById('timer').innerText = "0.00s";
-  document.getElementById('speed').innerText = "0 mph";
-  document.getElementById('splitDisplay').innerText = "Split: --";
-
-  updateActiveUserUI();
-  showScreen('live');
-
-  startCamera();
-}
-
-// ---------------- CAMERA ----------------
-async function startCamera(){
-  try{
-    if(currentStream){
-      currentStream.getTracks().forEach(t=>t.stop());
+  <style>
+    body{
+      margin:0;
+      font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+      background:linear-gradient(to bottom,#000,#111);
+      color:white;
     }
 
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode: useBackCamera ? "environment":"user" },
-      audio:false
-    });
+    .screen{display:none;padding:20px;}
+    .active{display:block;}
 
-    const video = document.getElementById("camera");
+    .header{font-size:28px;font-weight:bold;}
+    .sub{color:#aaa;margin-bottom:10px;}
 
-    if(video){
-      video.srcObject = currentStream;
-      video.onloadedmetadata = () => video.play().catch(()=>{});
+    .card{
+      background:#111;
+      padding:16px;
+      border-radius:16px;
+      margin-top:15px;
+      box-shadow:0 0 20px rgba(255,0,0,.2);
     }
 
-    recordedChunks = [];
-
-    if(window.MediaRecorder){
-      mediaRecorder = new MediaRecorder(currentStream);
-
-      mediaRecorder.ondataavailable = e=>{
-        if(e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.start();
+    .btn{
+      width:100%;
+      padding:16px;
+      font-size:18px;
+      border:none;
+      border-radius:14px;
+      margin-top:12px;
+      color:white;
+      font-weight:bold;
+      background:linear-gradient(to right,#ff2d2d,#ff5a5a);
     }
 
-  }catch(err){
-    console.error(err);
-    alert("Camera blocked or failed");
-  }
-}
+    #camera{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100vh;
+      object-fit:cover;
+      z-index:1;
+      filter:contrast(1.1) brightness(1.1) saturate(1.1);
+      background:#000;
+    }
 
-// ---------------- CAMERA FLIP ----------------
-function flipCamera(){
-  useBackCamera = !useBackCamera;
-  startCamera();
-}
+    #laneOverlay{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100vh;
+      z-index:2;
+      pointer-events:none;
+    }
 
-// ---------------- RUN ----------------
-function beginMovement(){
-  if(isRunning) return;
+    .controls{
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      padding:15px;
+      z-index:3;
+      box-sizing:border-box;
+      background:linear-gradient(
+        to top,
+        rgba(0,0,0,0.92),
+        rgba(0,0,0,0.05)
+      );
+    }
 
-  isRunning = true;
-  startTime = Date.now();
+    .subtle-label{
+      font-size:12px;
+      color:#aaa;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
 
-  timer = setInterval(update,100);
-}
+    .metric-row{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+    }
 
-function update(){
-  if(!isRunning || !startTime) return;
+    .metric-box{
+      flex:1;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px;
+      padding:10px;
+    }
 
-  const t = (Date.now() - startTime)/1000;
-  document.getElementById('timer').innerText = t.toFixed(2)+"s";
+    .metric-value{
+      font-size:22px;
+      font-weight:bold;
+    }
 
-  const speed = (distance/Math.max(t,0.1))*2.237;
+    .rec-dot{
+      display:inline-block;
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#ff3b30;
+      margin-right:8px;
+      box-shadow:0 0 10px rgba(255,59,48,.8);
+    }
 
-  speeds.push(speed);
-  chartData.push(speed);
+    .speedBar{
+      height:12px;
+      border-radius:10px;
+      background:#222;
+      overflow:hidden;
+      margin-top:10px;
+    }
 
-  document.getElementById('speed').innerText = speed.toFixed(1)+" mph";
-  document.getElementById('speedFill').style.width = (speed/22*100)+"%";
+    .speedFill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(to right,#ff2d2d,#ff0000);
+    }
 
-  drawSpeedChart();
-}
+    .miniBtn{
+      padding:8px 12px;
+      font-size:13px;
+      border:none;
+      border-radius:10px;
+      color:white;
+      font-weight:600;
+      background:rgba(255,45,45,0.5);
+      backdrop-filter:blur(8px);
+      box-shadow:0 0 12px rgba(255,0,0,0.35);
+      width:auto;
+      display:inline-block;
+      transition:all 0.2s ease;
+      margin-bottom:10px;
+    }
 
-function markSplit(){
-  if(!isRunning || !startTime) return;
+    .miniBtn:active{
+      transform:scale(0.95);
+      background:rgba(255,45,45,0.8);
+    }
 
-  const t = (Date.now()-startTime)/1000;
-  const prev = splits.length ? splits[splits.length-1].time : 0;
-  const seg = t - prev;
+    .history-video{
+      width:100%;
+      margin-top:10px;
+      border-radius:10px;
+      display:block;
+      height:auto;
+      object-fit:contain;
+      background:#000;
+      transition:transform 0.2s ease;
+      transform-origin:center center;
+    }
 
-  const speed = (distance/4)/Math.max(seg,0.1)*2.237;
+    .side-buttons{
+      position:fixed;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:4;
+      width:120px;
+    }
 
-  splits.push({time:t,segmentTime:seg,speed});
+    .side-buttons .btn{
+      width:120px;
+      padding:10px;
+      font-size:14px;
+      margin-top:0;
+      opacity:0.9;
+    }
+  </style>
+</head>
 
-  document.getElementById("splitDisplay").innerText =
-    `Split ${splits.length}: ${seg.toFixed(2)}s`;
-}
+<body>
 
-// ---------------- STOP RUN ----------------
-async function stopRun(){
+  <!-- HOME -->
+  <div id="home" class="screen active">
+    <div class="header">🏃 Track Star</div>
+    <div class="sub">Train Faster. Run Smarter.</div>
 
-  clearInterval(timer);
+    <div class="card">
+      <b>BEST TIMES</b><br>
+      100m: 11.2s | 200m: 24.5s | 400m: 58.2s
+    </div>
 
-  if(!startTime) return;
+    <button class="btn" onclick="showScreen('setup')">Start New Run</button>
+    <button class="btn" onclick="goToHistory()">View History</button>
+    <button class="btn" onclick="switchUser()">Switch User</button>
+    <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
+  </div>
 
-  const t = (Date.now()-startTime)/1000;
-  const speed = (distance/Math.max(t,0.1))*2.237;
+  <!-- SETUP -->
+  <div id="setup" class="screen">
+    <div class="header">Select Event</div>
 
-  document.getElementById('finalTime').innerText = "Time: "+t.toFixed(2);
-  document.getElementById('finalSpeed').innerText = "Speed: "+speed.toFixed(2);
+    <div style="margin-top:15px;">
+      <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
+      <select onchange="selectedLane = Number(this.value); updateLaneUI();" style="
+        width:100%;
+        padding:12px;
+        border-radius:10px;
+        border:none;
+        font-size:16px;
+        background:#222;
+        color:white;
+      ">
+        <option value="1">Lane 1</option>
+        <option value="2">Lane 2</option>
+        <option value="3">Lane 3</option>
+        <option value="4">Lane 4</option>
+        <option value="5">Lane 5</option>
+      </select>
+    </div>
 
-  let videoURL = null;
+    <button class="btn" onclick="startRun(100)">100m</button>
+    <button class="btn" onclick="startRun(200)">200m</button>
+    <button class="btn" onclick="startRun(400)">400m</button>
+    <button class="btn" onclick="startRun(800)">800m</button>
+    <button class="btn" onclick="startRun(1600)">1600m</button>
 
-  try{
-    if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    <button class="btn" onclick="showScreen('home')">Back</button>
+  </div>
 
-      const stopPromise = new Promise(resolve=>{
-        mediaRecorder.onstop = resolve;
-      });
+  <!-- LIVE -->
+  <div id="live" class="screen">
+    <video id="camera" autoplay playsinline muted></video>
 
-      mediaRecorder.stop();
-      await stopPromise;
+    <canvas id="laneOverlay"></canvas>
 
-      const blob = new Blob(recordedChunks,{type:"video/webm"});
+    <div class="controls">
+      <div id="liveUser" style="
+        font-size:16px;
+        color:#ff4d4d;
+        font-weight:bold;
+        margin-bottom:10px;
+      ">
+        🏃 Runner: Default
+      </div>
 
-      if(blob.size > 0 && supabase){
-        videoURL = await uploadVideo(blob);
+      <button class="miniBtn" onclick="toggleFocus()">Focus</button>
+
+      <div id="laneDisplay" style="
+        font-size:14px;
+        color:#aaa;
+        margin-bottom:10px;
+      ">
+        Lane: 1
+      </div>
+
+      <canvas id="speedChart" width="600" height="140" style="
+        width:100%;
+        background:rgba(0,0,0,0.45);
+        border-radius:14px;
+        margin-bottom:12px;
+      "></canvas>
+
+      <div class="card" style="margin-top:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:16px;color:#ff4d4d;font-weight:bold;">
+            🏃 Runner: <span id="liveUserText">Default</span>
+          </div>
+          <div id="recordingBadge" style="font-size:13px;font-weight:bold;display:none;">
+            <span class="rec-dot"></span>REC
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-box">
+            <div class="subtle-label">Time</div>
+            <div id="timer" class="metric-value">0.00s</div>
+          </div>
+          <div class="metric-box">
+            <div class="subtle-label">Speed</div>
+            <div id="speed" class="metric-value">0 mph</div>
+          </div>
+        </div>
+
+        <div class="metric-box" style="margin-top:10px;">
+          <div class="subtle-label">Split</div>
+          <div id="splitDisplay" class="metric-value" style="font-size:18px;">Split: --</div>
+
+          <div class="speedBar">
+            <div id="speedFill" class="speedFill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-buttons">
+      <button class="btn" onclick="beginMovement()">Start</button>
+      <button class="btn" onclick="markSplit()">Split</button>
+      <button class="btn" onclick="stopRun()">Finish</button>
+      <button class="btn" onclick="resetRun()">Reset</button>
+      <button class="btn" onclick="flipCamera()">Flip</button>
+      <button class="btn" onclick="backupData()">Backup</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="screen">
+    <div class="header">Results</div>
+    <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
+
+    <div class="card">
+      <p id="finalTime"></p>
+      <p id="finalSpeed"></p>
+    </div>
+
+    <div class="card" id="splitsBox"></div>
+
+    <button class="btn" onclick="showScreen('home')">Back Home</button>
+  </div>
+
+  <!-- PROFILES -->
+  <div id="profiles" class="screen">
+    <div class="header">Athlete Profiles</div>
+    <div id="profilesList" class="card"></div>
+    <button class="btn" onclick="addAthlete()">Add Athlete</button>
+    <button class="btn" onclick="showScreen('home')">Back</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history" class="screen">
+    <div class="header">History</div>
+    <div class="card" id="historyList"></div>
+    <button class="btn" onclick="clearHistory()">Clear History</button>
+    <button class="btn" onclick="showScreen('home')">Back</button>
+  </div>
+
+  <!-- REPLAY -->
+  <div id="replay" class="screen">
+    <div class="header">Coach Replay</div>
+
+    <div class="card">
+      <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
+
+      <div style="overflow:hidden;border-radius:12px;">
+        <video id="replayVideo" class="history-video" controls playsinline></video>
+      </div>
+    </div>
+
+    <div style="margin-top:15px;">
+      <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
+      <input
+        type="range"
+        min="1"
+        max="5"
+        step="0.1"
+        value="1"
+        oninput="zoomReplay(this.value)"
+        style="width:100%;">
+    </div>
+
+    <div class="card">
+      <button class="btn" onclick="setReplaySpeed(0.5)">0.5x</button>
+      <button class="btn" onclick="setReplaySpeed(1)">1x</button>
+      <button class="btn" onclick="setReplaySpeed(1.5)">1.5x</button>
+      <button class="btn" onclick="jumpReplay(-2)">-2 sec</button>
+      <button class="btn" onclick="jumpReplay(2)">+2 sec</button>
+      <button class="btn" onclick="zoomReplay(zoomLevel + 0.5)">Zoom +</button>
+      <button class="btn" onclick="zoomReplay(zoomLevel - 0.5)">Zoom -</button>
+    </div>
+
+    <button class="btn" onclick="goToHistory()">Back to History</button>
+  </div>
+
+  <script>
+    let useBackCamera = true;
+    let chartData = [];
+    let selectedRunIndex = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let currentUser = localStorage.getItem("currentUser") || "Default";
+    let startTime = null;
+    let timer = null;
+    let distance = 100;
+    let splits = [];
+    let speeds = [];
+    let isRunning = false;
+    let currentStream = null;
+    let selectedLane = 1;
+    let zoomLevel = 1;
+    let currentTrack = null;
+    let focusMode = false;
+
+    function updateActiveUserUI(){
+      const liveUserText = document.getElementById("liveUserText");
+      const liveUserTop = document.getElementById("liveUser");
+      const resultsUser = document.getElementById("resultsUser");
+      const laneDisplay = document.getElementById("laneDisplay");
+
+      if (liveUserText) liveUserText.innerText = currentUser;
+      if (liveUserTop) liveUserTop.innerText = "🏃 Runner: " + currentUser;
+      if (resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
+      if (laneDisplay) laneDisplay.innerText = "Lane: " + selectedLane;
+    }
+
+    function showScreen(id){
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(id);
+      if(target) target.classList.add('active');
+    }
+
+    function toggleFocus(){
+      focusMode = !focusMode;
+      const controls = document.querySelector(".controls");
+      if(controls){
+        controls.style.opacity = focusMode ? "0.3" : "1";
       }
     }
-  }catch(e){
-    console.error("Video fail:", e);
-  }
 
-  if(supabase){
-    await saveRunToCloud(t,speed,videoURL);
-  }
+    async function goToHistory(){
+      showScreen('history');
+      showHistory();
+    }
 
-  showSplits();
-  showScreen("results");
+    function updateLaneUI(){
+      const laneDisplay = document.getElementById("laneDisplay");
+      if(laneDisplay){
+        laneDisplay.innerText = "Lane: " + selectedLane;
+      }
+    }
 
-  if(currentStream){
-    currentStream.getTracks().forEach(t=>t.stop());
-  }
+    function showProfiles(){
+      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
-  isRunning = false;
-}
+      let html = "";
 
-// ---------------- SAVE ----------------
-async function uploadVideo(blob){
-  if(!supabase) return null;
+      if(users.length === 0){
+        html = "No athletes yet";
+      } else {
+        users.forEach(user => {
+          html += `
+            <div style="
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              padding:10px 0;
+              border-bottom:1px solid rgba(255,255,255,0.08);
+            ">
+              <div style="font-weight:bold;">${user}</div>
+              <div>
+                <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="chooseProfile('${user.replace(/'/g, "\\'")}')">Use</button>
+                <button class="btn" style="width:auto;padding:10px 14px;margin-top:0;" onclick="deleteProfile('${user.replace(/'/g, "\\'")}')">Delete</button>
+              </div>
+            </div>
+          `;
+        });
+      }
 
-  const fileName = "run_"+Date.now()+".webm";
+      document.getElementById("profilesList").innerHTML = html;
+      showScreen("profiles");
+    }
 
-  const { error } = await supabase.storage
-    .from("videos")
-    .upload(fileName, blob);
+    function addAthlete(){
+      const name = prompt("Enter athlete name:");
+      if(!name || !name.trim()) return;
 
-  if(error){
-    console.error(error);
-    return null;
-  }
+      const clean = name.trim();
+      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
-  return supabase.storage
-    .from("videos")
-    .getPublicUrl(fileName).data.publicUrl;
-}
+      if(!users.includes(clean)){
+        users.push(clean);
+        localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+      }
 
-async function saveRunToCloud(time,speed,videoURL){
-  if(!supabase) return;
+      currentUser = clean;
+      localStorage.setItem("currentUser", currentUser);
+      updateActiveUserUI();
+      showProfiles();
+    }
 
-  const { data:{user} } = await supabase.auth.getUser();
-  if(!user) return;
+    function chooseProfile(name){
+      currentUser = name;
+      localStorage.setItem("currentUser", currentUser);
+      updateActiveUserUI();
+      showScreen("home");
+    }
 
-  await supabase.from("runs").insert([{
-    user_id:user.id,
-    distance,
-    time,
-    speed,
-    video_url:videoURL,
-    date:new Date()
-  }]);
-}
+    function deleteProfile(name){
+      let users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+      users = users.filter(u => u !== name);
+      localStorage.setItem("SprintIQUserList", JSON.stringify(users));
 
-// ---------------- UI ----------------
-function showSplits(){
-  let html="<b>Splits</b><br>";
+      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+      delete data[name];
+      localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
-  if(splits.length === 0){
-    html += "No splits";
-  } else {
-    splits.forEach((s,i)=>{
-      html+=`Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
-    });
-  }
+      if(currentUser === name){
+        currentUser = users[0] || "Default";
+        localStorage.setItem("currentUser", currentUser);
+        updateActiveUserUI();
+      }
 
-  document.getElementById("splitsBox").innerHTML = html;
-}
+      showProfiles();
+    }
 
-// ---------------- HISTORY ----------------
-async function showHistory(){
+    function switchUser(){
+      const name = prompt("Enter athlete name:");
+      if(!name || !name.trim()) return;
+      currentUser = name.trim();
+      localStorage.setItem("currentUser", currentUser);
 
-  if(!supabase){
-    document.getElementById("historyList").innerHTML="Supabase not connected";
-    return;
-  }
+      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+      if(!users.includes(currentUser)){
+        users.push(currentUser);
+        localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+      }
 
-  const { data:{user} } = await supabase.auth.getUser();
+      updateActiveUserUI();
+    }
 
-  if(!user){
-    document.getElementById("historyList").innerHTML="Login first";
-    return;
-  }
+    function setReplaySpeed(rate){
+      const video = document.getElementById("replayVideo");
+      if(video) video.playbackRate = rate;
+    }
 
-  const { data } = await supabase
-    .from("runs")
-    .select("*")
-    .eq("user_id",user.id)
-    .order("date",{ascending:false});
+    function jumpReplay(seconds){
+      const video = document.getElementById("replayVideo");
+      if(video) video.currentTime = Math.max(0, video.currentTime + seconds);
+    }
 
-  let html="";
-  data.forEach(r=>{
-    html+=`
-      <div class="card">
-        ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
-        ⚡ ${Number(r.speed).toFixed(2)} mph<br>
-        ${new Date(r.date).toLocaleString()}
-        ${r.video_url ? `<video controls class="history-video" src="${r.video_url}"></video>` : ""}
-      </div>
-    `;
-  });
+    function selectRunner(){
+      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
-  document.getElementById("historyList").innerHTML = html;
-}
+      const list = users.length
+        ? "Select runner:\n\n" + users.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nType number or new name:"
+        : "Enter runner name:";
 
-function goToHistory(){
-  showScreen("history");
-  showHistory();
-}
+      let input = prompt(list);
+      if(!input) return null;
 
-// ---------------- CHART ----------------
-function drawSpeedChart(){
-  const c=document.getElementById("speedChart");
-  if(!c) return;
+      input = input.trim();
 
-  const ctx=c.getContext("2d");
-  ctx.clearRect(0,0,c.width,c.height);
+      const index = parseInt(input, 10);
+      if(!isNaN(index) && users[index - 1]){
+        currentUser = users[index - 1];
+      } else {
+        currentUser = input;
 
-  if(chartData.length<2) return;
+        if(!users.includes(currentUser)){
+          users.push(currentUser);
+          localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+        }
+      }
 
-  const max=Math.max(...chartData,1);
+      localStorage.setItem("currentUser", currentUser);
+      return currentUser;
+    }
 
-  ctx.beginPath();
-  ctx.strokeStyle="#ff3b30";
-  ctx.lineWidth=3;
+    function startRun(d){
+      try{
+        const user = selectRunner();
+        if(!user) return;
 
-  chartData.forEach((v,i)=>{
-    const x=(i/chartData.length)*c.width;
-    const y=c.height-(v/max)*(c.height-10);
-    if(i===0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
-  });
+        distance = d;
+        splits = [];
+        speeds = [];
+        chartData = [];
+        isRunning = false;
+        startTime = null;
 
-  ctx.stroke();
-}
+        if(timer) clearInterval(timer);
 
-// INIT
-updateActiveUserUI();
+        document.getElementById('timer').innerText = "0.00s";
+        document.getElementById('speed').innerText = "0 mph";
+        document.getElementById('splitDisplay').innerText = "Split: --";
+        document.getElementById('speedFill').style.width = "0%";
 
-</script>
+        updateActiveUserUI();
+        showScreen('live');
+
+        startCamera();
+        drawSpeedChart();
+        drawLanes();
+      } catch(err){
+        console.error("startRun crashed:", err);
+        alert("Start failed");
+      }
+    }
+
+    async function startCamera(){
+      try{
+        if(currentStream){
+          currentStream.getTracks().forEach(track => track.stop());
+          currentStream = null;
+        }
+
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: useBackCamera ? "environment" : "user",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            frameRate: { ideal: 60 }
+          },
+          audio: false
+        });
+
+        const video = document.getElementById('camera');
+        if(video){
+          video.srcObject = currentStream;
+          await video.play().catch(()=>{});
+        }
+
+        const track = currentStream.getVideoTracks()[0];
+        currentTrack = track || null;
+
+        recordedChunks = [];
+
+        if (typeof MediaRecorder !== "undefined") {
+          let options = {};
+
+          if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
+            options.mimeType = "video/webm;codecs=vp9";
+          } else if (MediaRecorder.isTypeSupported("video/webm")) {
+            options.mimeType = "video/webm";
+          }
+
+          mediaRecorder = new MediaRecorder(currentStream, options);
+
+          mediaRecorder.ondataavailable = function(e){
+            if(e.data.size > 0){
+              recordedChunks.push(e.data);
+            }
+          };
+
+          mediaRecorder.start();
+        } else {
+          mediaRecorder = null;
+        }
+      } catch(err){
+        console.error("Camera error:", err);
+        alert("Camera access failed or blocked");
+      }
+    }
+
+    function beginMovement(){
+      if(isRunning) return;
+      isRunning = true;
+      startTime = Date.now();
+
+      const rec = document.getElementById("recordingBadge");
+      if(rec) rec.style.display = "block";
+
+      if(timer) clearInterval(timer);
+      timer = setInterval(update, 100);
+    }
+
+    function setZoom(level){
+      if(!currentTrack || typeof currentTrack.getCapabilities !== "function") return;
+
+      const capabilities = currentTrack.getCapabilities();
+      if(!capabilities.zoom) return;
+
+      zoomLevel = Math.max(capabilities.zoom.min, Math.min(level, capabilities.zoom.max));
+
+      currentTrack.applyConstraints({
+        advanced: [{ zoom: zoomLevel }]
+      }).catch(console.error);
+    }
+
+    function drawRunnerBox(){
+      const canvas = document.getElementById("laneOverlay");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      const lanes = 5;
+      const laneWidth = canvas.width / lanes;
+
+      const laneIndex = selectedLane - 1;
+      const x = laneIndex * laneWidth + laneWidth/2 - 40;
+      const y = canvas.height/2 - 60;
+
+      ctx.strokeStyle = "#ff3b30";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x, y, 80, 120);
+
+      ctx.fillStyle = "#ff3b30";
+      ctx.font = "14px sans-serif";
+      ctx.fillText("TRACKING", x, y - 10);
+    }
+
+    function drawLanes(){
+      const canvas = document.getElementById("laneOverlay");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      const lanes = 5;
+      const laneWidth = canvas.width / lanes;
+
+      for(let i = 0; i < lanes; i++){
+        const x = i * laneWidth;
+
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+
+        if((i + 1) === selectedLane){
+          ctx.fillStyle = "rgba(255,0,0,0.12)";
+          ctx.fillRect(x, 0, laneWidth, canvas.height);
+        }
+      }
+    }
+
+    function update(){
+      if(!isRunning || !startTime) return;
+
+      const t = (Date.now() - startTime) / 1000;
+      document.getElementById('timer').innerText = t.toFixed(2) + "s";
+
+      const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
+      speeds.push(speed);
+      chartData.push(speed);
+
+      document.getElementById('speed').innerText = "Speed: " + speed.toFixed(1) + " mph";
+      document.getElementById('speedFill').style.width = (speed / 22 * 100) + "%";
+
+      drawLanes();
+      drawRunnerBox();
+      drawSpeedChart();
+    }
+
+    function markSplit(){
+      if(!isRunning || !startTime) return;
+
+      const t = (Date.now() - startTime) / 1000;
+      const prevTime = splits.length ? splits[splits.length - 1].time : 0;
+      const segmentTime = t - prevTime;
+      const segmentDistance = distance / 4;
+      const segmentSpeed = (segmentDistance / Math.max(segmentTime, 0.01)) * 2.237;
+
+      splits.push({
+        time: t,
+        segmentTime: segmentTime,
+        speed: segmentSpeed
+      });
+
+      document.getElementById('splitDisplay').innerText =
+        `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
+    }
+
+    function zoomReplay(level){
+      const video = document.getElementById("replayVideo");
+      if(!video) return;
+
+      zoomLevel = Math.max(1, Math.min(Number(level), 5));
+      video.style.transform = `scale(${zoomLevel})`;
+      video.style.transformOrigin = "center center";
+    }
+
+    function stopRun(){
+      if(timer) clearInterval(timer);
+
+      const t = startTime ? (Date.now() - startTime) / 1000 : 0;
+      const speed = t > 0 ? (distance / t) * 2.237 : 0;
+
+      document.getElementById('finalTime').innerText = "Time: " + t.toFixed(2) + "s";
+      document.getElementById('finalSpeed').innerText = "Speed: " + speed.toFixed(2) + " mph";
+
+      const finishUI = () => {
+        showSplits();
+        updateActiveUserUI();
+        showScreen('results');
+      };
+
+      try{
+        if(!mediaRecorder || mediaRecorder.state === "inactive"){
+          saveRun(t, speed, null);
+          finishUI();
+        } else {
+          mediaRecorder.onstop = function(){
+            try{
+              const mimeType = mediaRecorder.mimeType || "video/webm";
+              const blob = new Blob(recordedChunks, { type: mimeType });
+
+              if(blob.size === 0){
+                saveRun(t, speed, null);
+                finishUI();
+                return;
+              }
+
+              const reader = new FileReader();
+              reader.onloadend = function(){
+                const base64Video = reader.result;
+                saveRun(t, speed, base64Video);
+                finishUI();
+              };
+              reader.readAsDataURL(blob);
+            } catch(err){
+              console.error("Video processing failed:", err);
+              saveRun(t, speed, null);
+              finishUI();
+            }
+          };
+
+          mediaRecorder.stop();
+        }
+      } catch(err){
+        console.error("StopRun crashed:", err);
+        saveRun(t, speed, null);
+        finishUI();
+      }
+
+      if(currentStream){
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+
+      const rec = document.getElementById("recordingBadge");
+      if(rec) rec.style.display = "none";
+
+      isRunning = false;
+    }
+
+    function resetRun(){
+      if(timer) clearInterval(timer);
+      isRunning = false;
+      startTime = null;
+      splits = [];
+      speeds = [];
+      chartData = [];
+
+      document.getElementById('timer').innerText = "0.00s";
+      document.getElementById('speed').innerText = "0 mph";
+      document.getElementById('splitDisplay').innerText = "Split: --";
+      document.getElementById('speedFill').style.width = "0%";
+
+      const rec = document.getElementById("recordingBadge");
+      if(rec) rec.style.display = "none";
+
+      drawSpeedChart();
+      drawLanes();
+    }
+
+    function showSplits(){
+      let html = "<b>Splits</b><br>";
+
+      if (splits.length === 0) {
+        html += "No splits recorded";
+      } else {
+        splits.forEach((s,i)=>{
+          html += `Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+        });
+      }
+
+      document.getElementById('splitsBox').innerHTML = html;
+    }
+
+    function drawSpeedChart(){
+      const c = document.getElementById("speedChart");
+      if(!c) return;
+
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      if(chartData.length < 2) return;
+
+      const max = Math.max(...chartData, 1);
+
+      ctx.beginPath();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#ff3b30";
+
+      chartData.forEach((v, i) => {
+        const x = (i / Math.max(chartData.length - 1, 1)) * c.width;
+        const y = c.height - (v / max) * (c.height - 10);
+
+        if(i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+
+      splits.forEach((s) => {
+        const totalTime = Math.max((Date.now() - startTime) / 1000, 0.1);
+        const splitIndex = Math.min(chartData.length - 1, Math.floor((s.time / totalTime) * chartData.length));
+        const x = (splitIndex / Math.max(chartData.length - 1, 1)) * c.width;
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, c.height);
+        ctx.stroke();
+      });
+    }
+
+    function saveRun(time, speed, videoURL){
+      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
+      if(!data[currentUser]) data[currentUser] = [];
+
+      data[currentUser].push({
+        distance: distance,
+        time: time,
+        speed: speed,
+        splits: splits,
+        video: videoURL,
+        date: new Date().toLocaleString()
+      });
+
+      localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+    }
+
+    function showHistory(){
+      try {
+        const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+        const runs = Array.isArray(data[currentUser]) ? data[currentUser] : [];
+
+        let html = `<b>${currentUser} History</b><br><br>`;
+
+        if(runs.length === 0){
+          html += "No runs yet";
+        } else {
+          runs.slice().reverse().forEach((r, index) => {
+            const realIndex = runs.length - 1 - index;
+            html += `
+              <div class="card">
+                <div style="font-size:18px;font-weight:bold;">
+                  ${r.distance}m - ${Number(r.time).toFixed(2)}s
+                </div>
+
+                <div style="color:#aaa;margin-top:4px;">
+                  ⚡ ${Number(r.speed).toFixed(2)} mph
+                </div>
+
+                <div style="font-size:12px;color:#666;margin-top:6px;">
+                  ${r.date}
+                </div>
+            `;
+
+            if(r.splits && r.splits.length){
+              html += `<div style="margin-top:8px;font-size:13px;color:#ccc;">`;
+              r.splits.forEach((s,i)=>{
+                html += `Split ${i+1}: ${(s.segmentTime || s.time).toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+              });
+              html += `</div>`;
+            }
+
+            html += `<button class="btn" style="margin-top:10px;" onclick="openReplay(${realIndex})">▶️ Replay</button>`;
+
+            if(r.video){
+              html += `<video controls class="history-video" src="${r.video}"></video>`;
+            }
+
+            html += `</div>`;
+          });
+        }
+
+        document.getElementById("historyList").innerHTML = html;
+
+      } catch(err) {
+        console.error("showHistory error:", err);
+        document.getElementById("historyList").innerHTML = "Error loading history";
+      }
+    }
+
+    function openReplay(index){
+      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+      const runs = data[currentUser] || [];
+      const run = runs[index];
+
+      if(!run || !run.video){
+        alert("No video saved for this run.");
+        return;
+      }
+
+      selectedRunIndex = index;
+
+      document.getElementById("replayTitle").innerText =
+        `${run.distance}m • ${Number(run.time).toFixed(2)}s • ${run.date}`;
+
+      const video = document.getElementById("replayVideo");
+      video.pause();
+      video.src = run.video;
+      video.load();
+      video.play().catch(()=>{});
+      video.playbackRate = 1;
+
+      showScreen("replay");
+    }
+
+    function clearHistory(){
+      try{
+        const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+        data[currentUser] = [];
+        localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+        showHistory();
+      } catch(err){
+        console.error("clearHistory error:", err);
+        localStorage.removeItem("SprintIQUsers");
+        document.getElementById("historyList").innerHTML = "No runs yet";
+      }
+    }
+
+    function backupData(){
+      const data = localStorage.getItem("SprintIQUsers") || "No data found";
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(data).then(()=>{
+          alert("Backup copied to clipboard ✅");
+        }).catch(()=>{
+          alert(data);
+        });
+      } else {
+        alert(data);
+      }
+    }
+
+    updateActiveUserUI();
+  </script>
+
+</body>
+</html>
