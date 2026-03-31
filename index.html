@@ -393,7 +393,6 @@ window.onerror = function(msg, url, line){
   console.error("GLOBAL ERROR:", msg, "Line:", line);
   alert("App error detected — check console");
 };
-let useBackCamera = true;
 let chartData = [];
 let selectedRunIndex = null;
 let mediaRecorder = null;
@@ -405,7 +404,6 @@ let distance = 100;
 let splits = [];
 let speeds = [];
 let isRunning = false;
-let currentStream = null;
 let selectedLane = 1;
 let zoomLevel = 1;
 let currentTrack = null;
@@ -718,11 +716,7 @@ async function startCamera(){
   }
 }
 
-// 🔄 Flip Camera
-function flipCamera(){
-  useBackCamera = !useBackCamera;
-  startCamera();
-}
+
 // RUN
 function beginMovement(){
 
@@ -854,37 +848,38 @@ function markSplit(){
       return;
     }
 
-    mediaRecorder.onstop = function(){
+    mediaRecorder.onstop = async function(){
 
-const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+  try{
 
-if(blob.size === 0){
-  finishUI();
-  return;
-}
+    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
 
-try {
+    if(blob.size === 0){
+      saveRun(t, speed, null);
+      finishUI();
+      return;
+    }
 
-  // 🔥 UPLOAD VIDEO
-  const videoURL = await uploadVideo(blob);
+    // 🔥 Upload video
+    const videoURL = await uploadVideo(blob);
 
-  // 🔥 SAVE RUN
-  const run = await saveRunToCloud(t, speed, videoURL);
+    // 🔥 Save run
+    const run = await saveRunToCloud(t, speed, videoURL);
 
-  // 🔥 SAVE SPLITS
-  if(run){
-    await saveSplits(run.id);
+    // 🔥 Save splits
+    if(run){
+      await saveSplits(run.id);
+    }
+
+  } catch(err){
+    console.error("Cloud save failed:", err);
+
+    // fallback so app still works
+    saveRun(t, speed, null);
   }
 
-} catch(err){
-  console.error("Cloud save failed:", err);
-
-  // fallback so app still works
-  saveRun(t, speed, null);
-}
-
-finishUI();
-
+  finishUI();
+};
         // ✅ USE THIS (NOT FileReader)
         const reader = new FileReader();
 
