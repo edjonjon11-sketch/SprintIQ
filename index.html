@@ -804,8 +804,8 @@ function markSplit(){
   video.style.transformOrigin = "center center";
 }
   
- function stopRun(){
-
+ async function stopRun(){
+   
   if(timer) clearInterval(timer);
 
   const t = startTime ? (Date.now() - startTime) / 1000 : 0;
@@ -838,15 +838,34 @@ function markSplit(){
 
     mediaRecorder.onstop = function(){
 
-      try{
-        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
 
-        // 🔥 CRITICAL FIX: avoid crash if empty
-        if(blob.size === 0){
-          saveRun(t, speed, null);
-          finishUI();
-          return;
-        }
+if(blob.size === 0){
+  finishUI();
+  return;
+}
+
+try {
+
+  // 🔥 UPLOAD VIDEO
+  const videoURL = await uploadVideo(blob);
+
+  // 🔥 SAVE RUN
+  const run = await saveRunToCloud(t, speed, videoURL);
+
+  // 🔥 SAVE SPLITS
+  if(run){
+    await saveSplits(run.id);
+  }
+
+} catch(err){
+  console.error("Cloud save failed:", err);
+
+  // fallback so app still works
+  saveRun(t, speed, null);
+}
+
+finishUI();
 
         // ✅ USE THIS (NOT FileReader)
         const reader = new FileReader();
@@ -858,8 +877,13 @@ reader.onloadend = function(){
   finishUI();
 };
 
-reader.readAsDataURL(blob);
+const videoURL = await uploadVideo(blob);
 
+const run = await saveRunToCloud(t, speed, videoURL);
+
+if(run){
+  await saveSplits(run.id);
+}
       } catch(err){
         console.error("Video processing failed:", err);
         saveRun(t, speed, null);
@@ -914,6 +938,18 @@ function showSplits(){
 
   document.getElementById('splitsBox').innerHTML = html;
 }
+
+async function saveSplits(runId){
+
+  const splitData = splits.map((s, i) => ({
+    run_id: runId,
+    split_number: i + 1,
+    segment_time: s.segmentTime,
+    speed: s.speed
+  }));
+
+  await supabase.from("splits").insert(splitData);
+}
   
 function drawSpeedChart(){
   const c = document.getElementById("speedChart");
@@ -950,47 +986,89 @@ function drawSpeedChart(){
     ctx.stroke();
   });
 }
-  
-function showHistory(){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = data[currentUser] || [];
+
+async function saveRunToCloud(time, speed, videoURL){
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if(!user){
+    alert("Not logged in");
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("runs")
+    .insert([{
+      user_id: user.id,
+      distance: distance,
+      time: time,
+      speed: speed,
+      video_url: videoURL,
+      date: new Date()
+    }])
+    .select();
+
+  if(error){
+    console.error(error);
+    return null;
+  }
+
+  return data[0];
+}  
+async function showHistory(){
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if(!user){
+    alert("Login first");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("runs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("date", { ascending: false });
+
+  if(error){
+    console.error(error);
+    return;
+  }
 
   let html = "";
 
-  if(runs.length === 0){
-    html = "No runs yet";
-  } else {
-    runs.slice().reverse().forEach((r,i)=>{
-      html += `
-        <div class="card" onclick="openReplay(${i})">
-          ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
-          ⚡ ${Number(r.speed).toFixed(2)} mph<br>
-          ${r.date}
-        </div>
-      `;
-    });
-  }
-
-  document.getElementById("historyList").innerHTML = html;
-}  
-// HISTORY
-function saveRun(time, speed, videoURL){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-
-  if(!data[currentUser]) data[currentUser] = [];
-
-  data[currentUser].push({
-    distance: distance,
-    time: time,
-    speed: speed,
-    splits: splits, // ✅ ADD THIS
-    video: videoURL,
-    date: new Date().toLocaleString()
+  data.forEach((r,i)=>{
+    html += `
+      <div class="card">
+        ${r.distance}m - ${Number(r.time).toFixed(2)}s<br>
+        ⚡ ${Number(r.speed).toFixed(2)} mph<br>
+        ${new Date(r.date).toLocaleString()}
+        ${r.video_url ? `<video class="history-video" controls src="${r.video_url}"></video>` : ""}
+      </div>
+    `;
   });
 
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+  document.getElementById("historyList").innerHTML = html;
 }
+   
+// HISTORY
+async function uploadVideo(blob){
 
+  const fileName = "run_" + Date.now() + ".webm";
+
+  const { error } = await supabase.storage
+    .from("videos")
+    .upload(fileName, blob);
+
+  if(error){
+    console.error("Upload failed:", error);
+    return null;
+  }
+
+  return supabase.storage
+    .from("videos")
+    .getPublicUrl(fileName).data.publicUrl;
+}
 // INIT
 updateActiveUserUI();
 </script>
