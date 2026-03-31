@@ -1,398 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track Star</title>
-
-<style>
-body{
-  margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:linear-gradient(to bottom,#000,#111);
-  color:white;
-}
-
-.screen{display:none;padding:20px;}
-.active{display:block;}
-
-.header{font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-bottom:10px;}
-
-.card{
-  background:#111;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
-  box-shadow:0 0 20px rgba(255,0,0,.2);
-}
-
-.btn{
-  width:100%;
-  padding:16px;
-  font-size:18px;
-  border:none;
-  border-radius:14px;
-  margin-top:12px;
-  color:white;
-  font-weight:bold;
-  background:linear-gradient(to right,#ff2d2d,#ff5a5a);
-}
-
-#camera{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  object-fit:cover;
-  z-index:1;
-
-  filter: contrast(1.1) brightness(1.1) saturate(1.1);
-}
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-}
-
-.controls{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  padding:15px;
-  z-index:2;
-  box-sizing:border-box;
-  background:linear-gradient(
-    to top,
-    rgba(0,0,0,0.9),
-    rgba(0,0,0,0)
-  );
-}
-
-.bigTimer{
-  font-size:42px;
-  font-weight:bold;
-}
-
-.subtle-label{
-  font-size:12px;
-  color:#aaa;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.metric-row{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-.metric-box{
-  flex:1;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:12px;
-  padding:10px;
-}
-
-.history-video{
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-  display:block;
-  position:static;
-  height:auto;
-  object-fit:contain;
-
-  transition: transform 0.2s ease;   /* ✅ smooth zoom */
-  transform-origin: center center;   /* ✅ zoom from center */
-}
-  
-.metric-value{
-  font-size:22px;
-  font-weight:bold;
-}
-
-.rec-dot{
-  display:inline-block;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#ff3b30;
-  margin-right:8px;
-  box-shadow:0 0 10px rgba(255,59,48,.8);
-}
-  
-.speedBar{
-  height:12px;
-  border-radius:10px;
-  background:#222;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.speedFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(to right,#ff2d2d,#ff0000);
-}
-  .miniBtn{
-  padding:8px 12px;
-  font-size:13px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  font-weight:600;
-
-  background:rgba(255,45,45,0.5);
-  backdrop-filter:blur(8px);
-
-  box-shadow:0 0 12px rgba(255,0,0,0.35);
-
-  width:auto;
-  display:inline-block;
-
-  transition:all 0.2s ease;
-}
-
-.miniBtn:active{
-  transform:scale(0.95);
-  background:rgba(255,45,45,0.8);
-}
-</style>
-</head>
-
-<body>
-
-<!-- HOME -->
-<div id="home" class="screen active">
-  <div class="header">🏃 Track Star</div>
-  <div class="sub">Train Faster. Run Smarter.</div>
-
-  <div class="card">
-    <b>BEST TIMES</b><br>
-    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
-  </div>
-
-  <button class="btn" onclick="showScreen('setup')">Start New Run</button>
-  <button class="btn" onclick="goToHistory()">View History</button>
-  <button class="btn" onclick="switchUser()">Switch User</button>
-  <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
-  <button class="btn" onclick="quickLogin()">Login</button>
-  <button onclick="alert('clicked')">TEST</button></div>
-
-<!-- SETUP -->
-<div id="setup" class="screen">
-  <div class="header">Select Event</div>
-  <div style="margin-top:15px;">
-  <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
-
-  <select onchange="selectedLane = this.value; updateLaneUI();" style="
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  font-size:16px;
-  background:#222;
-  color:white;
-">
-    <option value="1">Lane 1</option>
-    <option value="2">Lane 2</option>
-    <option value="3">Lane 3</option>
-    <option value="4">Lane 4</option>
-    <option value="5">Lane 5</option>
-  </select>
-</div>
-
-
-  <button class="btn" onclick="startRun(100)">100m</button>
-  <button class="btn" onclick="startRun(200)">200m</button>
-  <button class="btn" onclick="startRun(400)">400m</button>
-  <button class="btn" onclick="startRun(800)">800m</button>
-  <button class="btn" onclick="startRun(1600)">1600m</button>
-
-  <button class="btn" onclick="showScreen('home')">Back</button>
-
-</div>
-
-<!-- LIVE -->
-<div id="live" class="screen">
-  <video id="camera" autoplay playsinline muted></video>
-
-  <canvas id="laneOverlay" style="
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100vh;
-    z-index:2;
-    pointer-events:none;
-  "></canvas>
-
-  <div class="controls">
-
-    <div id="liveUser" style="
-      font-size:16px;
-      color:#ff4d4d;
-      font-weight:bold;
-      margin-bottom:10px;
-    ">
-      🏃 Runner: Default
-    </div>
-
-    <button class="miniBtn" onclick="toggleFocus()">Focus</button>
-
-    <div id="laneDisplay" style="
-      font-size:14px;
-      color:#aaa;
-      margin-bottom:10px;
-    ">
-      Lane: 1
-    </div>
-
-    <canvas id="speedChart" width="600" height="140" style="
-      width:100%;
-      background:rgba(0,0,0,0.45);
-      border-radius:14px;
-      margin-bottom:12px;
-    "></canvas>
-
-    <div class="card">
-
-      <div style="display:flex;justify-content:space-between;">
-        <div style="color:#ff4d4d;font-weight:bold;">
-          🏃 Runner: <span id="liveUserText">Default</span>
-        </div>
-        <div id="recordingBadge" style="display:none;">
-          <span class="rec-dot"></span>REC
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="subtle-label">Time</div>
-          <div id="timer" class="metric-value">0.00s</div>
-        </div>
-        <div class="metric-box">
-          <div class="subtle-label">Speed</div>
-          <div id="speed" class="metric-value">0 mph</div>
-        </div>
-      </div>
-
-      <div class="metric-box" style="margin-top:10px;">
-        <div class="subtle-label">Split</div>
-        <div id="splitDisplay" class="metric-value">Split: --</div>
-
-        <div class="speedBar">
-          <div id="speedFill" class="speedFill"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ✅ SIDE BUTTONS -->
-    <div style="
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    ">      <button class="btn" onclick="beginMovement()">Start</button>
-      <button class="btn" onclick="markSplit()">Split</button>
-      <button class="btn" onclick="stopRun()">Finish</button>
-      <button class="btn" onclick="resetRun()">Reset</button>
-      <button class="btn" onclick="flipCamera()">Flip</button>
-    </div>
-
-  </div>
-  
-</div><!-- RESULTS -->
-<div id="results" class="screen">
-  <div class="header">Results</div>
-  <div id="resultsUser" style="font-size:16px;color:#ff4d4d;font-weight:bold;"></div>
-
-  <div class="card">
-    <p id="finalTime"></p>
-    <p id="finalSpeed"></p>
-  </div>
-
-  <div class="card" id="splitsBox"></div>
-
-  <button class="btn" onclick="showScreen('home')">Back Home</button>
-</div>
-
-<div id="profiles" class="screen">
-  <div class="header">Athlete Profiles</div>
-  <div id="profilesList" class="card"></div>
-  <button class="btn" onclick="addAthlete()">Add Athlete</button>
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-  
-<!-- HISTORY -->
-<div id="history" class="screen">
-  <div class="header">History</div>
-  <div class="card" id="historyList"></div>
-  <button class="btn" onclick="clearHistory()">Clear History</button>
-  <button class="btn" onclick="showScreen('home')">Back</button>
-</div>
-
-<div id="replay" class="screen">
-  <div class="header">Coach Replay</div>
-
-  <div class="card">
-  <div id="replayTitle" style="font-weight:bold;margin-bottom:10px;"></div>
-
-  <div style="overflow:hidden;border-radius:12px;">
-    <video id="replayVideo" class="history-video" controls playsinline></video>
-  </div>
-</div>
-
-  <div style="margin-top:15px;">
-  <div style="font-size:12px;color:#aaa;margin-bottom:5px;">Zoom</div>
-
-  <input type="range"
-    min="1"
-    max="5"
-    step="0.1"
-    value="1"
-    oninput="zoomReplay(this.value)"
-    style="width:100%;">
-</div>
-
-  <div class="card">
-    <button class="btn" onclick="setReplaySpeed(0.5)">0.5x</button>
-    <button class="btn" onclick="setReplaySpeed(1)">1x</button>
-    <button class="btn" onclick="setReplaySpeed(1.5)">1.5x</button>
-    <button class="btn" onclick="jumpReplay(-2)">-2 sec</button>
-    <button class="btn" onclick="jumpReplay(2)">+2 sec</button>
-    <button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel + 0.5)">Zoom +</button>
-<button class="btn" style="width:120px;padding:10px;font-size:14px;" onclick="setZoom(zoomLevel - 0.5)">Zoom -</button>
-  </div>
-
-  <button class="btn" onclick="goToHistory()">Back to History</button>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
 // 🔥 GLOBAL ERROR HANDLER
 window.onerror = function(msg, url, line){
-  alert("Error line " + line + ": " + msg);
+  console.error("ERROR:", msg, "Line:", line);
 };
 
-// 🔥 SUPABASE
-const supabase = window.supabase.createClient(
-  "YOUR_SUPABASE_URL",
-  "YOUR_SUPABASE_ANON_KEY"
-);
+// 🔥 SAFE SUPABASE INIT (NO CRASH)
+let supabase = null;
+
+if(window.supabase){
+  try{
+    supabase = window.supabase.createClient(
+      "YOUR_SUPABASE_URL",
+      "YOUR_SUPABASE_ANON_KEY"
+    );
+  }catch(e){
+    console.warn("Supabase not connected");
+  }
+}
 
 // 🔥 STATE
 let useBackCamera = true;
@@ -421,14 +47,22 @@ function showScreen(id){
 
 // ---------------- USER ----------------
 function updateActiveUserUI(){
-  const name = currentUser;
-  document.getElementById("liveUserText").innerText = name;
-  document.getElementById("liveUser").innerText = "🏃 Runner: " + name;
-  document.getElementById("resultsUser").innerText = "🏁 Athlete: " + name;
+  const liveUserText = document.getElementById("liveUserText");
+  const liveUser = document.getElementById("liveUser");
+  const resultsUser = document.getElementById("resultsUser");
+
+  if(liveUserText) liveUserText.innerText = currentUser;
+  if(liveUser) liveUser.innerText = "🏃 Runner: " + currentUser;
+  if(resultsUser) resultsUser.innerText = "🏁 Athlete: " + currentUser;
 }
 
 // ---------------- LOGIN ----------------
 async function quickLogin(){
+  if(!supabase){
+    alert("Supabase not connected");
+    return;
+  }
+
   let email = prompt("Email:");
   let password = prompt("Password:");
 
@@ -472,9 +106,11 @@ async function startCamera(){
     });
 
     const video = document.getElementById("camera");
-    video.srcObject = currentStream;
 
-    video.onloadedmetadata = () => video.play();
+    if(video){
+      video.srcObject = currentStream;
+      video.onloadedmetadata = () => video.play().catch(()=>{});
+    }
 
     recordedChunks = [];
 
@@ -489,6 +125,7 @@ async function startCamera(){
     }
 
   }catch(err){
+    console.error(err);
     alert("Camera blocked or failed");
   }
 }
@@ -510,7 +147,7 @@ function beginMovement(){
 }
 
 function update(){
-  if(!isRunning) return;
+  if(!isRunning || !startTime) return;
 
   const t = (Date.now() - startTime)/1000;
   document.getElementById('timer').innerText = t.toFixed(2)+"s";
@@ -527,13 +164,13 @@ function update(){
 }
 
 function markSplit(){
-  if(!isRunning) return;
+  if(!isRunning || !startTime) return;
 
   const t = (Date.now()-startTime)/1000;
   const prev = splits.length ? splits[splits.length-1].time : 0;
   const seg = t - prev;
 
-  const speed = (distance/4)/seg*2.237;
+  const speed = (distance/4)/Math.max(seg,0.1)*2.237;
 
   splits.push({time:t,segmentTime:seg,speed});
 
@@ -546,8 +183,10 @@ async function stopRun(){
 
   clearInterval(timer);
 
+  if(!startTime) return;
+
   const t = (Date.now()-startTime)/1000;
-  const speed = (distance/t)*2.237;
+  const speed = (distance/Math.max(t,0.1))*2.237;
 
   document.getElementById('finalTime').innerText = "Time: "+t.toFixed(2);
   document.getElementById('finalSpeed').innerText = "Speed: "+speed.toFixed(2);
@@ -566,7 +205,7 @@ async function stopRun(){
 
       const blob = new Blob(recordedChunks,{type:"video/webm"});
 
-      if(blob.size > 0){
+      if(blob.size > 0 && supabase){
         videoURL = await uploadVideo(blob);
       }
     }
@@ -574,7 +213,9 @@ async function stopRun(){
     console.error("Video fail:", e);
   }
 
-  await saveRunToCloud(t,speed,videoURL);
+  if(supabase){
+    await saveRunToCloud(t,speed,videoURL);
+  }
 
   showSplits();
   showScreen("results");
@@ -588,13 +229,18 @@ async function stopRun(){
 
 // ---------------- SAVE ----------------
 async function uploadVideo(blob){
+  if(!supabase) return null;
+
   const fileName = "run_"+Date.now()+".webm";
 
   const { error } = await supabase.storage
     .from("videos")
     .upload(fileName, blob);
 
-  if(error) return null;
+  if(error){
+    console.error(error);
+    return null;
+  }
 
   return supabase.storage
     .from("videos")
@@ -602,6 +248,8 @@ async function uploadVideo(blob){
 }
 
 async function saveRunToCloud(time,speed,videoURL){
+  if(!supabase) return;
+
   const { data:{user} } = await supabase.auth.getUser();
   if(!user) return;
 
@@ -618,15 +266,28 @@ async function saveRunToCloud(time,speed,videoURL){
 // ---------------- UI ----------------
 function showSplits(){
   let html="<b>Splits</b><br>";
-  splits.forEach((s,i)=>{
-    html+=`Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
-  });
+
+  if(splits.length === 0){
+    html += "No splits";
+  } else {
+    splits.forEach((s,i)=>{
+      html+=`Split ${i+1}: ${s.segmentTime.toFixed(2)}s (${s.speed.toFixed(1)} mph)<br>`;
+    });
+  }
+
   document.getElementById("splitsBox").innerHTML = html;
 }
 
 // ---------------- HISTORY ----------------
 async function showHistory(){
+
+  if(!supabase){
+    document.getElementById("historyList").innerHTML="Supabase not connected";
+    return;
+  }
+
   const { data:{user} } = await supabase.auth.getUser();
+
   if(!user){
     document.getElementById("historyList").innerHTML="Login first";
     return;
