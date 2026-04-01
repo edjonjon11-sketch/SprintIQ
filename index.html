@@ -411,19 +411,19 @@
     let currentTrack = null;
     let focusMode = false;
 
-const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
+ const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
 const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_ANON_KEY_HERE";
 
 let supabaseClient = null;
 
-if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+if (
+  window.supabase &&
+  SUPABASE_URL &&
+  SUPABASE_ANON_KEY &&
+  SUPABASE_ANON_KEY !== "PASTE_YOUR_REAL_ANON_KEY_HERE"
+) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}    
-let supabaseClient = null;
-
-if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}    
+}
     function updateActiveUserUI(){
       const liveUserText = document.getElementById("liveUserText");
       const liveUserTop = document.getElementById("liveUser");
@@ -621,6 +621,40 @@ function updateMedalUI(){
       showProfiles();
     }
 
+    function showHistory(){
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const runs = data[currentUser] || [];
+
+  let html = `<b>${currentUser} History</b><br><br>`;
+
+  if(runs.length === 0){
+    html += "No runs yet";
+  } else {
+    runs.slice().reverse().forEach((r, index) => {
+      const realIndex = runs.length - 1 - index;
+
+      html += `
+        <div class="card">
+          <div style="font-weight:bold;">
+            ${r.distance}m • ${Number(r.time).toFixed(2)}s
+          </div>
+          <div style="color:#aaa;font-size:12px;">
+            ${r.date}
+          </div>
+
+          ${
+            r.video
+              ? `<button class="btn" onclick="openReplay(${realIndex})">▶️ Watch</button>`
+              : ""
+          }
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("historyList").innerHTML = html;
+}
+    
     function chooseProfile(name){
   currentUser = name;
   localStorage.setItem("currentUser", currentUser);
