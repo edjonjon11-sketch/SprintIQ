@@ -210,7 +210,8 @@
     <button class="btn" onclick="goToHistory()">View History</button>
     <button class="btn" onclick="switchUser()">Switch User</button>
     <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
-  </div>
+    <button class="btn" onclick="quickLogin()">Login</button>
+<button class="btn" onclick="quickLogout()">Logout</button>  </div>
 
   <!-- SETUP -->
   <div id="setup" class="screen">
@@ -387,6 +388,7 @@
     <button class="btn" onclick="goToHistory()">Back to History</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
     let useBackCamera = true;
     let chartData = [];
@@ -406,7 +408,14 @@
     let currentTrack = null;
     let focusMode = false;
 
-    https://nosjciobbmhcbabypbsq.supabase.co
+const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_ANON_KEY_HERE";
+
+let supabaseClient = null;
+
+if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}    
 let supabaseClient = null;
 
 if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
@@ -445,15 +454,14 @@ if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY
 
     async function quickLogin(){
   if(!supabaseClient){
-    alert("Add your Supabase URL and anon key first.");
+    alert("Supabase not connected.");
     return;
   }
 
-  const email = prompt("Enter email:");
-  if(!email) return;
+  const email = prompt("Email:");
+  const password = prompt("Password:");
 
-  const password = prompt("Enter password:");
-  if(!password) return;
+  if(!email || !password) return;
 
   const { error } = await supabaseClient.auth.signInWithPassword({
     email,
@@ -463,12 +471,10 @@ if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY
   if(error){
     console.error(error);
     alert("Login failed");
-    return;
+  } else {
+    alert("Logged in ✅");
   }
-
-  alert("Logged in");
 }
-
 async function quickLogout(){
   if(!supabaseClient){
     alert("Supabase is not connected.");
