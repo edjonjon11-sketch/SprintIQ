@@ -390,6 +390,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
+  window.onerror = function(msg, url, line){
+  alert("Error: " + msg + " (line " + line + ")");
+};
     let useBackCamera = true;
     let chartData = [];
     let selectedRunIndex = null;
