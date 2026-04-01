@@ -185,7 +185,16 @@
 
   <!-- HOME -->
   <div id="home" class="screen active">
-    <div class="header">🏃 Track Star</div>
+    <div id="profileIcon" onclick="openProfile()" style="
+  position:fixed;
+  top:20px;
+  right:15px;
+  z-index:999;
+  font-size:28px;
+  cursor:pointer;
+">
+  🥉
+</div>    <div class="header">🏃 Track Star</div>
     <div class="sub">Train Faster. Run Smarter.</div>
 
     <div class="card">
@@ -201,8 +210,7 @@
     <button class="btn" onclick="goToHistory()">View History</button>
     <button class="btn" onclick="switchUser()">Switch User</button>
     <button class="btn" onclick="showProfiles()">Athlete Profiles</button>
-    <button class="btn" onclick="quickLogin()">Login</button>
-<button class="btn" onclick="quickLogout()">Logout</button>  </div>
+  </div>
 
   <!-- SETUP -->
   <div id="setup" class="screen">
@@ -398,9 +406,7 @@
     let currentTrack = null;
     let focusMode = false;
 
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
+    https://nosjciobbmhcbabypbsq.supabase.co
 let supabaseClient = null;
 
 if (window.supabase && SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
@@ -485,6 +491,33 @@ async function quickLogout(){
       }
     }
 
+    function getMedalLevel(){
+
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const runs = data[currentUser] || [];
+
+  // count PRs (best per distance)
+  const best = {};
+
+  runs.forEach(r=>{
+    if(!best[r.distance] || r.time < best[r.distance]){
+      best[r.distance] = r.time;
+    }
+  });
+
+  const prCount = Object.keys(best).length;
+
+  if(prCount >= 10) return "🥇";   // GOLD (highest)
+  if(prCount >= 5) return "🥈";    // PLATINUM (middle)
+  return "🥉";                     // BEGINNER
+}
+
+function updateMedalUI(){
+  const icon = document.getElementById("profileIcon");
+  if(icon){
+    icon.innerText = getMedalLevel();
+  }
+}    
     function showProfiles(){
       const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
 
@@ -516,6 +549,33 @@ async function quickLogout(){
       showScreen("profiles");
     }
 
+    function openProfile(){
+
+  let profile = JSON.parse(localStorage.getItem("SprintIQProfile") || "{}");
+
+  if(!profile.firstName){
+
+    const firstName = prompt("First Name:");
+    if(!firstName) return;
+
+    const lastName = prompt("Last Name:");
+    if(!lastName) return;
+
+    const phone = prompt("Phone Number:");
+    if(!phone) return;
+
+    profile = { firstName, lastName, phone };
+
+    localStorage.setItem("SprintIQProfile", JSON.stringify(profile));
+
+    alert("Profile created ✅");
+  } else {
+    alert(
+      "👤 " + profile.firstName + " " + profile.lastName +
+      "\n📱 " + profile.phone
+    );
+  }
+}    
     function addAthlete(){
       const name = prompt("Enter athlete name:");
       if(!name || !name.trim()) return;
@@ -1017,7 +1077,9 @@ function switchUser(){
 
   localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
-  renderPRClips();
+  
+  updateMedalUI();
+renderPRClips();   
 }
     
     function openReplay(index){
@@ -1071,8 +1133,10 @@ function switchUser(){
       }
     }
 
-    updateActiveUserUI();
+   updateActiveUserUI();
+updateMedalUI();
 renderPRClips();
+    
   </script>
 </body>
 </html>
