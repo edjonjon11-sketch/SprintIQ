@@ -1383,25 +1383,44 @@ function switchUser(){
       });
     }
 
-    function saveRun(time, speed, videoURL){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+    async function saveRun(time, speed, videoBase64){
 
-  if(!data[currentUser]) data[currentUser] = [];
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if(!user) return;
 
-  data[currentUser].push({
-    distance: distance,
-    time: time,
-    speed: speed,
-    splits: splits,
-    video: videoURL,
-    date: new Date().toLocaleString()
-  });
+  let videoURL = null;
 
-  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+  if(videoBase64){
 
-  
-  updateMedalUI();
-renderPRClips();   
+    const fileName = `${user.id}_${Date.now()}.webm`;
+
+    const blob = await fetch(videoBase64).then(r => r.blob());
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from('runs')
+      .upload(fileName, blob);
+
+    if(!uploadError){
+      const { data } = supabaseClient.storage
+        .from('runs')
+        .getPublicUrl(fileName);
+
+      videoURL = data.publicUrl;
+    }
+  }
+
+  await supabaseClient
+    .from('runs')
+    .insert([{
+      user_id: user.id,
+      distance,
+      time,
+      speed,
+      splits,
+      video_url: videoURL
+    }]);
+
+  console.log("Saved to Supabase ✅");
 }
     
     function openReplay(index){
