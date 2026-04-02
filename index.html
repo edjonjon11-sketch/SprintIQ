@@ -630,6 +630,7 @@ function toggleMenu(){
     }
 
     async function quickLogin(){
+
   if(!supabaseClient){
     alert("Supabase not connected.");
     return;
@@ -640,33 +641,50 @@ function toggleMenu(){
 
   if(!email || !password) return;
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
   });
 
   if(error){
-    console.error(error);
     alert("Login failed");
-  } else {
-    alert("Logged in ✅");
+    return;
+  }
+
+  // 🔥 SET USER NAME
+  currentUser = email;
+  localStorage.setItem("currentUser", currentUser);
+
+  updateActiveUserUI();
+
+  alert("Logged in ✅");
+}
+    
+    async function quickLogout(){
+
+  try {
+
+    if(supabaseClient){
+      await supabaseClient.auth.signOut();
+    }
+
+    // 🔥 RESET LOCAL USER STATE
+    localStorage.removeItem("currentUser");
+
+    currentUser = "Default";
+
+    updateActiveUserUI();
+
+    alert("Logged out ✅");
+
+    // OPTIONAL: close profile modal
+    closeProfile();
+
+  } catch(err){
+    console.error(err);
+    alert("Logout failed");
   }
 }
-async function quickLogout(){
-  if(!supabaseClient){
-    alert("Supabase is not connected.");
-    return;
-  }
-
-  const { error } = await supabaseClient.auth.signOut();
-  if(error){
-    console.error(error);
-    alert("Logout failed");
-    return;
-  }
-
-  alert("Logged out");
-}    
     function updateLaneUI(){
       const laneDisplay = document.getElementById("laneDisplay");
       if(laneDisplay){
