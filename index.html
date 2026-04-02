@@ -741,7 +741,7 @@ function updateMedalUI(){
       showScreen("profiles");
     }
 
-    function openProfile(){
+function openProfile(){
 
   let profile = JSON.parse(localStorage.getItem("SprintIQProfile") || "{}");
 
@@ -753,42 +753,73 @@ function updateMedalUI(){
     const lastName = prompt("Last Name:");
     if(!lastName) return;
 
-    const phone = prompt("Phone Number:");
-    if(!phone) return;
+    const age = prompt("Age:");
+    if(!age) return;
 
-    profile = { firstName, lastName, phone };
+    const school = prompt("School:");
+    if(!school) return;
+
+    profile = { firstName, lastName, age, school };
 
     localStorage.setItem("SprintIQProfile", JSON.stringify(profile));
 
     alert("Profile created ✅");
+
   } else {
     alert(
       "👤 " + profile.firstName + " " + profile.lastName +
-      "\n📱 " + profile.phone
+      "\n🎂 Age: " + profile.age +
+      "\n🏫 School: " + profile.school
     );
   }
-}    
+}
 
-   function openProfileCard(){
+  function openProfileCard(){
   const modal = document.getElementById("profileModal");
   modal.style.display = "flex";
 
   const profile = JSON.parse(localStorage.getItem("SprintIQProfile") || "{}");
 
-  document.getElementById("profileName").innerText =
-    profile.firstName ? profile.firstName + " " + profile.lastName : currentUser;
+  const fullName = profile.firstName
+    ? profile.firstName + " " + profile.lastName
+    : currentUser;
 
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = data[currentUser] || [];
+  document.getElementById("profileName").innerText = fullName;
 
   document.getElementById("profileStats").innerText =
-    runs.length + " Runs Logged";
+    (profile.age ? "Age: " + profile.age + " • " : "") +
+    (profile.school ? profile.school : "");
 
   document.getElementById("modalMedal").innerText = getMedalLevel();
 }
-
+    
 function closeProfile(){
   document.getElementById("profileModal").style.display = "none";
+}
+
+function editProfile(){
+
+  let profile = JSON.parse(localStorage.getItem("SprintIQProfile") || "{}");
+
+  const firstName = prompt("First Name:", profile.firstName || "");
+  if(!firstName) return;
+
+  const lastName = prompt("Last Name:", profile.lastName || "");
+  if(!lastName) return;
+
+  const age = prompt("Age:", profile.age || "");
+  if(!age) return;
+
+  const school = prompt("School:", profile.school || "");
+  if(!school) return;
+
+  profile = { firstName, lastName, age, school };
+
+  localStorage.setItem("SprintIQProfile", JSON.stringify(profile));
+
+  alert("Profile updated ✅");
+
+  openProfileCard(); // refresh modal
 }
     
     function addAthlete(){
