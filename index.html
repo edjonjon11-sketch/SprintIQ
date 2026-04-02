@@ -1442,18 +1442,29 @@ function switchUser(){
   showScreen("replay");
 }
 
-    function clearHistory(){
-      try{
-        const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-        data[currentUser] = [];
-        localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-        showHistory();
-      } catch(err){
-        console.error("clearHistory error:", err);
-        localStorage.removeItem("SprintIQUsers");
-        document.getElementById("historyList").innerHTML = "No runs yet";
-      }
-    }
+    async function clearHistory(){
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if(!user) return;
+
+  const confirmDelete = confirm("Delete all runs?");
+  if(!confirmDelete) return;
+
+  const { error } = await supabaseClient
+    .from('runs')
+    .delete()
+    .eq('user_id', user.id);
+
+  if(error){
+    console.error(error);
+    alert("Failed to delete");
+    return;
+  }
+
+  alert("History cleared ✅");
+
+  showHistory();
+}
 
     function backupData(){
       const data = localStorage.getItem("SprintIQUsers") || "No data found";
