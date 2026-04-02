@@ -286,7 +286,6 @@
 </div>
   
   <div id="home" class="screen active">
-    <div id="profileIcon" onclick="openProfile()" style="
   position:fixed;
   top:20px;
   right:15px;
@@ -709,6 +708,29 @@ function updateMedalUI(){
     );
   }
 }    
+
+   function openProfileCard(){
+  const modal = document.getElementById("profileModal");
+  modal.style.display = "flex";
+
+  const profile = JSON.parse(localStorage.getItem("SprintIQProfile") || "{}");
+
+  document.getElementById("profileName").innerText =
+    profile.firstName ? profile.firstName + " " + profile.lastName : currentUser;
+
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  const runs = data[currentUser] || [];
+
+  document.getElementById("profileStats").innerText =
+    runs.length + " Runs Logged";
+
+  document.getElementById("modalMedal").innerText = getMedalLevel();
+}
+
+function closeProfile(){
+  document.getElementById("profileModal").style.display = "none";
+}
+    
     function addAthlete(){
       const name = prompt("Enter athlete name:");
       if(!name || !name.trim()) return;
