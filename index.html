@@ -559,6 +559,21 @@ function toggleMenu(){
 
   menuOpen = !menuOpen;
 }
+
+  function toggleMenu(){
+  const menu = document.getElementById("sideMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  if(menuOpen){
+    menu.style.left = "-260px";
+    overlay.style.display = "none";
+  } else {
+    menu.style.left = "0";
+    overlay.style.display = "block";
+  }
+
+  menuOpen = !menuOpen;
+}
     
     function showScreen(id){
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
