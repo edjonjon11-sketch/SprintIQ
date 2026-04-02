@@ -213,10 +213,10 @@
     🏃 Track Menu
   </div>
 
-  <div class="menuItem" onclick="showScreen('setup')">Start Run</div>
-  <div class="menuItem" onclick="goToHistory()">History</div>
-  <div class="menuItem" onclick="showProfiles()">Athletes</div>
-  <div class="menuItem" onclick="switchUser()">Switch User</div>
+  <div class="menuItem" onclick="navigate('setup')">Start Run</div>
+<div class="menuItem" onclick="navigate('history')">History</div>
+<div class="menuItem" onclick="navigate('profiles')">Athletes</div>
+<div class="menuItem" onclick="switchUser(); toggleMenu()">Switch User</div>
 
 </div>
 
@@ -307,7 +307,8 @@
   <div id="prClipsList" style="margin-top:10px;">No PR clips yet</div>
 </div>
     </div> 
-
+</div> <!-- CLOSE HOME SCREEN -->
+  
   <!-- SETUP -->
   <div id="setup" class="screen">
     <div class="header">Select Event</div>
@@ -623,6 +624,15 @@ async function quickLogout(){
       }
     }
 
+ function navigate(screen){
+  showScreen(screen);
+
+  // CLOSE MENU AFTER CLICK
+  const menu = document.getElementById("sideMenu");
+  menu.style.left = "-260px";
+  menuOpen = false;
+}
+    
     function getMedalLevel(){
 
   const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
