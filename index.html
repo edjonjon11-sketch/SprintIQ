@@ -307,6 +307,7 @@
   <b>PR CLIPS</b>
   <div id="prClipsList" style="margin-top:10px;">No PR clips yet</div>
 </div>
+    </div> 
 
   <!-- SETUP -->
   <div id="setup" class="screen">
@@ -505,8 +506,7 @@
 };
     let useBackCamera = true;
     let chartData = [];
-    let selectedRunIndex = null;
-    let menuOpen = false;
+    let selectedRunIndex = null; 
     let mediaRecorder = null;
     let recordedChunks = [];
     let currentUser = localStorage.getItem("currentUser") || "Default";
@@ -522,19 +522,18 @@
     let currentTrack = null;
     let focusMode = false;
 
- const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
+   const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_1IIO_oDha-Wdxdt2Y5KERMg_pINRupbF";
 
 let supabaseClient = null;
 
-if (
-  window.supabase &&
-  SUPABASE_URL &&
-  SUPABASE_ANON_KEY &&
-  SUPABASE_ANON_KEY !== nosjciobbmhcbabypbsq
-) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 }
+    
     function updateActiveUserUI(){
       const liveUserText = document.getElementById("liveUserText");
       const liveUserTop = document.getElementById("liveUser");
