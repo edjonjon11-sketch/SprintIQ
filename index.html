@@ -659,6 +659,9 @@ function toggleMenu(){
     return;
   }
 
+loadUserFromSession(data.session);
+await renderPRClips();
+      
   const email = prompt("Email:");
   const password = prompt("Password:");
 
