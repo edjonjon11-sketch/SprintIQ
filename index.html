@@ -954,33 +954,16 @@ function switchUser(){
       if(video) video.currentTime = Math.max(0, video.currentTime + seconds);
     }
 
-    function selectRunner(){
-      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+   function selectRunner(){
+  // If user is not logged in → block
+  if(!currentUser){
+    alert("Please login first");
+    return null;
+  }
 
-      const list = users.length
-        ? "Select runner:\n\n" + users.map((u,i)=>`${i+1}. ${u}`).join("\n") + "\n\nType number or new name:"
-        : "Enter runner name:";
-
-      let input = prompt(list);
-      if(!input) return null;
-
-      input = input.trim();
-
-      const index = parseInt(input, 10);
-      if(!isNaN(index) && users[index - 1]){
-        currentUser = users[index - 1];
-      } else {
-        currentUser = input;
-
-        if(!users.includes(currentUser)){
-          users.push(currentUser);
-          localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-        }
-      }
-
-      localStorage.setItem("currentUser", currentUser);
-      return currentUser;
-    }
+  // Return logged-in user (from Supabase session)
+  return currentUser;
+} 
 
     function renderPRClips(){
   const container = document.getElementById("prClipsList");
