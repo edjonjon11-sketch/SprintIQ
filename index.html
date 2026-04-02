@@ -13,7 +13,12 @@
       color:white;
     }
 
-    .screen{display:none;padding:20px;}
+    .screen {
+  display: none;
+  padding: 16px;
+  width: 100%;
+  max-width: 100vw;
+}
     .active{display:block;}
 
     .header{font-size:28px;font-weight:bold;}
@@ -29,8 +34,8 @@
 
     .btn{
       width:100%;
-      padding:16px;
-      font-size:18px;
+      padding:14px;
+      font-size:16px;
       border:none;
       border-radius:14px;
       margin-top:12px;
@@ -196,6 +201,10 @@
 </head>
 
 <body>
+
+  body {
+  overflow-x: hidden;
+}
 
 <div id="menuOverlay" onclick="toggleMenu()" style="
   position:fixed;
@@ -513,6 +522,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
+
+* {
+  box-sizing: border-box;
+}
+    
   window.onerror = function(msg, url, line){
   alert("Error: " + msg + " (line " + line + ")");
 };
