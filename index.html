@@ -4,6 +4,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <title>Track Star</title>
+  * {
+  box-sizing: border-box;
+}
 
   <style>
     body{
@@ -13,6 +16,14 @@
       color:white;
     }
 
+ body {
+  margin:0;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  background:linear-gradient(to bottom,#000,#111);
+  color:white;
+  overflow-x:hidden; /* ADD THIS HERE */
+}
+    
     .screen {
   display: none;
   padding: 16px;
@@ -307,27 +318,41 @@
 </div>
   
   <div id="home" class="screen active">
-  position:fixed;
-  top:20px;
-  right:15px;
-  z-index:999;
-  font-size:28px;
-  cursor:pointer;
-">
-  🥉
-</div>    <div class="header">🏃 Track Star</div>
-    <div class="sub">Train Faster. Run Smarter.</div>
 
-    <div class="card">
-      <b>BEST TIMES</b><br>
-      100m: 11.2s | 200m: 24.5s | 400m: 58.2s
-    </div>
+  <div id="profileIcon" onclick="openProfileCard()" style="
+    position:fixed;
+    top:20px;
+    right:15px;
+    z-index:999;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    background:linear-gradient(145deg,#222,#000);
+    box-shadow:0 0 12px rgba(255,215,0,0.4);
+    cursor:pointer;
+  ">
+    🥉
+  </div>
 
-    <div class="card">
-  <b>PR CLIPS</b>
-  <div id="prClipsList" style="margin-top:10px;">No PR clips yet</div>
+  <div class="header">🏃 Track Star</div>
+  <div class="sub">Train Faster. Run Smarter.</div>
+
+  <div class="card">
+    <b>BEST TIMES</b><br>
+    100m: 11.2s | 200m: 24.5s | 400m: 58.2s
+  </div>
+
+  <div class="card">
+    <b>PR CLIPS</b>
+    <div id="prClipsList" style="margin-top:10px;">No PR clips yet</div>
+  </div>
+
 </div>
-    </div> 
+  
 </div> <!-- CLOSE HOME SCREEN -->
   
   <!-- SETUP -->
@@ -522,10 +547,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
-
-* {
-  box-sizing: border-box;
-}
     
   window.onerror = function(msg, url, line){
   alert("Error: " + msg + " (line " + line + ")");
@@ -584,21 +605,6 @@ function toggleMenu(){
   } else {
     menu.style.left = "0";
     if(overlay) overlay.style.display = "block";
-  }
-
-  menuOpen = !menuOpen;
-}
-
-  function toggleMenu(){
-  const menu = document.getElementById("sideMenu");
-  const overlay = document.getElementById("menuOverlay");
-
-  if(menuOpen){
-    menu.style.left = "-260px";
-    overlay.style.display = "none";
-  } else {
-    menu.style.left = "0";
-    overlay.style.display = "block";
   }
 
   menuOpen = !menuOpen;
