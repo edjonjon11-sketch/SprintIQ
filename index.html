@@ -980,32 +980,41 @@ function switchUser(){
   return currentUser;
 } 
 
-    function renderPRClips(){
+    async function renderPRClips(){
+
   const container = document.getElementById("prClipsList");
   if(!container) return;
 
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = Array.isArray(data[currentUser]) ? data[currentUser] : [];
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if(!user){
+    container.innerHTML = "Login to see PR clips";
+    return;
+  }
 
-  if(runs.length === 0){
+  const { data, error } = await supabaseClient
+    .from('runs')
+    .select('*')
+    .eq('user_id', user.id);
+
+  if(error || !data || data.length === 0){
     container.innerHTML = "No PR clips yet";
     return;
   }
 
   const bestByDistance = {};
 
-  runs.forEach((run, index) => {
-    if(!run.video) return;
+  data.forEach((run, index) => {
+    if(!run.video_url) return;
 
     const d = run.distance;
     const time = Number(run.time || 999999);
 
-    if(!bestByDistance[d] || time < Number(bestByDistance[d].time)){
-      bestByDistance[d] = { ...run, _index: index };
+    if(!bestByDistance[d] || time < bestByDistance[d].time){
+      bestByDistance[d] = run;
     }
   });
 
-  const prs = Object.values(bestByDistance).sort((a, b) => Number(a.distance) - Number(b.distance));
+  const prs = Object.values(bestByDistance);
 
   if(prs.length === 0){
     container.innerHTML = "No PR clips yet";
@@ -1013,19 +1022,23 @@ function switchUser(){
   }
 
   let html = "";
+
   prs.forEach(pr => {
     html += `
       <div style="margin-bottom:14px;">
         <div style="font-weight:bold;margin-bottom:6px;">
           ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
         </div>
-        <button class="btn" style="margin-top:0;margin-bottom:8px;" onclick="openReplay(${pr._index})">▶️ Watch PR Clip</button>
+        <button class="btn" onclick="openReplay('${pr.video_url}')">
+          ▶️ Watch PR Clip
+        </button>
       </div>
     `;
   });
 
   container.innerHTML = html;
 }
+    
     function startRun(d){
       try{
         const user = selectRunner();
