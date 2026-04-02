@@ -541,6 +541,25 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
+
+    window.onload = async function(){
+
+  if(!supabaseClient){
+    showScreen('home');
+    return;
+  }
+
+  const { data } = await supabaseClient.auth.getSession();
+
+  if(!data.session){
+    // NOT LOGGED IN → SHOW LOGIN
+    showLoginPrompt();
+  } else {
+    // LOGGED IN → LOAD USER
+    loadUserFromSession(data.session);
+    showScreen('home');
+  }
+};
     
   window.onerror = function(msg, url, line){
   alert("Error: " + msg + " (line " + line + ")");
@@ -550,7 +569,7 @@
     let selectedRunIndex = null; 
     let mediaRecorder = null;
     let recordedChunks = [];
-    let currentUser = localStorage.getItem("currentUser") || "Default";
+    let currentUser = null;
     let startTime = null;
     let timer = null;
     let distance = 100;
@@ -624,6 +643,15 @@ function toggleMenu(){
       showHistory();
     }
 
+    function showLoginPrompt(){
+
+  const choice = confirm("Login required.\n\nPress OK to login");
+
+  if(choice){
+    quickLogin();
+  }
+}
+    
     async function quickLogin(){
 
   if(!supabaseClient){
@@ -646,40 +674,31 @@ function toggleMenu(){
     return;
   }
 
-  // 🔥 SET USER NAME
-  currentUser = email;
-  localStorage.setItem("currentUser", currentUser);
-
-  updateActiveUserUI();
+  // 🔥 SET USER AFTER LOGIN
+  loadUserFromSession(data.session);
 
   alert("Logged in ✅");
+
+  showScreen("home");
 }
     
     async function quickLogout(){
 
-  try {
-
-    if(supabaseClient){
-      await supabaseClient.auth.signOut();
-    }
-
-    // 🔥 RESET LOCAL USER STATE
-    localStorage.removeItem("currentUser");
-
-    currentUser = "Default";
-
-    updateActiveUserUI();
-
-    alert("Logged out ✅");
-
-    // OPTIONAL: close profile modal
-    closeProfile();
-
-  } catch(err){
-    console.error(err);
-    alert("Logout failed");
+  if(!supabaseClient){
+    alert("Supabase is not connected.");
+    return;
   }
+
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+  localStorage.removeItem("currentUser");
+
+  alert("Logged out");
+
+  showLoginPrompt();
 }
+    
     function updateLaneUI(){
       const laneDisplay = document.getElementById("laneDisplay");
       if(laneDisplay){
@@ -694,6 +713,16 @@ function toggleMenu(){
   const menu = document.getElementById("sideMenu");
   menu.style.left = "-260px";
   menuOpen = false;
+}
+
+  function loadUserFromSession(session){
+
+  const email = session.user.email;
+
+  currentUser = email; // or customize later
+  localStorage.setItem("currentUser", currentUser);
+
+  updateActiveUserUI();
 }
     
     function getMedalLevel(){
