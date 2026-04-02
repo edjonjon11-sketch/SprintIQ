@@ -900,30 +900,32 @@ function editProfile(){
       showProfiles();
     }
 
-    function showHistory(){
-  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-  const runs = data[currentUser] || [];
+    async function showHistory(){
 
-  let html = `<b>${currentUser} History</b><br><br>`;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if(!user) return;
 
-  if(runs.length === 0){
+  const { data, error } = await supabaseClient
+    .from('runs')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  let html = `<b>${user.email} History</b><br><br>`;
+
+  if(!data || data.length === 0){
     html += "No runs yet";
   } else {
-    runs.slice().reverse().forEach((r, index) => {
-      const realIndex = runs.length - 1 - index;
-
+    data.forEach((r, index) => {
       html += `
         <div class="card">
           <div style="font-weight:bold;">
             ${r.distance}m • ${Number(r.time).toFixed(2)}s
           </div>
-          <div style="color:#aaa;font-size:12px;">
-            ${r.date}
-          </div>
 
           ${
-            r.video
-              ? `<button class="btn" onclick="openReplay(${realIndex})">▶️ Watch</button>`
+            r.video_url
+              ? `<button class="btn" onclick="openReplay('${r.video_url}')">▶️ Watch</button>`
               : ""
           }
         </div>
@@ -1423,30 +1425,22 @@ function switchUser(){
   console.log("Saved to Supabase ✅");
 }
     
-    function openReplay(index){
-      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-      const runs = data[currentUser] || [];
-      const run = runs[index];
+    function openReplay(videoUrl){
 
-      if(!run || !run.video){
-        alert("No video saved for this run.");
-        return;
-      }
+  if(!videoUrl){
+    alert("No video available");
+    return;
+  }
 
-      selectedRunIndex = index;
+  const video = document.getElementById("replayVideo");
 
-      document.getElementById("replayTitle").innerText =
-        `${run.distance}m • ${Number(run.time).toFixed(2)}s • ${run.date}`;
+  video.pause();
+  video.src = videoUrl;
+  video.load();
+  video.play().catch(()=>{});
 
-      const video = document.getElementById("replayVideo");
-      video.pause();
-      video.src = run.video;
-      video.load();
-      video.play().catch(()=>{});
-      video.playbackRate = 1;
-
-      showScreen("replay");
-    }
+  showScreen("replay");
+}
 
     function clearHistory(){
       try{
