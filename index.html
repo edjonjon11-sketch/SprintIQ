@@ -683,21 +683,6 @@ function toggleMenu(){
 }
     
     async function quickLogout(){
-
-  if(!supabaseClient){
-    alert("Supabase is not connected.");
-    return;
-  }
-
-  await supabaseClient.auth.signOut();
-
-  currentUser = null;
-  localStorage.removeItem("currentUser");
-
-  alert("Logged out");
-
-  showLoginPrompt();
-}
     
     function updateLaneUI(){
       const laneDisplay = document.getElementById("laneDisplay");
