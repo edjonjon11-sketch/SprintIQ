@@ -561,9 +561,26 @@
   }
 };
     
-  window.onerror = function(msg, url, line){
-  alert("Error: " + msg + " (line " + line + ")");
-};
+ window.onload = async function(){
+
+  if(!supabaseClient){
+    showScreen('home');
+    return;
+  }
+
+  const { data } = await supabaseClient.auth.getSession();
+
+  if(!data.session){
+    showScreen('home');
+  } else {
+    loadUserFromSession(data.session);
+
+    // ✅ LOAD PR CLIPS IF ALREADY LOGGED IN
+    await renderPRClips();
+
+    showScreen('home');
+  }
+}; 
     let useBackCamera = true;
     let chartData = [];
     let selectedRunIndex = null; 
