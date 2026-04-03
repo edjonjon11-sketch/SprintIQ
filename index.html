@@ -716,6 +716,27 @@ function toggleMenu(){
 
   showLoginPrompt();
 }
+
+async function quickSignup(){
+
+  const email = prompt("Create Email:");
+  const password = prompt("Create Password:");
+
+  if(!email || !password) return;
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  });
+
+  if(error){
+    alert("Signup failed: " + error.message);
+    return;
+  }
+
+  alert("Account created ✅ Now login");
+
+}
     
     function updateLaneUI(){
       const laneDisplay = document.getElementById("laneDisplay");
