@@ -1495,7 +1495,9 @@ function switchUser(){
 
    updateActiveUserUI();
 updateMedalUI();
-  renderPRClips(); 
+ if(supabaseClient){
+  renderPRClips();
+} 
     
   </script>
 </body>
