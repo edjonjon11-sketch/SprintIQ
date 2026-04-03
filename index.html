@@ -1019,8 +1019,7 @@ function switchUser(){
 
   const bestByDistance = {};
 
-  data.forEach((run, index) => {
-    // allow runs even without video
+  data.forEach(run => {
     const d = run.distance;
     const time = Number(run.time || 999999);
 
@@ -1031,33 +1030,26 @@ function switchUser(){
 
   const prs = Object.values(bestByDistance);
 
-  if(prs.length === 0){
-    container.innerHTML = "No PR clips yet";
-    return;
-  }
-
   let html = "";
 
   prs.forEach(pr => {
-    
+    html += `
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:bold;margin-bottom:6px;">
+          ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
+        </div>
+
+        ${
+          pr.video_url
+          ? `<button class="btn" onclick="openReplay('${pr.video_url}')">▶️ Watch</button>`
+          : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
+        }
+      </div>
+    `;
   });
 
   container.innerHTML = html;
-}
-    html += `
-  <div style="margin-bottom:14px;">
-    <div style="font-weight:bold;margin-bottom:6px;">
-      ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
-    </div>
-
-    ${
-      pr.video_url
-      ? `<button class="btn" onclick="openReplay('${pr.video_url}')">▶️ Watch</button>`
-      : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
-    }
-  </div>
-`;
-    
+}    
     async function saveRun(time, speed, videoBase64){
 
   const { data: { user } } = await supabaseClient.auth.getUser();
