@@ -1050,70 +1050,44 @@ function switchUser(){
 
   container.innerHTML = html;
 }    
-    async function saveRun(time, speed, videoBase64){
+    function startRun(d){
+  try{
+    const user = selectRunner();
+    if(!user) return;
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if(!user) return;
+    distance = d;
+    splits = [];
+    speeds = [];
+    chartData = [];
+    isRunning = false;
+    startTime = null;
 
-  let videoURL = null;
+    if(timer) clearInterval(timer);
 
-  // 🔍 DEBUG
-  console.log("Video Base64 exists?", !!videoBase64);
+    document.getElementById('timer').innerText = "0.00s";
+    document.getElementById('speed').innerText = "0 mph";
+    document.getElementById('splitDisplay').innerText = "Split: --";
+    document.getElementById('speedFill').style.width = "0%";
 
-  if(videoBase64){
+    updateActiveUserUI();
 
-    try{
-      const fileName = `${user.id}_${Date.now()}.webm`;
+    // ✅ SHOW LIVE FIRST (so it doesn’t bounce back)
+    showScreen('live');
 
-      const blob = await fetch(videoBase64).then(r => r.blob());
+    // ✅ TRY CAMERA SAFELY
+    startCamera().catch(err => {
+      console.error("Camera failed:", err);
+      alert("Camera failed — but run will still work without video");
+    });
 
-      console.log("Blob size:", blob.size);
+    drawSpeedChart();
+    drawLanes();
 
-      if(blob.size > 0){
-
-        const { data, error } = await supabaseClient.storage
-          .from('runs')
-          .upload(fileName, blob, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if(error){
-          console.error("UPLOAD ERROR:", error);
-        } else {
-          const { data: urlData } = supabaseClient.storage
-            .from('runs')
-            .getPublicUrl(fileName);
-
-          videoURL = urlData.publicUrl;
-
-          console.log("VIDEO URL:", videoURL);
-        }
-
-      } else {
-        console.log("⚠️ Blob empty — no video recorded");
-      }
-
-    } catch(err){
-      console.error("Video processing failed:", err);
-    }
+  } catch(err){
+    console.error("startRun crashed:", err);
+    alert("Start failed");
   }
-
-  // ✅ SAVE RUN ANYWAY
-  await supabaseClient
-    .from('runs')
-    .insert([{
-      user_id: user.id,
-      distance,
-      time,
-      speed,
-      splits,
-      video_url: videoURL
-    }]);
-
-  console.log("Saved run ✅");
 }
-
     async function startCamera(){
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
   alert("Camera not supported on this device");
