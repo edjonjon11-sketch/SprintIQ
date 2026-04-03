@@ -644,7 +644,10 @@ function toggleMenu(){
     }
     
     function showLoginPrompt(){
-  quickLogin(); // force login immediately
+  const choice = confirm("Login required.\n\nPress OK to login");
+  if(choice){
+    quickLogin();
+  }
 }
     
     async function quickLogin(){
@@ -654,9 +657,6 @@ function toggleMenu(){
     return;
   }
 
-loadUserFromSession(data.session);
-await renderPRClips();
-      
   const email = prompt("Email:");
   const password = prompt("Password:");
 
@@ -668,14 +668,17 @@ await renderPRClips();
   });
 
   if(error){
-    alert("Login failed");
+    alert("Login failed: " + error.message);
     return;
   }
 
-  // 🔥 SET USER AFTER LOGIN
+  // ✅ SET USER
   loadUserFromSession(data.session);
 
   alert("Logged in ✅");
+
+  // ✅ LOAD PR CLIPS AFTER LOGIN
+  await renderPRClips();
 
   showScreen("home");
 }
