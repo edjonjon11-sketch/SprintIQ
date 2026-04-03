@@ -332,6 +332,10 @@
     🥉
   </div>
 
+<div class="card">
+  <button class="btn" onclick="quickLogin()">🔐 Login</button>
+</div>
+    
   <div class="header">🏃 Track Star</div>
   <div class="sub">Train Faster. Run Smarter.</div>
 
@@ -644,12 +648,7 @@ function toggleMenu(){
     }
 
     function showLoginPrompt(){
-
-  const choice = confirm("Login required.\n\nPress OK to login");
-
-  if(choice){
-    quickLogin();
-  }
+  quickLogin(); // force login immediately
 }
     
     async function quickLogin(){
@@ -688,7 +687,7 @@ await renderPRClips();
     async function quickLogout(){
 
   if(!supabaseClient){
-    alert("Supabase not connected.");
+    alert("Supabase is not connected.");
     return;
   }
 
