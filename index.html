@@ -1144,6 +1144,11 @@ function switchUser(){
 }
 
     async function startCamera(){
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+  alert("Camera not supported on this device");
+  return;
+}
+      
       try{
         if(currentStream){
           currentStream.getTracks().forEach(track => track.stop());
