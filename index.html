@@ -552,18 +552,13 @@
 
   const { data } = await supabaseClient.auth.getSession();
 
-  if(!data.session){
-    showScreen('home');
-  } else {
+  if(data.session){
     loadUserFromSession(data.session);
-
-    // ✅ LOAD PR CLIPS IF ALREADY LOGGED IN
     await renderPRClips();
-
-    showScreen('home');
   }
-}; 
-    let useBackCamera = true;
+
+  showScreen('home');
+};    let useBackCamera = true;
     let chartData = [];
     let selectedRunIndex = null; 
     let mediaRecorder = null;
@@ -1025,8 +1020,7 @@ function switchUser(){
   const bestByDistance = {};
 
   data.forEach((run, index) => {
-    if(!run.video_url) return;
-
+    // allow runs even without video
     const d = run.distance;
     const time = Number(run.time || 999999);
 
@@ -1045,20 +1039,24 @@ function switchUser(){
   let html = "";
 
   prs.forEach(pr => {
-    html += `
-      <div style="margin-bottom:14px;">
-        <div style="font-weight:bold;margin-bottom:6px;">
-          ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
-        </div>
-        <button class="btn" onclick="openReplay('${pr.video_url}')">
-          ▶️ Watch PR Clip
-        </button>
-      </div>
-    `;
+    
   });
 
   container.innerHTML = html;
 }
+    html += `
+  <div style="margin-bottom:14px;">
+    <div style="font-weight:bold;margin-bottom:6px;">
+      ${pr.distance}m PR • ${Number(pr.time).toFixed(2)}s
+    </div>
+
+    ${
+      pr.video_url
+      ? `<button class="btn" onclick="openReplay('${pr.video_url}')">▶️ Watch</button>`
+      : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
+    }
+  </div>
+`;
     
     async function saveRun(time, speed, videoBase64){
 
