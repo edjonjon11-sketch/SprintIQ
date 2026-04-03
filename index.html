@@ -542,25 +542,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
   <script>
-
-    window.onload = async function(){
-
-  if(!supabaseClient){
-    showScreen('home');
-    return;
-  }
-
-  const { data } = await supabaseClient.auth.getSession();
-
-  if(!data.session){
-    // NOT LOGGED IN → SHOW LOGIN
-    showLoginPrompt();
-  } else {
-    // LOGGED IN → LOAD USER
-    loadUserFromSession(data.session);
-    showScreen('home');
-  }
-};
     
  window.onload = async function(){
 
