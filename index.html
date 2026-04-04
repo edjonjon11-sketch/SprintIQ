@@ -646,35 +646,43 @@ function toggleMenu(){
     
     async function quickLogin(){
 
+  alert("Login clicked"); // 👈 DEBUG
+
   if(!supabaseClient){
-    alert("Supabase not connected.");
+    alert("Supabase not connected");
     return;
   }
 
   const email = prompt("Email:");
   const password = prompt("Password:");
 
-  if(!email || !password) return;
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-    alert("Login failed: " + error.message);
+  if(!email || !password){
+    alert("Missing email or password");
     return;
   }
 
-  // ✅ SET USER
-  loadUserFromSession(data.session);
+  try{
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
-  alert("Logged in ✅");
+    if(error){
+      alert("Login failed: " + error.message);
+      return;
+    }
 
-  // ✅ LOAD PR CLIPS AFTER LOGIN
-  await renderPRClips();
+    alert("Login success ✅");
 
-  showScreen("home");
+    loadUserFromSession(data.session);
+    await renderPRClips();
+
+    showScreen("home");
+
+  } catch(err){
+    alert("Crash: " + err.message);
+    console.error(err);
+  }
 }
     
     async function quickLogout(){
