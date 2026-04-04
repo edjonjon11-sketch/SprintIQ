@@ -1293,7 +1293,10 @@ function switchUser(){
         try{
           const mimeType = mediaRecorder.mimeType || "video/webm";
           const blob = new Blob(recordedChunks, { type: mimeType });
-
+          
+   console.log("Recorded chunks:", recordedChunks.length);
+console.log("Blob size:", blob.size);
+          
           if(blob.size === 0){
             saveRun(t, speed, null);
             finishUI();
