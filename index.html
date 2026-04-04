@@ -1300,6 +1300,10 @@ function switchUser(){
             return;
           }
 
+const blob = new Blob(recordedChunks, { type: mimeType });
+  console.log("Recorded chunks:", recordedChunks.length);
+console.log("Blob size:", blob.size);
+          
           const reader = new FileReader();
           reader.onloadend = function(){
             const base64Video = reader.result;
