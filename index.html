@@ -1050,7 +1050,7 @@ function switchUser(){
 
   container.innerHTML = html;
 }    
-    function startRun(d){
+    async function startRun(d){
   try{
     const user = selectRunner();
     if(!user) return;
@@ -1071,14 +1071,10 @@ function switchUser(){
 
     updateActiveUserUI();
 
-    // ✅ SHOW LIVE FIRST (so it doesn’t bounce back)
-    showScreen('live');
+    // ✅ WAIT for camera before switching screen
+    await startCamera();
 
-    // ✅ TRY CAMERA SAFELY
-    startCamera().catch(err => {
-      console.error("Camera failed:", err);
-      alert("Camera failed — but run will still work without video");
-    });
+    showScreen('live');
 
     drawSpeedChart();
     drawLanes();
@@ -1088,6 +1084,7 @@ function switchUser(){
     alert("Start failed");
   }
 }
+    
     async function startCamera(){
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
   alert("Camera not supported on this device");
