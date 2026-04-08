@@ -1283,15 +1283,26 @@ function switchUser(){
           }
 
 const blob = new Blob(recordedChunks, { type: mimeType });
-  console.log("Recorded chunks:", recordedChunks.length);
+
+console.log("Recorded chunks:", recordedChunks.length);
 console.log("Blob size:", blob.size);
+
+if (blob.size === 0) {
+  console.log("⚠️ No video recorded");
+  saveRun(t, speed, null);
+  finishUI();
+  return;
+}
+
+const reader = new FileReader();
+reader.onloadend = function () {
+  const base64Video = reader.result;
+  saveRun(t, speed, base64Video);
+  finishUI();
+};
+
+reader.readAsDataURL(blob);
           
-          const reader = new FileReader();
-          reader.onloadend = function(){
-            const base64Video = reader.result;
-            saveRun(t, speed, base64Video);
-            finishUI();
-          };
           reader.readAsDataURL(blob);
         } catch(err){
           console.error("Video processing failed:", err);
