@@ -969,15 +969,12 @@ function switchUser(){
     }
 
    function selectRunner(){
-  // If user is not logged in → block
   if(!currentUser){
-    alert("Please login first");
-    return null;
+    currentUser = "Guest";
+    localStorage.setItem("currentUser", currentUser);
   }
-
-  // Return logged-in user (from Supabase session)
   return currentUser;
-} 
+}
 
     async function renderPRClips(){
 
