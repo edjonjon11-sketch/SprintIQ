@@ -520,17 +520,21 @@
     
  window.onload = async function(){
 
-  if(!supabaseClient){
-    showScreen('home');
-    return;
-  }
+  showScreen('home'); // ALWAYS show app first
 
-  const { data } = await supabaseClient.auth.getSession();
+  try{
+    if(supabaseClient){
+      const { data } = await supabaseClient.auth.getSession();
 
-  if(data.session){
-    loadUserFromSession(data.session);
-    await renderPRClips();
+      if(data?.session){
+        loadUserFromSession(data.session);
+        await renderPRClips();
+      }
+    }
+  } catch(err){
+    console.log("Session skipped");
   }
+};
 
   showScreen('home');
 };    let useBackCamera = true;
@@ -552,16 +556,20 @@
     let focusMode = false;
 
    const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
-
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vc2pjaW9iYm1oY2JhYnlwYnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDI4MDMsImV4cCI6MjA5MDU3ODgwM30.xOKrPVbIacOM7JkA4DHQoJy1yEIXN8jCmg-ykJ0YL2I";
+const SUPABASE_ANON_KEY = "YOUR_KEY";
 
 let supabaseClient = null;
 
-if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
-  supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+try {
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+    console.log("Supabase connected ✅");
+  }
+} catch (err) {
+  console.log("Supabase failed — app still works");
 }
     
     function updateActiveUserUI(){
@@ -1268,16 +1276,36 @@ function switchUser(){
       saveRun(t, speed, null);
       finishUI();
     } else {
-      mediaRecorder.onstop = function(){
-        try{
-          const mimeType = mediaRecorder.mimeType || "video/webm";
-          const blob = new Blob(recordedChunks, { type: mimeType });
-          
-          if(blob.size === 0){
-            saveRun(t, speed, null);
-            finishUI();
-            return;
-          }
+      mediaRecorder.onstop = function () {
+  try {
+    const mimeType = mediaRecorder.mimeType || "video/webm";
+    const blob = new Blob(recordedChunks, { type: mimeType });
+
+    console.log("Recorded chunks:", recordedChunks.length);
+    console.log("Blob size:", blob.size);
+
+    if (blob.size === 0) {
+      console.log("⚠️ No video recorded");
+      saveRun(t, speed, null);
+      finishUI();
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = function () {
+      const base64Video = reader.result;
+      saveRun(t, speed, base64Video);
+      finishUI();
+    };
+
+    reader.readAsDataURL(blob);
+
+  } catch (err) {
+    console.error("Video processing failed:", err);
+    saveRun(t, speed, null);
+    finishUI();
+  }
+};
 
 const blob = new Blob(recordedChunks, { type: mimeType });
 
