@@ -870,6 +870,11 @@ function editProfile(){
 
   openProfileCard(); // refresh modal
 }
+
+function flipCamera(){
+  useBackCamera = !useBackCamera;
+  startCamera();
+}
     
     function addAthlete(){
       const name = prompt("Enter athlete name:");
