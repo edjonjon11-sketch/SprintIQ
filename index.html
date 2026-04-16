@@ -1129,6 +1129,10 @@ function startRecording(){
           options.mimeType = "video/webm";
         }
 
+        mediaRecorder.onstart = () => {
+  console.log("🎥 Recording started");
+};
+
         mediaRecorder = new MediaRecorder(currentStream, options);
         mediaRecorder.ondataavailable = function(e){
           if(e.data && e.data.size > 0){
