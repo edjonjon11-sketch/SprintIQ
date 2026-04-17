@@ -1121,29 +1121,40 @@ function startRecording(){
       currentTrack = track || null;
       recordedChunks = [];
 
-      if(typeof MediaRecorder !== "undefined"){
-        let options = {};
-        if(MediaRecorder.isTypeSupported("video/webm;codecs=vp9")){
-          options.mimeType = "video/webm;codecs=vp9";
-        }else if(MediaRecorder.isTypeSupported("video/webm")){
-          options.mimeType = "video/webm";
-        }
+      // SAFE MediaRecorder setup (iPhone-safe)
 
-        mediaRecorder.onstart = () => {
-  console.log("🎥 Recording started");
-};
+if (typeof MediaRecorder !== "undefined") {
 
-        mediaRecorder = new MediaRecorder(currentStream, options);
-        mediaRecorder.ondataavailable = function(e){
-          if(e.data && e.data.size > 0){
-            recordedChunks.push(e.data);
-          }
-        };
+  try {
+    let options = {};
 
-      }else{
-        mediaRecorder = null;
-      }
+    if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
+      options.mimeType = "video/webm;codecs=vp9";
+    } else if (MediaRecorder.isTypeSupported("video/webm")) {
+      options.mimeType = "video/webm";
     }
+
+    mediaRecorder = new MediaRecorder(currentStream, options);
+
+    mediaRecorder.onstart = () => {
+      console.log("🎥 Recording started");
+    };
+
+    mediaRecorder.ondataavailable = function (e) {
+      if (e.data && e.data.size > 0) {
+        recordedChunks.push(e.data);
+      }
+    };
+
+  } catch (err) {
+    console.log("❌ MediaRecorder failed:", err);
+    mediaRecorder = null;
+  }
+
+} else {
+  console.log("⚠️ MediaRecorder NOT supported on this device");
+  mediaRecorder = null;
+}
 
     function beginMovement(){
       if(isRunning) return;
