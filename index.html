@@ -1308,6 +1308,8 @@ beginMovement();
                 return;
               }
 
+         console.log("Chunks:", recordedChunks.length);
+              
               const reader = new FileReader();
               reader.onloadend = async function(){
                 const base64Video = reader.result;
