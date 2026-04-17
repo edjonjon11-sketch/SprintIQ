@@ -1092,68 +1092,60 @@ function startRecording(){
     }
 
     async function startCamera(){
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        throw new Error("Camera not supported on this device");
-      }
+  console.log("🎥 Attempting camera start...");
 
-      if(currentStream){
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-      }
-
-      currentStream = await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode: useBackCamera ? "environment" : "user",
-          width:{ ideal:1920 },
-          height:{ ideal:1080 },
-          frameRate:{ ideal:60 }
-        },
-        audio:false
-      });
-
-      const video = document.getElementById("camera");
-      if(video){
-        video.srcObject = currentStream;
-        await video.play().catch(()=>{});
-      }
-
-      const track = currentStream.getVideoTracks()[0];
-      currentTrack = track || null;
-      recordedChunks = [];
-
-      // SAFE MediaRecorder setup (iPhone-safe)
-
-if (typeof MediaRecorder !== "undefined") {
-
-  try {
-    let options = {};
-
-    if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
-      options.mimeType = "video/webm;codecs=vp9";
-    } else if (MediaRecorder.isTypeSupported("video/webm")) {
-      options.mimeType = "video/webm";
-    }
-
-    mediaRecorder = new MediaRecorder(currentStream, options);
-
-    mediaRecorder.onstart = () => {
-      console.log("🎥 Recording started");
-    };
-
-    mediaRecorder.ondataavailable = function (e) {
-      if (e.data && e.data.size > 0) {
-        recordedChunks.push(e.data);
-      }
-    };
-
-  } catch (err) {
-    console.log("❌ MediaRecorder failed:", err);
-    mediaRecorder = null;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert("Camera not supported");
+    return false;
   }
 
-} else {
-  console.log("⚠️ MediaRecorder NOT supported on this device");
-  mediaRecorder = null;
+  try{
+    if(currentStream){
+      currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
+    }
+
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: useBackCamera ? "environment" : "user"
+      },
+      audio: false
+    });
+
+    const video = document.getElementById('camera');
+
+    if(video){
+      video.srcObject = currentStream;
+      await video.play();
+    }
+
+    console.log("✅ Camera started");
+
+    // SAFE MediaRecorder (no crash)
+    if (typeof MediaRecorder !== "undefined") {
+      try {
+        mediaRecorder = new MediaRecorder(currentStream);
+
+        mediaRecorder.ondataavailable = function(e){
+          if(e.data && e.data.size > 0){
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.start();
+      } catch (err) {
+        console.log("MediaRecorder failed:", err);
+        mediaRecorder = null;
+      }
+    }
+
+    return true;
+
+  } catch(err){
+    console.error("❌ Camera error:", err);
+    alert("Camera blocked. Allow camera access.");
+    return false;
+  }
 }
 
     function beginMovement(){
