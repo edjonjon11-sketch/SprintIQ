@@ -1080,11 +1080,14 @@ function startRecording(){
 
         updateActiveUserUI();
 
-        await startCamera();
-        showScreen('live');
-        drawSpeedChart();
-        drawLanes();
-        beginMovement();
+        const cameraStarted = await startCamera();
+
+if(!cameraStarted){
+  return; // STOP if camera fails
+}
+
+showScreen('live');
+beginMovement();
       }catch(err){
         console.error("startRun crashed:", err);
         alert("Start failed: " + err.message);
