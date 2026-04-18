@@ -1220,50 +1220,48 @@ beginMovement();
   detectPose();
 } 
 
-  async function detectPose(){
+async function detectPose(){
   if(!detector || !currentStream) return;
 
   const video = document.getElementById("camera");
-
   const poses = await detector.estimatePoses(video);
 
   if(poses.length > 0){
-  const keypoints = poses[0].keypoints;
+    const keypoints = poses[0].keypoints;
 
- const hip = keypoints.find(k => k.name === "left_hip");
+    const hip = keypoints.find(k => k.name === "left_hip");
 
-if (hip) {
-  let now = Date.now();
+    if (hip) {
+      let now = Date.now();
 
-  if (lastX !== null) {
-    let dx = hip.x - lastX;
-    let dt = (now - lastTime) / 1000;
+      if (lastX !== null) {
+        let dx = hip.x - lastX;
+        let dt = (now - lastTime) / 1000;
 
-    let pixelSpeed = Math.abs(dx) / dt;
-    let speed = pixelSpeed * 0.02;
+        let pixelSpeed = Math.abs(dx) / dt;
+        let speed = pixelSpeed * 0.02;
 
-    document.getElementById("speed").innerText =
-      speed.toFixed(1) + " mph";
+        document.getElementById("speed").innerText =
+          speed.toFixed(1) + " mph";
 
-    // optional: update bar safely
-    document.getElementById("speedFill").style.width =
-      Math.min((speed / 22) * 100, 100) + "%";
+        document.getElementById("speedFill").style.width =
+          Math.min((speed / 22) * 100, 100) + "%";
+      }
+
+      lastX = hip.x;
+      lastTime = now;
+    }
+
+    const body = {
+      leftKnee: keypoints.find(k => k.name === "left_knee"),
+      rightKnee: keypoints.find(k => k.name === "right_knee"),
+      hip: keypoints.find(k => k.name === "left_hip"),
+      shoulder: keypoints.find(k => k.name === "left_shoulder")
+    };
+
+    analyzeForm(body);
   }
-
-  lastX = hip.x;
-  lastTime = now;
-} 
-
-  // keep your form analysis
-  const body = {
-    leftKnee: keypoints.find(k => k.name === "left_knee"),
-    rightKnee: keypoints.find(k => k.name === "right_knee"),
-    hip: keypoints.find(k => k.name === "left_hip"),
-    shoulder: keypoints.find(k => k.name === "left_shoulder")
-  };
-
-  analyzeForm(body);
-}
+}  
 
 function analyzeForm(body){
   let feedback = [];
