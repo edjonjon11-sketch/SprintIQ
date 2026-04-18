@@ -521,6 +521,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
   <script>
     window.onerror = function(msg, url, line, col, err){
       console.error("Global error:", msg, "line:", line, "col:", col, err);
@@ -557,8 +559,11 @@
     let currentTrack = null;
     let focusMode = false;
     let menuOpen = false;
+    let detector = null;
 
     window.onload = async function(){
+      await initPose();
+      
       showScreen("home");
       updateActiveUserUI();
       updateMedalUI();
@@ -574,7 +579,7 @@
       }catch(err){
         console.log("Session skipped");
       }
-
+      
       await renderPRClips();
     };
 
@@ -615,6 +620,16 @@
       }
     }
 
+   async function initPose(){
+  const model = poseDetection.SupportedModels.MoveNet;
+
+  detector = await poseDetection.createDetector(model, {
+    modelType: "lightning"
+  });
+
+  console.log("✅ Pose detection ready");
+}
+    
     function updateActiveUserUI(){
       const liveUserText = document.getElementById("liveUserText");
       const liveUserTop = document.getElementById("liveUser");
@@ -1172,14 +1187,59 @@ beginMovement();
       speeds.push(speed);
       chartData.push(speed);
 
+    runPoseDetection(videoFrame)
+      
       document.getElementById("speed").innerText = speed.toFixed(1) + " mph";
       document.getElementById("speedFill").style.width = (speed / 22 * 100) + "%";
 
       drawLanes();
       drawRunnerBox();
       drawSpeedChart();
+      
+      detectPose();
     }
 
+  async function detectPose(){
+  if(!detector || !currentStream) return;
+
+  const video = document.getElementById("camera");
+
+  const poses = await detector.estimatePoses(video);
+
+  if(poses.length > 0){
+    const keypoints = poses[0].keypoints;
+
+    const body = {
+      leftKnee: keypoints.find(k => k.name === "left_knee"),
+      rightKnee: keypoints.find(k => k.name === "right_knee"),
+      hip: keypoints.find(k => k.name === "left_hip"),
+      shoulder: keypoints.find(k => k.name === "left_shoulder")
+    };
+
+    analyzeForm(body);
+  }
+}
+
+function analyzeForm(body){
+  let feedback = [];
+
+  if(body.shoulder && body.hip && body.shoulder.x < body.hip.x){
+    feedback.push("Leaning back");
+  }
+
+  if(body.leftKnee && body.hip && body.leftKnee.y > body.hip.y){
+    feedback.push("Low knee drive");
+  }
+
+  const display = document.getElementById("splitDisplay");
+
+  if(display){
+    display.innerText = feedback.length
+      ? feedback.join(" | ")
+      : "Good running form";
+  }
+}
+    
     function markSplit(){
       if(!isRunning || !startTime) return;
 
