@@ -553,9 +553,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <script>
-    window.onerror = function(msg, url, line, col, err){
-      console.error("Global error:", msg, "line:", line, "col:", col, err);
-    };
+    window.onerror = function(msg, url, line){
+  alert("Error: " + msg + " at line " + line);
+};
 
     const SUPABASE_URL = "https://nosjciobbmhcbabypbsq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vc2pjaW9iYm1oY2JhYnlwYnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDI4MDMsImV4cCI6MjA5MDU3ODgwM30.xOKrPVbIacOM7JkA4DHQoJy1yEIXN8jCmg-ykJ0YL2I";
