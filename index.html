@@ -1211,7 +1211,6 @@ beginMovement();
       if(!isRunning || !startTime) return;
 
       const t = (Date.now() - startTime) / 1000;
-      document.getElementById("timer").innerText = t.toFixed(2) + "s";
 
       document.getElementById("speedFill").style.width = (speed / 22 * 100) + "%";
 
