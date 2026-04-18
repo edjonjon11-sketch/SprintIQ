@@ -1247,9 +1247,12 @@ beginMovement();
       let pixelSpeed = Math.abs(dx) / dt;
 
       // 🔥 convert pixels → mph (tune this later)
-      let speed = pixelSpeed * 
+      let speed = pixelSpeed * 0.02;
     }
 
+    document.getElementById("speed").innerText =
+  speed.toFixed(1) + " mph";
+    
     lastX = hip.x;
     lastTime = now;
   }
