@@ -1046,11 +1046,10 @@ function startRecording(){
               <div style="color:#aaa;font-size:12px;margin-top:4px;">
                 ${r.date || ""}
               </div>
-              ${
-                r.video
-                  ? `<button class="btn" onclick="openReplayFromUrl('${String(r.video).replace(/'/g, "\\'")}', '${r.distance}m • ${Number(r.time).toFixed(2)}s')">▶️ Watch</button>`
-                  : `<div style="color:#aaa;font-size:12px;margin-top:8px;">No video recorded</div>`
-              }
+              ${r.video 
+  ? `<button class="btn" onclick="openReplayFromUrl('${r.video}', '${r.distance}m • ${Number(r.time).toFixed(2)}s')">▶️ Watch</button>`
+  : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
+}
             </div>
           `;
         });
@@ -1376,21 +1375,30 @@ beginMovement();
     }
 
     async function saveRun(time, speed, videoBase64){
-      const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
-      if(!data[currentUser]) data[currentUser] = [];
+      // LOCAL SAVE (FIXED)
+const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
 
-      let localVideo = videoBase64 || null;
+if(!data[currentUser]) data[currentUser] = [];
 
-      data[currentUser].push({
-        distance,
-        time,
-        speed,
-        splits,
-        video: localVideo,
-        date: new Date().toLocaleString()
-      });
+let videoData = null;
 
-      localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+// ONLY save video if it's small enough
+if(videoBase64 && videoBase64.length < 5000000){  // ~5MB limit
+  videoData = videoBase64;
+} else {
+  console.log("⚠️ Video too large, skipping local save");
+}
+
+data[currentUser].push({
+  distance,
+  time,
+  speed,
+  splits,
+  video: videoData,   // ✅ IMPORTANT
+  date: new Date().toLocaleString()
+});
+
+localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
       const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
       if(!users.includes(currentUser)){
