@@ -1448,21 +1448,37 @@ localStorage.setItem("SprintIQUsers", JSON.stringify(data));
     }
 
     function openReplayFromUrl(videoUrl, titleText){
-      if(!videoUrl){
-        alert("No video available");
-        return;
-      }
 
-      const video = document.getElementById("replayVideo");
-      const title = document.getElementById("replayTitle");
+  if(!videoUrl){
+    alert("No video available");
+    return;
+  }
 
-      title.innerText = titleText || "Coach Replay";
-      video.pause();
-      video.src = videoUrl;
-      video.load();
-      video.play().catch(()=>{});
-      showScreen("replay");
-    }
+  const video = document.getElementById("replayVideo");
+  const title = document.getElementById("replayTitle");
+
+  title.innerText = titleText || "Coach Replay";
+
+  // 🔥 CRITICAL FIX
+  video.pause();
+  video.removeAttribute("src");   // clears old source
+  video.load();
+
+  // small delay prevents blank video bug
+  setTimeout(() => {
+    video.src = videoUrl;
+    video.load();
+
+    video.onloadeddata = () => {
+      video.play().catch(() => {
+        console.log("Autoplay blocked (normal on iPhone)");
+      });
+    };
+
+  }, 100);
+
+  showScreen("replay");
+}
 
     function zoomReplay(level){
       const video = document.getElementById("replayVideo");
