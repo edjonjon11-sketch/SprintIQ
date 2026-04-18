@@ -360,44 +360,37 @@
 <div class="card">
   <b>🏃 Technique Training</b>
 
-  <div style="margin-top:12px;">
+  <div style="margin-top:15px;">
+    <div><b>100m Sprint</b></div>
+    <lottie-player 
+      src="https://assets9.lottiefiles.com/packages/lf20_totrpclr.json"
+      background="transparent"
+      speed="1"
+      loop autoplay>
+    </lottie-player>
+    <div class="small-note">Explosive drive • High knees • Forward lean</div>
+  </div>
 
-    <!-- 100m -->
-    <div style="margin-bottom:16px;">
-      <div style="font-weight:bold;">100m Sprint Form</div>
-      <video autoplay muted loop playsinline style="width:100%; border-radius:12px; margin-top:6px;">
-        <source src="videos/100m.mp4" type="video/mp4">
-      </video>
-      <div class="small-note">High knee drive • Forward lean • Explosive arms</div>
-    </div>
+  <div style="margin-top:15px;">
+    <div><b>400m Technique</b></div>
+    <lottie-player 
+      src="https://assets4.lottiefiles.com/packages/lf20_9cyyl8i7.json"
+      background="transparent"
+      speed="0.8"
+      loop autoplay>
+    </lottie-player>
+    <div class="small-note">Relaxed shoulders • Rhythm stride</div>
+  </div>
 
-    <!-- 200m -->
-    <div style="margin-bottom:16px;">
-      <div style="font-weight:bold;">200m Technique</div>
-      <video autoplay muted loop playsinline style="width:100%; border-radius:12px; margin-top:6px;">
-        <source src="videos/200m.mp4" type="video/mp4">
-      </video>
-      <div class="small-note">Relaxed speed • Smooth transition • Controlled curve</div>
-    </div>
-
-    <!-- 400m -->
-    <div style="margin-bottom:16px;">
-      <div style="font-weight:bold;">400m Technique</div>
-      <video autoplay muted loop playsinline style="width:100%; border-radius:12px; margin-top:6px;">
-        <source src="videos/400m.mp4" type="video/mp4">
-      </video>
-      <div class="small-note">Relaxed shoulders • Rhythm stride • Maintain posture</div>
-    </div>
-
-    <!-- 1600m -->
-    <div>
-      <div style="font-weight:bold;">1600m Technique</div>
-      <video autoplay muted loop playsinline style="width:100%; border-radius:12px; margin-top:6px;">
-        <source src="videos/1600m.mp4" type="video/mp4">
-      </video>
-      <div class="small-note">Upright form • Efficient stride • Energy control</div>
-    </div>
-
+  <div style="margin-top:15px;">
+    <div><b>1600m Technique</b></div>
+    <lottie-player 
+      src="https://assets10.lottiefiles.com/packages/lf20_khzniaya.json"
+      background="transparent"
+      speed="0.6"
+      loop autoplay>
+    </lottie-player>
+    <div class="small-note">Efficient stride • Upright posture</div>
   </div>
 </div>
   
@@ -567,6 +560,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <script>
     window.onerror = function(msg, url, line, col, err){
       console.error("Global error:", msg, "line:", line, "col:", col, err);
