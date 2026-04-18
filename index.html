@@ -1213,8 +1213,6 @@ beginMovement();
       const t = (Date.now() - startTime) / 1000;
       document.getElementById("timer").innerText = t.toFixed(2) + "s";
 
-      
-      document.getElementById("speed").innerText = speed.toFixed(1) + " mph";
       document.getElementById("speedFill").style.width = (speed / 22 * 100) + "%";
 
       drawLanes();
@@ -1240,18 +1238,25 @@ beginMovement();
 
     let now = Date.now();
 
-    if(lastX !== null){
-      let dx = hip.x - lastX;
-      let dt = (now - lastTime) / 1000;
+    if(hip){
 
-      let pixelSpeed = Math.abs(dx) / dt;
+  let now = Date.now();
 
-      // 🔥 convert pixels → mph (tune this later)
-      let speed = pixelSpeed * 0.02;
-    }
+  if(lastX !== null){
+    let dx = hip.x - lastX;
+    let dt = (now - lastTime) / 1000;
+
+    let pixelSpeed = Math.abs(dx) / dt;
+
+    let speed = pixelSpeed * 0.02;
 
     document.getElementById("speed").innerText =
-  speed.toFixed(1) + " mph";
+      speed.toFixed(1) + " mph";
+  }
+
+  lastX = hip.x;
+  lastTime = now;
+}
     
     lastX = hip.x;
     lastTime = now;
