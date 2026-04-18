@@ -1179,7 +1179,7 @@ beginMovement();
           }
         };
 
-        mediaRecorder.start();
+        
       } catch (err) {
         console.log("MediaRecorder failed:", err);
         mediaRecorder = null;
@@ -1377,6 +1377,7 @@ function analyzeForm(body){
     }
 
     async function stopRun(){
+      console.log("STOP RUN CLICKED");
       if(timer) clearInterval(timer);
 
       const t = startTime ? (Date.now() - startTime) / 1000 : 0;
