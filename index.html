@@ -580,7 +580,8 @@
     let timer = null;
     let distance = 100;
     let splits = [];
-    let speeds = [];
+    let lastX = null;
+    let lastTime = null;
     let isRunning = false;
     let currentStream = null;
     let selectedLane = 1;
@@ -1212,11 +1213,6 @@ beginMovement();
       const t = (Date.now() - startTime) / 1000;
       document.getElementById("timer").innerText = t.toFixed(2) + "s";
 
-      const speed = Math.min((distance / Math.max(t, 0.1)) * 2.237, 22);
-      speeds.push(speed);
-      chartData.push(speed);
-
-    runPoseDetection(videoFrame)
       
       document.getElementById("speed").innerText = speed.toFixed(1) + " mph";
       document.getElementById("speedFill").style.width = (speed / 22 * 100) + "%";
@@ -1236,17 +1232,37 @@ beginMovement();
   const poses = await detector.estimatePoses(video);
 
   if(poses.length > 0){
-    const keypoints = poses[0].keypoints;
+  const keypoints = poses[0].keypoints;
 
-    const body = {
-      leftKnee: keypoints.find(k => k.name === "left_knee"),
-      rightKnee: keypoints.find(k => k.name === "right_knee"),
-      hip: keypoints.find(k => k.name === "left_hip"),
-      shoulder: keypoints.find(k => k.name === "left_shoulder")
-    };
+  const hip = keypoints.find(k => k.name === "left_hip");
 
-    analyzeForm(body);
+  if(hip){
+
+    let now = Date.now();
+
+    if(lastX !== null){
+      let dx = hip.x - lastX;
+      let dt = (now - lastTime) / 1000;
+
+      let pixelSpeed = Math.abs(dx) / dt;
+
+      // 🔥 convert pixels → mph (tune this later)
+      let speed = pixelSpeed * 
+    }
+
+    lastX = hip.x;
+    lastTime = now;
   }
+
+  // keep your form analysis
+  const body = {
+    leftKnee: keypoints.find(k => k.name === "left_knee"),
+    rightKnee: keypoints.find(k => k.name === "right_knee"),
+    hip: keypoints.find(k => k.name === "left_hip"),
+    shoulder: keypoints.find(k => k.name === "left_shoulder")
+  };
+
+  analyzeForm(body);
 }
 
 function analyzeForm(body){
