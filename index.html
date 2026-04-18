@@ -1207,19 +1207,18 @@ beginMovement();
       timer = setInterval(update, 100);
     }
 
-    function update(){
-      if(!isRunning || !startTime) return;
+   function update(){
+  if(!isRunning || !startTime) return;
 
-      const t = (Date.now() - startTime) / 1000;
+  const t = (Date.now() - startTime) / 1000;
+  document.getElementById("timer").innerText = t.toFixed(2) + "s";
 
-      document.getElementById("speedFill").style.width = (speed / 22 * 100) + "%";
+  drawLanes();
+  drawRunnerBox();
+  drawSpeedChart();
 
-      drawLanes();
-      drawRunnerBox();
-      drawSpeedChart();
-      
-      detectPose();
-    }
+  detectPose();
+} 
 
   async function detectPose(){
   if(!detector || !currentStream) return;
@@ -1231,35 +1230,29 @@ beginMovement();
   if(poses.length > 0){
   const keypoints = poses[0].keypoints;
 
-  const hip = keypoints.find(k => k.name === "left_hip");
+ const hip = keypoints.find(k => k.name === "left_hip");
 
-  if(hip){
-
-    let now = Date.now();
-
-    if(hip){
-
+if (hip) {
   let now = Date.now();
 
-  if(lastX !== null){
+  if (lastX !== null) {
     let dx = hip.x - lastX;
     let dt = (now - lastTime) / 1000;
 
     let pixelSpeed = Math.abs(dx) / dt;
-
     let speed = pixelSpeed * 0.02;
 
     document.getElementById("speed").innerText =
       speed.toFixed(1) + " mph";
+
+    // optional: update bar safely
+    document.getElementById("speedFill").style.width =
+      Math.min((speed / 22) * 100, 100) + "%";
   }
 
   lastX = hip.x;
   lastTime = now;
-}
-    
-    lastX = hip.x;
-    lastTime = now;
-  }
+} 
 
   // keep your form analysis
   const body = {
