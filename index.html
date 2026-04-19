@@ -13,7 +13,9 @@
       font-family:-apple-system, BlinkMacSystemFont, sans-serif;
       background:linear-gradient(to bottom,#000,#111);
       color:white;
+
       overflow-x:hidden;
+      overflow-y:auto; /* ✅ scrolling */
     }
 
     .screen{
@@ -22,6 +24,7 @@
       width:100%;
       max-width:100vw;
       min-height:100vh;
+      overflow-y:auto;
     }
 
     .active{ display:block; }
@@ -95,6 +98,15 @@
       transition:0.2s;
     }
 
+.screen{
+  display:none;
+  padding:16px;
+  width:100%;
+  max-width:100vw;
+  min-height:100vh;
+  overflow-y:auto;   /* ✅ ADD THIS */
+}
+    
     .menuItem:hover{
       background:rgba(255,0,0,0.3);
     }
@@ -358,30 +370,34 @@
   </div>
 
 <div class="card">
-  <b>🏃 Technique Training</b>
+  <b>🏃 Sprint Technique Training</b>
 
-  <!-- 100m -->
   <div style="margin-top:15px;">
-    <div><b>100m Sprint</b></div>
-    <img src="https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif" 
-         style="width:100%; border-radius:12px;">
-    <div class="small-note">Explosive drive • High knees • Forward lean</div>
+    <div><b>Start / Drive Phase</b></div>
+    <div class="small-note">
+      Low forward angle • Explosive push • Big arm drive
+    </div>
   </div>
 
-  <!-- 400m -->
   <div style="margin-top:15px;">
-    <div><b>400m Technique</b></div>
-    <img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" 
-         style="width:100%; border-radius:12px;">
-    <div class="small-note">Relaxed shoulders • Rhythm stride</div>
+    <div><b>Acceleration (0–30m)</b></div>
+    <div class="small-note">
+      Gradually rise up • Powerful strides • Stay aggressive
+    </div>
   </div>
 
-  <!-- 1600m -->
   <div style="margin-top:15px;">
-    <div><b>1600m Technique</b></div>
-    <img src="https://media.giphy.com/media/xT0GqeSlGSRQutbQwM/giphy.gif" 
-         style="width:100%; border-radius:12px;">
-    <div class="small-note">Efficient stride • Upright posture</div>
+    <div><b>Top Speed (30–60m)</b></div>
+    <div class="small-note">
+      Upright posture • Relax shoulders • Fast turnover
+    </div>
+  </div>
+
+  <div style="margin-top:15px;">
+    <div><b>Finish</b></div>
+    <div class="small-note">
+      Lean chest forward • Don’t slow early
+    </div>
   </div>
 </div>
   
