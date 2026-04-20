@@ -1151,7 +1151,9 @@ if(!cameraStarted){
 }
 
 showScreen('live');
-beginMovement();
+setTimeout(() => {
+  startRecording();
+}, 300);
       }catch(err){
         console.error("startRun crashed:", err);
         alert("Start failed: " + err.message);
