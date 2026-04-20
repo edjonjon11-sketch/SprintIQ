@@ -1169,11 +1169,13 @@ setTimeout(() => {
   }
 
   try{
+    // Stop previous stream
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
       currentStream = null;
     }
 
+    // Start camera
     currentStream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: useBackCamera ? "environment" : "user"
@@ -1190,42 +1192,52 @@ setTimeout(() => {
 
     console.log("✅ Camera started");
 
-    // SAFE MediaRecorder (no crash)
-    if if (typeof MediaRecorder !== "undefined") {
-  try {
+    // 🔥 SAFE MediaRecorder setup (no crashes)
+    mediaRecorder = null;
 
-    let options = {};
+    if (typeof MediaRecorder !== "undefined") {
+      try {
 
-    if (MediaRecorder.isTypeSupported("video/mp4")) {
-      options.mimeType = "video/mp4";
-    } else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
-      options.mimeType = "video/webm;codecs=vp9";
-    } else if (MediaRecorder.isTypeSupported("video/webm")) {
-      options.mimeType = "video/webm";
+        let options = {};
+
+        // Try best supported format (prevents iPhone crash)
+        if (MediaRecorder.isTypeSupported("video/mp4")) {
+          options.mimeType = "video/mp4";
+        } else if (MediaRecorder.isTypeSupported("video/webm")) {
+          options.mimeType = "video/webm";
+        }
+
+        mediaRecorder = new MediaRecorder(currentStream, options);
+
+        recordedChunks = [];
+
+        mediaRecorder.ondataavailable = function(e){
+          console.log("📦 chunk:", e.data.size);
+          if(e.data && e.data.size > 0){
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstart = () => {
+          console.log("🎥 Recording STARTED");
+        };
+
+        mediaRecorder.onstop = () => {
+          console.log("🛑 Recording STOPPED");
+        };
+
+      } catch (err) {
+        console.log("⚠️ MediaRecorder failed:", err);
+        mediaRecorder = null;
+      }
     }
 
-    mediaRecorder = new MediaRecorder(currentStream, options);
+    return true;
 
-    recordedChunks = [];
-
-    mediaRecorder.ondataavailable = function(e){
-      console.log("📦 chunk received:", e.data.size);
-      if(e.data && e.data.size > 0){
-        recordedChunks.push(e.data);
-      }
-    };
-
-    mediaRecorder.onstart = () => {
-      console.log("🎥 Recorder STARTED");
-    };
-
-    mediaRecorder.onerror = (e) => {
-      console.log("Recorder error:", e);
-    };
-
-  } catch (err) {
-    console.log("MediaRecorder failed:", err);
-    mediaRecorder = null;
+  } catch(err){
+    console.error("❌ Camera error:", err);
+    alert("Camera blocked. Allow camera access.");
+    return false;
   }
 }
 
@@ -1523,10 +1535,8 @@ if(!data[currentUser]) data[currentUser] = [];
 let videoData = null;
 
 // ONLY save video if it's small enough
-if(videoBase64 && videoBase64.length < 5000000){  // ~5MB limit
+if(videoBase64){
   videoData = videoBase64;
-} else {
-  console.log("⚠️ Video too large, skipping local save");
 }
 
 data[currentUser].push({
