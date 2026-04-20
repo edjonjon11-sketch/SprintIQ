@@ -1402,6 +1402,8 @@ function analyzeForm(body){
       console.log("STOP RUN CLICKED");
       if(timer) clearInterval(timer);
 
+      console.log("STOP RUN CLICKED", mediaRecorder ? mediaRecorder.state : "no recorder");
+
       const t = startTime ? (Date.now() - startTime) / 1000 : 0;
       const speed = t > 0 ? (distance / t) * 2.237 : 0;
 
