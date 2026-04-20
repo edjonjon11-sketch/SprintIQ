@@ -1191,29 +1191,41 @@ setTimeout(() => {
     console.log("✅ Camera started");
 
     // SAFE MediaRecorder (no crash)
-    if (typeof MediaRecorder !== "undefined") {
-      try {
-        mediaRecorder = new MediaRecorder(currentStream);
+    if if (typeof MediaRecorder !== "undefined") {
+  try {
 
-        mediaRecorder.ondataavailable = function(e){
-          if(e.data && e.data.size > 0){
-            recordedChunks.push(e.data);
-          }
-        };
+    let options = {};
 
-        
-      } catch (err) {
-        console.log("MediaRecorder failed:", err);
-        mediaRecorder = null;
-      }
+    if (MediaRecorder.isTypeSupported("video/mp4")) {
+      options.mimeType = "video/mp4";
+    } else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) {
+      options.mimeType = "video/webm;codecs=vp9";
+    } else if (MediaRecorder.isTypeSupported("video/webm")) {
+      options.mimeType = "video/webm";
     }
 
-    return true;
+    mediaRecorder = new MediaRecorder(currentStream, options);
 
-  } catch(err){
-    console.error("❌ Camera error:", err);
-    alert("Camera blocked. Allow camera access.");
-    return false;
+    recordedChunks = [];
+
+    mediaRecorder.ondataavailable = function(e){
+      console.log("📦 chunk received:", e.data.size);
+      if(e.data && e.data.size > 0){
+        recordedChunks.push(e.data);
+      }
+    };
+
+    mediaRecorder.onstart = () => {
+      console.log("🎥 Recorder STARTED");
+    };
+
+    mediaRecorder.onerror = (e) => {
+      console.log("Recorder error:", e);
+    };
+
+  } catch (err) {
+    console.log("MediaRecorder failed:", err);
+    mediaRecorder = null;
   }
 }
 
