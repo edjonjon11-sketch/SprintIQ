@@ -771,7 +771,6 @@ window.onload = async function(){
     }
 
 function startRecording(){
-
   if (!mediaRecorder) {
     alert("Recorder not ready");
     return;
@@ -779,7 +778,8 @@ function startRecording(){
 
   if (mediaRecorder.state === "inactive") {
     recordedChunks = [];
-    mediaRecorder.start(100);
+    mediaRecorder.start();
+    console.log("🎥 Recording started");
   }
 
   beginMovement();
