@@ -640,19 +640,23 @@
     }
 
     function toggleMenu(){
-      const menu = document.getElementById("sideMenu");
-      const overlay = document.getElementById("menuOverlay");
+  const menu = document.getElementById("sideMenu");
+  const overlay = document.getElementById("menuOverlay");
 
-      if(menuOpen){
-        menu.style.left = "-260px";
-        overlay.style.display = "none";
-      }else{
-        menu.style.left = "0";
-        overlay.style.display = "block";
-      }
+  if(menuOpen){
+    // CLOSE menu
+    menu.style.left = "-260px";
+    overlay.style.display = "none";
+    overlay.style.pointerEvents = "none";   // ✅ allow clicks through
+  }else{
+    // OPEN menu
+    menu.style.left = "0";
+    overlay.style.display = "block";
+    overlay.style.pointerEvents = "auto";   // ✅ block clicks (menu active)
+  }
 
-      menuOpen = !menuOpen;
-    }
+  menuOpen = !menuOpen;
+}
 
     function navigate(screen){
       showScreen(screen);
