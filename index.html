@@ -101,15 +101,6 @@
       cursor:pointer;
       transition:0.2s;
     }
-
-.screen{
-  display:none;
-  padding:16px;
-  width:100%;
-  max-width:100vw;
-  min-height:100vh;
-  overflow-y:auto;   /* ✅ ADD THIS */
-}
     
     .menuItem:hover{
       background:rgba(255,0,0,0.3);
@@ -610,28 +601,33 @@
     let focusMode = false;
     let menuOpen = false;
     let detector = null;
+    
+window.onload = async function(){
 
-    window.onload = async function(){
-      await initPose();
-      
-      showScreen("home");
-      updateActiveUserUI();
-      updateMedalUI();
-      renderBestTimes();
+  try{
+    await initPose();
+  }catch(err){
+    console.log("Pose failed, continuing...");
+  }
 
-      try{
-        if(supabaseClient){
-          const { data } = await supabaseClient.auth.getSession();
-          if(data?.session){
-            loadUserFromSession(data.session);
-          }
-        }
-      }catch(err){
-        console.log("Session skipped");
+  showScreen("home");
+  updateActiveUserUI();
+  updateMedalUI();
+  renderBestTimes();
+
+  try{
+    if(supabaseClient){
+      const { data } = await supabaseClient.auth.getSession();
+      if(data?.session){
+        loadUserFromSession(data.session);
       }
-      
-      await renderPRClips();
-    };
+    }
+  }catch(err){
+    console.log("Session skipped");
+  }
+
+  await renderPRClips();
+};
 
     function showScreen(id){
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
