@@ -778,7 +778,7 @@ function startRecording(){
 
   if (mediaRecorder.state === "inactive") {
     recordedChunks = [];
-    mediaRecorder.start();
+    mediaRecorder.start(200);
     console.log("🎥 Recording started");
   }
 
@@ -1195,42 +1195,33 @@ setTimeout(() => {
     // 🔥 SAFE MediaRecorder setup (no crashes)
     mediaRecorder = null;
 
-    if (typeof MediaRecorder !== "undefined") {
-      try {
+    mediaRecorder = null;
 
-        let options = {};
+if (typeof MediaRecorder !== "undefined") {
+  try {
 
-        // Try best supported format (prevents iPhone crash)
-        if (MediaRecorder.isTypeSupported("video/mp4")) {
-          options.mimeType = "video/mp4";
-        } else if (MediaRecorder.isTypeSupported("video/webm")) {
-          options.mimeType = "video/webm";
-        }
+    // FORCE iPhone-safe format
+    let options = { mimeType: "video/mp4" };
 
-        mediaRecorder = new MediaRecorder(currentStream, options);
+    mediaRecorder = new MediaRecorder(currentStream, options);
 
-        recordedChunks = [];
+    recordedChunks = [];
 
-        mediaRecorder.ondataavailable = function(e){
-          console.log("📦 chunk:", e.data.size);
-          if(e.data && e.data.size > 0){
-            recordedChunks.push(e.data);
-          }
-        };
-
-        mediaRecorder.onstart = () => {
-          console.log("🎥 Recording STARTED");
-        };
-
-        mediaRecorder.onstop = () => {
-          console.log("🛑 Recording STOPPED");
-        };
-
-      } catch (err) {
-        console.log("⚠️ MediaRecorder failed:", err);
-        mediaRecorder = null;
+    mediaRecorder.ondataavailable = function(e){
+      if(e.data && e.data.size > 0){
+        recordedChunks.push(e.data);
       }
-    }
+    };
+
+    mediaRecorder.onstop = function(){
+      console.log("🛑 STOPPED. Chunks:", recordedChunks.length);
+    };
+
+  } catch (err) {
+    console.log("MediaRecorder failed:", err);
+    mediaRecorder = null;
+  }
+}
 
     return true;
 
