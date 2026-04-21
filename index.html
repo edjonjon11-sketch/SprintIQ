@@ -1457,33 +1457,35 @@ function analyzeForm(body){
           await finishUI();
         }else{
           mediaRecorder.onstop = async function(){
-            try{
-              const mimeType = mediaRecorder.mimeType || "video/webm";
-              const blob = new Blob(recordedChunks, { type:mimeType });
 
-              if(blob.size === 0){
-                await saveRun(t, speed, null);
-                await finishUI();
-                return;
-              }
+  if(!recordedBlob){
+    console.log("❌ No blob recorded");
+    await saveRun(t, speed, null);
+    await finishUI();
+    return;
+  }
 
-         console.log("Chunks:", recordedChunks.length);
-              
-              const reader = new FileReader();
-              reader.onloadend = async function(){
-                const base64Video = reader.result;
-                await saveRun(t, speed, base64Video);
-                await finishUI();
-              };
-              reader.readAsDataURL(blob);
-            }catch(err){
-              console.error("Video processing failed:", err);
-              await saveRun(t, speed, null);
-              await finishUI();
-            }
-          };
+  console.log("✅ Blob size:", recordedBlob.size);
 
-          mediaRecorder.stop();
+  const reader = new FileReader();
+
+  reader.onloadend = async function(){
+    const base64Video = reader.result;
+
+    await saveRun(t, speed, base64Video);
+
+    // 🔥 DOWNLOAD TO PHONE
+    const url = URL.createObjectURL(recordedBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sprint_run.mp4";
+    a.click();
+
+    await finishUI();
+  };
+
+  reader.readAsDataURL(recordedBlob);
+};
         }
       }catch(err){
         console.error("StopRun crashed:", err);
