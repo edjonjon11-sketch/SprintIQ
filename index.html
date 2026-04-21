@@ -601,6 +601,7 @@
     let focusMode = false;
     let menuOpen = false;
     let detector = null;
+    let recordedBlob = null;
     
 window.onload = async function(){
 
@@ -772,14 +773,20 @@ window.onload = async function(){
 
 function startRecording(){
   if (!mediaRecorder) {
-    alert("Recorder not ready");
+    console.log("❌ No recorder available");
     return;
   }
 
   if (mediaRecorder.state === "inactive") {
     recordedChunks = [];
-    mediaRecorder.start(200);
-    console.log("🎥 Recording started");
+    recordedBlob = null;
+
+    try {
+      mediaRecorder.start(200); // chunk capture
+      console.log("🎥 Recording STARTED");
+    } catch (err) {
+      console.log("❌ Start failed:", err);
+    }
   }
 
   beginMovement();
@@ -1195,13 +1202,15 @@ setTimeout(() => {
     // 🔥 SAFE MediaRecorder setup (no crashes)
     mediaRecorder = null;
 
-    mediaRecorder = null;
-
 if (typeof MediaRecorder !== "undefined") {
   try {
+    let options = {};
 
-    // FORCE iPhone-safe format
-    let options = { mimeType: "video/mp4" };
+    if (MediaRecorder.isTypeSupported("video/mp4")) {
+      options.mimeType = "video/mp4";
+    } else if (MediaRecorder.isTypeSupported("video/webm")) {
+      options.mimeType = "video/webm";
+    }
 
     mediaRecorder = new MediaRecorder(currentStream, options);
 
@@ -1214,11 +1223,19 @@ if (typeof MediaRecorder !== "undefined") {
     };
 
     mediaRecorder.onstop = function(){
-      console.log("🛑 STOPPED. Chunks:", recordedChunks.length);
+      console.log("🛑 Recording stopped");
+
+      if(recordedChunks.length){
+        recordedBlob = new Blob(recordedChunks, {
+          type: mediaRecorder.mimeType
+        });
+      } else {
+        console.log("⚠️ No video captured");
+      }
     };
 
   } catch (err) {
-    console.log("MediaRecorder failed:", err);
+    console.log("⚠️ MediaRecorder failed:", err);
     mediaRecorder = null;
   }
 }
