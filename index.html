@@ -788,6 +788,7 @@ function startRecording(){
     } catch (err) {
       console.log("❌ Start failed:", err);
     }
+  }
 }
     
     function loadUserFromSession(session){
@@ -1470,10 +1471,16 @@ function analyzeForm(body){
 
     // download to phone
     const url = URL.createObjectURL(recordedBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sprint_run.mp4";
-    a.click();
+    // Try download (Android/Desktop)
+const a = document.createElement("a");
+a.href = url;
+a.download = "sprint_run.mp4";
+a.click();
+
+// 🔥 iPhone fallback (opens video so user can save)
+setTimeout(() => {
+  window.open(url, "_blank");
+}, 500);
 
     await finishUI();
   };
@@ -1614,6 +1621,7 @@ localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
   title.innerText = titleText || "Coach Replay";
 
+  // 🔥 FULL RESET (important)
   video.pause();
   video.removeAttribute("src");
   video.load();
@@ -1622,23 +1630,28 @@ localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
     let finalUrl = videoUrl;
 
-    // 🔥 HANDLE BASE64 (LOCAL STORAGE)
+    // ✅ HANDLE LOCAL BASE64 VIDEO
     if(videoUrl.startsWith("data:")){
       const blob = await fetch(videoUrl).then(r => r.blob());
       finalUrl = URL.createObjectURL(blob);
     }
 
     video.src = finalUrl;
-    video.muted = true;
+
+    // 🔥 CRITICAL FIXES FOR MOBILE
+    video.controls = true;
     video.playsInline = true;
+    video.muted = false;
+    video.preload = "auto";
 
     video.load();
 
+    // Try autoplay (will fail on iPhone but that's OK)
     video.play().catch(() => {
-      console.log("Tap to play (iPhone behavior)");
+      console.log("User tap required (normal)");
     });
 
-  }, 100);
+  }, 120);
 
   showScreen("replay");
 }
