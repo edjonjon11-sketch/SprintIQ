@@ -783,7 +783,7 @@ function startRecording(){
     recordedBlob = null;
 
     try {
-      mediaRecorder.start(200); // chunk capture
+      mediaRecorder.start(); // chunk capture
       console.log("🎥 Recording STARTED");
     } catch (err) {
       console.log("❌ Start failed:", err);
