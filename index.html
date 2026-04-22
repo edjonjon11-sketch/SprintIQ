@@ -1226,8 +1226,9 @@ if (typeof MediaRecorder !== "undefined") {
     console.log("⚠️ MediaRecorder failed:", err);
     mediaRecorder = null;
   }
+} else {
+  console.log("⚠️ MediaRecorder not supported");
 }
-
     return true;
 
   } catch(err){
