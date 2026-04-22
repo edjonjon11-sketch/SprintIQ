@@ -1486,6 +1486,8 @@ function analyzeForm(body){
 
   reader.readAsDataURL(recordedBlob);
 };
+
+mediaRecorder.stop();
         }
       }catch(err){
         console.error("StopRun crashed:", err);
