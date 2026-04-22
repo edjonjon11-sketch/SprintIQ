@@ -1222,13 +1222,6 @@ if (typeof MediaRecorder !== "undefined") {
       }
     };
 
-    mediaRecorder.onstop = function(){
-      console.log("🛑 Recording stopped");
-
-      if(recordedChunks.length){
-        recordedBlob = new Blob(recordedChunks, {
-          type: mediaRecorder.mimeType
-        });
       } else {
         console.log("⚠️ No video captured");
       }
@@ -1458,6 +1451,13 @@ function analyzeForm(body){
         }else{
           mediaRecorder.onstop = async function(){
 
+  // 🔥 CREATE BLOB HERE (THIS IS THE FIX)
+  if(recordedChunks.length){
+    recordedBlob = new Blob(recordedChunks, {
+      type: mediaRecorder.mimeType
+    });
+  }
+
   if(!recordedBlob){
     console.log("❌ No blob recorded");
     await saveRun(t, speed, null);
@@ -1474,7 +1474,7 @@ function analyzeForm(body){
 
     await saveRun(t, speed, base64Video);
 
-    // 🔥 DOWNLOAD TO PHONE
+    // download to phone
     const url = URL.createObjectURL(recordedBlob);
     const a = document.createElement("a");
     a.href = url;
@@ -1486,7 +1486,6 @@ function analyzeForm(body){
 
   reader.readAsDataURL(recordedBlob);
 };
-
 mediaRecorder.stop();
         }
       }catch(err){
