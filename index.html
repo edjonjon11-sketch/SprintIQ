@@ -492,6 +492,7 @@
       <button class="btn" onclick="resetRun()">Reset</button>
       <button class="btn" onclick="flipCamera()">Flip</button>
       <button class="btn" onclick="backupData()">Backup</button>
+      <button class="btn" onclick="beginMovement()">Start Timer</button>
     </div>
   </div>
 
@@ -787,9 +788,6 @@ function startRecording(){
     } catch (err) {
       console.log("❌ Start failed:", err);
     }
-  }
-
-  beginMovement();
 }
     
     function loadUserFromSession(session){
@@ -1616,21 +1614,29 @@ localStorage.setItem("SprintIQUsers", JSON.stringify(data));
 
   title.innerText = titleText || "Coach Replay";
 
-  // 🔥 CRITICAL FIX
   video.pause();
-  video.removeAttribute("src");   // clears old source
+  video.removeAttribute("src");
   video.load();
 
-  // small delay prevents blank video bug
-  setTimeout(() => {
-    video.src = videoUrl;
+  setTimeout(async () => {
+
+    let finalUrl = videoUrl;
+
+    // 🔥 HANDLE BASE64 (LOCAL STORAGE)
+    if(videoUrl.startsWith("data:")){
+      const blob = await fetch(videoUrl).then(r => r.blob());
+      finalUrl = URL.createObjectURL(blob);
+    }
+
+    video.src = finalUrl;
+    video.muted = true;
+    video.playsInline = true;
+
     video.load();
 
-    video.onloadeddata = () => {
-      video.play().catch(() => {
-        console.log("Autoplay blocked (normal on iPhone)");
-      });
-    };
+    video.play().catch(() => {
+      console.log("Tap to play (iPhone behavior)");
+    });
 
   }, 100);
 
