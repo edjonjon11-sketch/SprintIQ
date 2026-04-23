@@ -1456,6 +1456,9 @@ function analyzeForm(body){
         }else{
           mediaRecorder.onstop = async function(){
 
+            console.log("🛑 Recording STOPPED");
+console.log("Chunks:", recordedChunks.length);
+
   // 🔥 CREATE BLOB HERE (THIS IS THE FIX)
   if(recordedChunks.length){
     recordedBlob = new Blob(recordedChunks, {
