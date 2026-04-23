@@ -486,7 +486,7 @@
     </div>
 
     <div class="side-buttons">
-      <button class="btn" onclick="startRecording()">Start</button>
+      <button class="btn" onclick="startRunFlow()">Start</button>
       <button class="btn" onclick="beginMovement()">Start Timer</button>
       <button class="btn" onclick="markSplit()">Split</button>
       <button class="btn" onclick="stopRun()">Finish</button>
@@ -774,7 +774,7 @@ window.onload = async function(){
 
 function startRecording(){
   if (!mediaRecorder) {
-    console.log("❌ No recorder available");
+    alert("Recorder not ready");
     return;
   }
 
@@ -783,12 +783,22 @@ function startRecording(){
     recordedBlob = null;
 
     try {
-      mediaRecorder.start(); // chunk capture
+      mediaRecorder.start();
+
       console.log("🎥 Recording STARTED");
+
+      // 🔴 SHOW RECORDING
+      document.getElementById("recordingBadge").style.display = "block";
+
     } catch (err) {
-      console.log("❌ Start failed:", err);
+      alert("Recording failed: " + err.message);
     }
   }
+}
+
+    function startRunFlow(){
+  startRecording();
+  beginMovement();
 }
     
     function loadUserFromSession(session){
