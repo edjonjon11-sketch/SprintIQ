@@ -603,6 +603,7 @@
     let menuOpen = false;
     let detector = null;
     let recordedBlob = null;
+    let currentRunVideoId = null;
     
 window.onload = async function(){
 
@@ -637,6 +638,57 @@ window.onload = async function(){
       if(target) target.classList.add('active');
     }
 
+const DB_NAME = "TrackStarDB";
+const DB_VERSION = 1;
+const STORE_NAME = "videos";
+
+function openVideoDB(){
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = function(event){
+      const db = event.target.result;
+      if(!db.objectStoreNames.contains(STORE_NAME)){
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+
+    request.onsuccess = function(){
+      resolve(request.result);
+    };
+
+    request.onerror = function(){
+      reject(request.error);
+    };
+  });
+}
+
+async function saveVideoToDB(videoId, blob){
+  const db = await openVideoDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.put(blob, videoId);
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getVideoFromDB(videoId){
+  const db = await openVideoDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(videoId);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+    
     function toggleMenu(){
   const menu = document.getElementById("sideMenu");
   const overlay = document.getElementById("menuOverlay");
@@ -773,25 +825,22 @@ window.onload = async function(){
     }
 
 function startRecording(){
-  if (!mediaRecorder) {
+  if(!mediaRecorder){
     alert("Recorder not ready");
     return;
   }
 
-  if (mediaRecorder.state === "inactive") {
+  if(mediaRecorder.state === "inactive"){
     recordedChunks = [];
     recordedBlob = null;
 
-    try {
-      mediaRecorder.start(1000);
-
-      console.log("🎥 Recording STARTED");
-
-      // 🔴 SHOW RECORDING
+    try{
+      mediaRecorder.start(250);
       document.getElementById("recordingBadge").style.display = "block";
-
-    } catch (err) {
-      alert("Recording failed: " + err.message);
+      console.log("🎥 Recording started");
+    }catch(err){
+      console.log("Recording start failed:", err);
+      alert("Recording failed to start");
     }
   }
 }
@@ -1128,7 +1177,8 @@ function startRecording(){
                 ${r.date || ""}
               </div>
               ${r.video 
-  ? `<button class="btn" onclick="openReplayFromUrl('${r.video}', '${r.distance}m • ${Number(r.time).toFixed(2)}s')">▶️ Watch</button>`
+  ${r.videoId
+  ? `<button class="btn" onclick="openReplayFromDB('${r.videoId}', '${r.distance}m • ${Number(r.time).toFixed(2)}s')">▶️ Watch</button>`
   : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
 }
             </div>
@@ -1167,9 +1217,7 @@ if(!cameraStarted){
 }
 
 showScreen('live');
-setTimeout(() => {
-  startRecording();
-}, 300);
+        
       }catch(err){
         console.error("startRun crashed:", err);
         alert("Start failed: " + err.message);
@@ -1185,62 +1233,64 @@ setTimeout(() => {
   }
 
   try{
-    // Stop previous stream
     if(currentStream){
       currentStream.getTracks().forEach(track => track.stop());
       currentStream = null;
     }
 
-    // Start camera
     currentStream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: useBackCamera ? "environment" : "user"
+        facingMode: useBackCamera ? "environment" : "user",
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
       },
       audio: false
     });
 
-    const video = document.getElementById('camera');
+    const video = document.getElementById("camera");
+    video.srcObject = currentStream;
+    await video.play();
 
-    if(video){
-      video.srcObject = currentStream;
-      await video.play();
+    mediaRecorder = null;
+    recordedChunks = [];
+    recordedBlob = null;
+
+    if(typeof MediaRecorder !== "undefined"){
+      try{
+        let options = {};
+
+        if(MediaRecorder.isTypeSupported("video/webm;codecs=vp8")){
+          options.mimeType = "video/webm;codecs=vp8";
+        }else if(MediaRecorder.isTypeSupported("video/webm")){
+          options.mimeType = "video/webm";
+        }else if(MediaRecorder.isTypeSupported("video/mp4")){
+          options.mimeType = "video/mp4";
+        }
+
+        mediaRecorder = new MediaRecorder(currentStream, options);
+
+        mediaRecorder.ondataavailable = function(e){
+          if(e.data && e.data.size > 0){
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onerror = function(e){
+          console.log("Recorder error:", e);
+        };
+
+      }catch(err){
+        console.log("MediaRecorder setup failed:", err);
+        mediaRecorder = null;
+      }
+    }else{
+      console.log("MediaRecorder not supported");
     }
 
     console.log("✅ Camera started");
-
-    // 🔥 SAFE MediaRecorder setup (no crashes)
-    mediaRecorder = null;
-
-if (typeof MediaRecorder !== "undefined") {
-  try {
-    let options = {};
-
-    if (MediaRecorder.isTypeSupported("video/mp4")) {
-      options.mimeType = "video/mp4";
-    } else if (MediaRecorder.isTypeSupported("video/webm")) {
-      options.mimeType = "video/webm";
-    }
-
-    mediaRecorder = new MediaRecorder(currentStream, options);
-
-    recordedChunks = [];
-
-    mediaRecorder.ondataavailable = function(e){
-      if(e.data && e.data.size > 0){
-        recordedChunks.push(e.data);
-      }
-    };
-
-  } catch (err) {
-    console.log("⚠️ MediaRecorder failed:", err);
-    mediaRecorder = null;
-  }
-} else {
-  console.log("⚠️ MediaRecorder not supported");
-}
     return true;
 
-  } catch(err){
+  }catch(err){
     console.error("❌ Camera error:", err);
     alert("Camera blocked. Allow camera access.");
     return false;
@@ -1333,6 +1383,34 @@ function analyzeForm(body){
       ? feedback.join(" | ")
       : "Good running form";
   }
+}
+
+async function openReplayFromDB(videoId, titleText){
+  const blob = await getVideoFromDB(videoId);
+
+  if(!blob){
+    alert("No video found");
+    return;
+  }
+
+  const video = document.getElementById("replayVideo");
+  const title = document.getElementById("replayTitle");
+
+  title.innerText = titleText || "Coach Replay";
+
+  const url = URL.createObjectURL(blob);
+
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+
+  video.src = url;
+  video.controls = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.load();
+
+  showScreen("replay");
 }
     
     function markSplit(){
@@ -1429,95 +1507,63 @@ function analyzeForm(body){
     }
 
     async function stopRun(){
-      console.log("STOP RUN CLICKED");
-      if(timer) clearInterval(timer);
+  if(timer) clearInterval(timer);
 
-      console.log("STOP RUN CLICKED", mediaRecorder ? mediaRecorder.state : "no recorder");
+  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
+  const speed = t > 0 ? (distance / t) * 2.237 : 0;
 
-      const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-      const speed = t > 0 ? (distance / t) * 2.237 : 0;
+  document.getElementById("finalTime").innerText = "Time: " + t.toFixed(2) + "s";
+  document.getElementById("finalSpeed").innerText = "Speed: " + speed.toFixed(2) + " mph";
 
-      document.getElementById("finalTime").innerText = "Time: " + t.toFixed(2) + "s";
-      document.getElementById("finalSpeed").innerText = "Speed: " + speed.toFixed(2) + " mph";
-
-      const finishUI = async () => {
-        showSplits();
-        updateActiveUserUI();
-        showScreen("results");
-        renderBestTimes();
-        updateMedalUI();
-        await renderPRClips();
-      };
-
-      try{
-        if(!mediaRecorder || mediaRecorder.state === "inactive"){
-          await saveRun(t, speed, null);
-          await finishUI();
-        }else{
-          mediaRecorder.onstop = async function(){
-
-            console.log("🛑 Recording STOPPED");
-console.log("Chunks:", recordedChunks.length);
-
-  // 🔥 CREATE BLOB HERE (THIS IS THE FIX)
-  if(recordedChunks.length){
-    recordedBlob = new Blob(recordedChunks, {
-      type: mediaRecorder.mimeType
-    });
+  async function finishUI(){
+    showSplits();
+    updateActiveUserUI();
+    showScreen("results");
+    renderBestTimes();
+    updateMedalUI();
+    await renderPRClips();
   }
 
-  if(!recordedBlob){
-    console.log("❌ No blob recorded");
+  try{
+    if(mediaRecorder && mediaRecorder.state === "recording"){
+      const stoppedBlob = await new Promise((resolve) => {
+        mediaRecorder.onstop = function(){
+          console.log("🛑 Recording stopped");
+          console.log("Chunks:", recordedChunks.length);
+
+          if(recordedChunks.length){
+            recordedBlob = new Blob(recordedChunks, {
+              type: mediaRecorder.mimeType || "video/webm"
+            });
+          }
+
+          resolve(recordedBlob || null);
+        };
+
+        mediaRecorder.stop();
+      });
+
+      await saveRun(t, speed, stoppedBlob);
+    }else{
+      await saveRun(t, speed, null);
+    }
+
+    await finishUI();
+
+  }catch(err){
+    console.error("stopRun error:", err);
     await saveRun(t, speed, null);
     await finishUI();
-    return;
   }
 
-  console.log("✅ Blob size:", recordedBlob.size);
+  if(currentStream){
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
 
-  const reader = new FileReader();
-
-  reader.onloadend = async function(){
-    const base64Video = reader.result;
-
-    await saveRun(t, speed, base64Video);
-
-    // download to phone
-    const url = URL.createObjectURL(recordedBlob);
-    // Try download (Android/Desktop)
-const a = document.createElement("a");
-a.href = url;
-a.download = "sprint_run.mp4";
-a.click();
-
-// 🔥 iPhone fallback (opens video so user can save)
-setTimeout(() => {
-  window.open(url, "_blank");
-}, 500);
-
-    await finishUI();
-  };
-
-  reader.readAsDataURL(recordedBlob);
-};
-mediaRecorder.stop();
-        }
-      }catch(err){
-        console.error("StopRun crashed:", err);
-        await saveRun(t, speed, null);
-        await finishUI();
-      }
-
-      if(currentStream){
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-      }
-
-      const rec = document.getElementById("recordingBadge");
-      if(rec) rec.style.display = "none";
-
-      isRunning = false;
-    }
+  document.getElementById("recordingBadge").style.display = "none";
+  isRunning = false;
+}
 
     function resetRun(){
       if(timer) clearInterval(timer);
@@ -1551,76 +1597,34 @@ mediaRecorder.stop();
       document.getElementById("splitsBox").innerHTML = html;
     }
 
-    async function saveRun(time, speed, videoBase64){
-      // LOCAL SAVE (FIXED)
-const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+    async function saveRun(time, speed, videoBlob){
+  const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+  if(!data[currentUser]) data[currentUser] = [];
 
-if(!data[currentUser]) data[currentUser] = [];
+  let videoId = null;
 
-let videoData = null;
+  if(videoBlob){
+    videoId = "video_" + Date.now();
+    await saveVideoToDB(videoId, videoBlob);
+  }
 
-// ONLY save video if it's small enough
-if(videoBase64){
-  videoData = videoBase64;
+  data[currentUser].push({
+    distance,
+    time,
+    speed,
+    splits,
+    videoId,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("SprintIQUsers", JSON.stringify(data));
+
+  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
+  if(!users.includes(currentUser)){
+    users.push(currentUser);
+    localStorage.setItem("SprintIQUserList", JSON.stringify(users));
+  }
 }
-
-data[currentUser].push({
-  distance,
-  time,
-  speed,
-  splits,
-  video: videoData,   // ✅ IMPORTANT
-  date: new Date().toLocaleString()
-});
-
-localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-
-      const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-      if(!users.includes(currentUser)){
-        users.push(currentUser);
-        localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-      }
-
-      if(!supabaseClient) return;
-
-      try{
-        const { data: authData } = await supabaseClient.auth.getUser();
-        const user = authData?.user;
-        if(!user) return;
-
-        let videoURL = null;
-
-        if(videoBase64){
-          const fileName = `${user.id}_${Date.now()}.webm`;
-          const blob = await fetch(videoBase64).then(r => r.blob());
-
-          const { error: uploadError } = await supabaseClient.storage
-            .from("runs")
-            .upload(fileName, blob, { upsert:true });
-
-          if(!uploadError){
-            const { data:urlData } = supabaseClient.storage
-              .from("runs")
-              .getPublicUrl(fileName);
-
-            videoURL = urlData?.publicUrl || null;
-          }
-        }
-
-        await supabaseClient
-          .from("runs")
-          .insert([{
-            user_id: user.id,
-            distance,
-            time,
-            speed,
-            splits,
-            video_url: videoURL
-          }]);
-      }catch(err){
-        console.log("Saved local only");
-      }
-    }
 
     function openReplayFromUrl(videoUrl, titleText){
 
