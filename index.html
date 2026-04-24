@@ -1173,12 +1173,11 @@ function startRecording(){
               <div style="color:#aaa;font-size:12px;margin-top:4px;">
                 ${r.date || ""}
               </div>
-              ${r.video 
-  ${r.videoId 
-  ? `<button onclick="openReplayFromDB('${r.videoId}','${r.distance}m')">Watch</button>`
-  : "No video"}
-  : `<div style="color:#aaa;font-size:12px;">No video recorded</div>
+              ${r.videoId
+  ? `<button class="btn" onclick="openReplayFromDB('${r.videoId}','${r.distance}m')">▶️ Watch</button>`
+  : `<div style="color:#aaa;font-size:12px;">No video</div>`
 }
+
             </div>
           `;
         });
@@ -1399,34 +1398,6 @@ function analyzeForm(body){
       ? feedback.join(" | ")
       : "Good running form";
   }
-}
-
-async function openReplayFromDB(videoId, titleText){
-  const blob = await getVideoFromDB(videoId);
-
-  if(!blob){
-    alert("No video found");
-    return;
-  }
-
-  const video = document.getElementById("replayVideo");
-  const title = document.getElementById("replayTitle");
-
-  title.innerText = titleText || "Coach Replay";
-
-  const url = URL.createObjectURL(blob);
-
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
-
-  video.src = url;
-  video.controls = true;
-  video.playsInline = true;
-  video.preload = "auto";
-  video.load();
-
-  showScreen("replay");
 }
     
     function markSplit(){
