@@ -688,6 +688,50 @@ async function getVideoFromDB(videoId){
     request.onerror = () => reject(request.error);
   });
 }
+
+const DB_NAME = "TrackStarDB";
+const DB_VERSION = 1;
+const STORE_NAME = "videos";
+
+function openVideoDB(){
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = function(event){
+      const db = event.target.result;
+      if(!db.objectStoreNames.contains(STORE_NAME)){
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveVideoToDB(videoId, blob){
+  const db = await openVideoDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).put(blob, videoId);
+
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
+  });
+}
+
+async function getVideoFromDB(videoId){
+  const db = await openVideoDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const request = tx.objectStore(STORE_NAME).get(videoId);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
     
     function toggleMenu(){
   const menu = document.getElementById("sideMenu");
@@ -834,14 +878,13 @@ function startRecording(){
     recordedChunks = [];
     recordedBlob = null;
 
-    try{
-      mediaRecorder.start(250);
-      document.getElementById("recordingBadge").style.display = "block";
-      console.log("🎥 Recording started");
-    }catch(err){
-      console.log("Recording start failed:", err);
-      alert("Recording failed to start");
-    }
+    // 🔥 THIS LINE FIXES RECORDING ON MOBILE
+    mediaRecorder.start(250);
+
+    const badge = document.getElementById("recordingBadge");
+    if(badge) badge.style.display = "block";
+
+    console.log("🎥 Recording started");
   }
 }
 
@@ -1177,9 +1220,10 @@ function startRecording(){
                 ${r.date || ""}
               </div>
               ${r.video 
-  ${r.videoId
-  ? `<button class="btn" onclick="openReplayFromDB('${r.videoId}', '${r.distance}m • ${Number(r.time).toFixed(2)}s')">▶️ Watch</button>`
-  : `<div style="color:#aaa;font-size:12px;">No video recorded</div>`
+  ${r.videoId 
+  ? `<button onclick="openReplayFromDB('${r.videoId}','${r.distance}m')">Watch</button>`
+  : "No video"}
+  : `<div style="color:#aaa;font-size:12px;">No video recorded</div>
 }
             </div>
           `;
@@ -1297,17 +1341,35 @@ showScreen('live');
   }
 }
 
+function setupRecorder(){
+  if(!currentStream) return;
+
+  try{
+    mediaRecorder = new MediaRecorder(currentStream);
+
+    recordedChunks = [];
+
+    mediaRecorder.ondataavailable = (e)=>{
+      if(e.data && e.data.size > 0){
+        recordedChunks.push(e.data);
+      }
+    };
+
+  }catch(err){
+    console.log("Recorder failed", err);
+    mediaRecorder = null;
+  }
+}
+    
     function beginMovement(){
-      if(isRunning) return;
-      isRunning = true;
-      startTime = Date.now();
+  if(isRunning) return;
 
-      const rec = document.getElementById("recordingBadge");
-      if(rec) rec.style.display = "block";
+  isRunning = true;
+  startTime = Date.now();
 
-      if(timer) clearInterval(timer);
-      timer = setInterval(update, 100);
-    }
+  if(timer) clearInterval(timer);
+  timer = setInterval(update, 100);
+}
 
    function update(){
   if(!isRunning || !startTime) return;
@@ -1507,62 +1569,45 @@ async function openReplayFromDB(videoId, titleText){
     }
 
     async function stopRun(){
+
   if(timer) clearInterval(timer);
 
-  const t = startTime ? (Date.now() - startTime) / 1000 : 0;
-  const speed = t > 0 ? (distance / t) * 2.237 : 0;
+  const t = startTime ? (Date.now() - startTime)/1000 : 0;
+  const speed = t > 0 ? (distance/t)*2.237 : 0;
 
-  document.getElementById("finalTime").innerText = "Time: " + t.toFixed(2) + "s";
-  document.getElementById("finalSpeed").innerText = "Speed: " + speed.toFixed(2) + " mph";
+  document.getElementById("finalTime").innerText = "Time: " + t.toFixed(2);
+  document.getElementById("finalSpeed").innerText = "Speed: " + speed.toFixed(2);
 
-  async function finishUI(){
-    showSplits();
-    updateActiveUserUI();
-    showScreen("results");
-    renderBestTimes();
-    updateMedalUI();
-    await renderPRClips();
+  let blob = null;
+
+  if(mediaRecorder && mediaRecorder.state === "recording"){
+
+    blob = await new Promise(resolve=>{
+      mediaRecorder.onstop = ()=>{
+        console.log("STOPPED | Chunks:", recordedChunks.length);
+
+        if(recordedChunks.length){
+          resolve(new Blob(recordedChunks, { type: "video/webm" }));
+        }else{
+          resolve(null);
+        }
+      };
+
+      mediaRecorder.stop();
+    });
   }
 
-  try{
-    if(mediaRecorder && mediaRecorder.state === "recording"){
-      const stoppedBlob = await new Promise((resolve) => {
-        mediaRecorder.onstop = function(){
-          console.log("🛑 Recording stopped");
-          console.log("Chunks:", recordedChunks.length);
-
-          if(recordedChunks.length){
-            recordedBlob = new Blob(recordedChunks, {
-              type: mediaRecorder.mimeType || "video/webm"
-            });
-          }
-
-          resolve(recordedBlob || null);
-        };
-
-        mediaRecorder.stop();
-      });
-
-      await saveRun(t, speed, stoppedBlob);
-    }else{
-      await saveRun(t, speed, null);
-    }
-
-    await finishUI();
-
-  }catch(err){
-    console.error("stopRun error:", err);
-    await saveRun(t, speed, null);
-    await finishUI();
-  }
+  await saveRun(t, speed, blob);
 
   if(currentStream){
-    currentStream.getTracks().forEach(track => track.stop());
-    currentStream = null;
+    currentStream.getTracks().forEach(t=>t.stop());
   }
 
   document.getElementById("recordingBadge").style.display = "none";
+
   isRunning = false;
+
+  showScreen("results");
 }
 
     function resetRun(){
@@ -1596,15 +1641,17 @@ async function openReplayFromDB(videoId, titleText){
       }
       document.getElementById("splitsBox").innerHTML = html;
     }
-
+    
     async function saveRun(time, speed, videoBlob){
+
   const data = JSON.parse(localStorage.getItem("SprintIQUsers") || "{}");
+
   if(!data[currentUser]) data[currentUser] = [];
 
   let videoId = null;
 
   if(videoBlob){
-    videoId = "video_" + Date.now();
+    videoId = "vid_" + Date.now();
     await saveVideoToDB(videoId, videoBlob);
   }
 
@@ -1618,57 +1665,33 @@ async function openReplayFromDB(videoId, titleText){
   });
 
   localStorage.setItem("SprintIQUsers", JSON.stringify(data));
-
-  const users = JSON.parse(localStorage.getItem("SprintIQUserList") || "[]");
-  if(!users.includes(currentUser)){
-    users.push(currentUser);
-    localStorage.setItem("SprintIQUserList", JSON.stringify(users));
-  }
 }
 
-    function openReplayFromUrl(videoUrl, titleText){
+    async function openReplayFromDB(videoId, title){
 
-  if(!videoUrl){
-    alert("No video available");
+  const blob = await getVideoFromDB(videoId);
+
+  if(!blob){
+    alert("No video found");
     return;
   }
 
   const video = document.getElementById("replayVideo");
-  const title = document.getElementById("replayTitle");
+  const titleEl = document.getElementById("replayTitle");
 
-  title.innerText = titleText || "Coach Replay";
+  if(titleEl) titleEl.innerText = title || "Replay";
 
-  // 🔥 FULL RESET (important)
+  const url = URL.createObjectURL(blob);
+
   video.pause();
   video.removeAttribute("src");
   video.load();
 
-  setTimeout(async () => {
+  video.src = url;
+  video.controls = true;
+  video.playsInline = true;
 
-    let finalUrl = videoUrl;
-
-    // ✅ HANDLE LOCAL BASE64 VIDEO
-    if(videoUrl.startsWith("data:")){
-      const blob = await fetch(videoUrl).then(r => r.blob());
-      finalUrl = URL.createObjectURL(blob);
-    }
-
-    video.src = finalUrl;
-
-    // 🔥 CRITICAL FIXES FOR MOBILE
-    video.controls = true;
-    video.playsInline = true;
-    video.muted = false;
-    video.preload = "auto";
-
-    video.load();
-
-    // Try autoplay (will fail on iPhone but that's OK)
-    video.play().catch(() => {
-      console.log("User tap required (normal)");
-    });
-
-  }, 120);
+  video.load();
 
   showScreen("replay");
 }
