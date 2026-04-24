@@ -680,39 +680,6 @@ async function getVideoFromDB(videoId){
 
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(videoId);
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-const DB_NAME = "TrackStarDB";
-const DB_VERSION = 1;
-const STORE_NAME = "videos";
-
-function openVideoDB(){
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = function(event){
-      const db = event.target.result;
-      if(!db.objectStoreNames.contains(STORE_NAME)){
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function getVideoFromDB(videoId){
-  const db = await openVideoDB();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
     const request = tx.objectStore(STORE_NAME).get(videoId);
 
     request.onsuccess = () => resolve(request.result);
