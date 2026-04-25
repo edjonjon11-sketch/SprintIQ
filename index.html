@@ -254,6 +254,75 @@
       border:2px solid rgba(255,255,255,0.15);
     }
 
+.runner {
+  position: relative;
+  width: 40px;
+  height: 80px;
+}
+
+.head {
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 13px;
+}
+
+.body {
+  width: 4px;
+  height: 30px;
+  background: white;
+  position: absolute;
+  top: 14px;
+  left: 18px;
+}
+
+.arm, .leg {
+  width: 4px;
+  height: 25px;
+  background: white;
+  position: absolute;
+  transform-origin: top center;
+}
+
+/* Arms */
+.arm.left {
+  top: 18px;
+  left: 8px;
+  animation: armRun 0.6s infinite alternate;
+}
+
+.arm.right {
+  top: 18px;
+  left: 26px;
+  animation: armRun 0.6s infinite alternate-reverse;
+}
+
+/* Legs */
+.leg.left {
+  top: 40px;
+  left: 12px;
+  animation: legRun 0.6s infinite alternate;
+}
+
+.leg.right {
+  top: 40px;
+  left: 22px;
+  animation: legRun 0.6s infinite alternate-reverse;
+}
+
+@keyframes armRun {
+  0% { transform: rotate(-30deg); }
+  100% { transform: rotate(30deg); }
+}
+
+@keyframes legRun {
+  0% { transform: rotate(30deg); }
+  100% { transform: rotate(-30deg); }
+}
+    
     .small-note{
       font-size:12px;
       color:#aaa;
@@ -378,7 +447,16 @@
   <b>🏃 Sprint Technique Training</b>
 
   <div id="techniqueBox" style="margin-top:20px; transition: all 0.4s ease;">
-    
+    <div id="runnerBox" style="height:120px; display:flex; justify-content:center; align-items:center;">
+  <div class="runner">
+    <div class="head"></div>
+    <div class="body"></div>
+    <div class="arm left"></div>
+    <div class="arm right"></div>
+    <div class="leg left"></div>
+    <div class="leg right"></div>
+  </div>
+</div>
     <div id="techTitle" style="font-weight:bold;font-size:18px;"></div>
     <div id="techDesc" class="small-note" style="margin-top:6px;"></div>
 
