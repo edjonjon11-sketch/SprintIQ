@@ -609,6 +609,8 @@ window.onload = async function(){
   updateMedalUI();
   renderBestTimes();
 
+  startTechniqueRotation();
+  
   try{
     if(supabaseClient){
       const { data } = await supabaseClient.auth.getSession();
@@ -1753,6 +1755,51 @@ function rotateTechnique(){
   box.style.animation = "fadeSlide 0.4s ease";
 
   techIndex = (techIndex + 1) % techniqueSteps.length;
+}
+
+function startTechniqueRotation(){
+  const steps = [
+    {
+      title: "Start / Drive Phase",
+      desc: "Low forward angle • Explosive push • Big arm drive"
+    },
+    {
+      title: "Acceleration (0–30m)",
+      desc: "Gradually rise up • Powerful strides • Stay aggressive"
+    },
+    {
+      title: "Top Speed (30–60m)",
+      desc: "Upright posture • Relax shoulders • Fast turnover"
+    },
+    {
+      title: "Finish",
+      desc: "Lean chest forward • Don’t slow early"
+    }
+  ];
+
+  let i = 0;
+
+  setInterval(() => {
+    const title = document.getElementById("techTitle");
+    const desc = document.getElementById("techDesc");
+
+    if(!title || !desc) return;
+
+    title.innerText = steps[i].title;
+    desc.innerText = steps[i].desc;
+
+    // 🔥 THIS TRIGGERS YOUR ANIMATION
+    title.style.animation = "none";
+    desc.style.animation = "none";
+
+    setTimeout(()=>{
+      title.style.animation = "fadeSlide 0.6s ease";
+      desc.style.animation = "fadeSlide 0.6s ease";
+    },10);
+
+    i = (i + 1) % steps.length;
+
+  }, 3000);
 }
     
     function backupData(){
