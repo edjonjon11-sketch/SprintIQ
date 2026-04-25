@@ -1214,6 +1214,12 @@ if(!cameraStarted){
 }
 
 showScreen('live');
+
+// 🔥 AUTO FLOW
+setTimeout(()=>{
+  startRecording();
+  beginMovement();
+}, 500);
         
       }catch(err){
         console.error("startRun crashed:", err);
@@ -1356,7 +1362,7 @@ async function detectPose(){
         let dt = (now - lastTime) / 1000;
 
         let pixelSpeed = Math.abs(dx) / dt;
-        let speed = pixelSpeed * 0.02;
+        let speed = (pixelSpeed / 50) * 2.237;
 
         document.getElementById("speed").innerText =
           speed.toFixed(1) + " mph";
@@ -1376,6 +1382,7 @@ async function detectPose(){
       shoulder: keypoints.find(k => k.name === "left_shoulder")
     };
 
+    drawSkeleton(keypoints);
     analyzeForm(body);
   }
 }  
@@ -1383,12 +1390,35 @@ async function detectPose(){
 function analyzeForm(body){
   let feedback = [];
 
-  if(body.shoulder && body.hip && body.shoulder.x < body.hip.x){
-    feedback.push("Leaning back");
+  // BODY ANGLE (lean forward)
+  if(body.shoulder && body.hip){
+    const angle = body.shoulder.x - body.hip.x;
+
+    if(angle < -20){
+      feedback.push("Leaning back ❌");
+    } else if(angle > 20){
+      feedback.push("Good forward lean ✅");
+    }
   }
 
-  if(body.leftKnee && body.hip && body.leftKnee.y > body.hip.y){
-    feedback.push("Low knee drive");
+  // KNEE DRIVE
+  if(body.leftKnee && body.hip){
+    const kneeHeight = body.hip.y - body.leftKnee.y;
+
+    if(kneeHeight < 20){
+      feedback.push("Low knee drive ❌");
+    } else {
+      feedback.push("Good knee lift ✅");
+    }
+  }
+
+  // POSTURE (vertical alignment)
+  if(body.shoulder && body.hip){
+    const vertical = Math.abs(body.shoulder.x - body.hip.x);
+
+    if(vertical < 10){
+      feedback.push("Upright posture ✅");
+    }
   }
 
   const display = document.getElementById("splitDisplay");
@@ -1396,7 +1426,7 @@ function analyzeForm(body){
   if(display){
     display.innerText = feedback.length
       ? feedback.join(" | ")
-      : "Good running form";
+      : "Analyzing...";
   }
 }
     
@@ -1419,6 +1449,21 @@ function analyzeForm(body){
         `Split ${splits.length}: ${segmentTime.toFixed(2)}s | ${segmentSpeed.toFixed(1)} mph`;
     }
 
+function drawSkeleton(keypoints){
+  const canvas = document.getElementById("laneOverlay");
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#00ff88";
+
+  keypoints.forEach(k => {
+    if(k.score > 0.4){
+      ctx.beginPath();
+      ctx.arc(k.x, k.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+}
+    
     function drawRunnerBox(){
       const canvas = document.getElementById("laneOverlay");
       if(!canvas) return;
