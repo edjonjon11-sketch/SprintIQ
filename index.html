@@ -368,14 +368,16 @@
     <div id="prClipsList">No PR clips yet</div>
   </div>
 
-  <!-- ✅ ADD IT HERE -->
   <div class="card">
-    <b>🏃 Sprint Technique Training</b>
+  <b>🏃 Sprint Technique Training</b>
 
-    <div style="margin-top:15px;">
-      <div><b>Start / Drive Phase</b></div>
-      <div class="small-note">Low forward angle • Explosive push • Big arm drive</div>
-    </div>
+  <div id="techniqueBox" style="margin-top:20px; transition: all 0.4s ease;">
+    
+    <div id="techTitle" style="font-weight:bold;font-size:18px;"></div>
+    <div id="techDesc" class="small-note" style="margin-top:6px;"></div>
+
+  </div>
+</div>
 
     <div style="margin-top:15px;">
       <div><b>Acceleration (0–30m)</b></div>
@@ -387,6 +389,11 @@
       <div class="small-note">Upright posture • Relax shoulders • Fast turnover</div>
     </div>
 
+@keyframes fadeSlide {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+    
     <div style="margin-top:15px;">
       <div><b>Finish</b></div>
       <div class="small-note">Lean chest forward • Don’t slow early</div>
@@ -629,6 +636,8 @@ window.onload = async function(){
   }
 
   await renderPRClips();
+  rotateTechnique(); // show first
+setInterval(rotateTechnique, 3000);
 };
 
     function showScreen(id){
@@ -1719,6 +1728,48 @@ function drawSkeleton(keypoints){
       }
     }
 
+const techniqueSteps = [
+  {
+    title: "Start / Drive Phase",
+    desc: "Low forward angle • Explosive push • Big arm drive"
+  },
+  {
+    title: "Acceleration (0–30m)",
+    desc: "Gradually rise up • Powerful strides • Stay aggressive"
+  },
+  {
+    title: "Top Speed (30–60m)",
+    desc: "Upright posture • Relax shoulders • Fast turnover"
+  },
+  {
+    title: "Finish",
+    desc: "Lean chest forward • Don’t slow early"
+  }
+];
+
+let techIndex = 0;
+
+function rotateTechnique(){
+  const title = document.getElementById("techTitle");
+  const desc = document.getElementById("techDesc");
+  const box = document.getElementById("techniqueBox");
+
+  if(!title || !desc || !box) return;
+
+  const step = techniqueSteps[techIndex];
+
+  // Apply content
+  title.innerText = step.title;
+  desc.innerText = step.desc;
+
+  // Restart animation
+  box.style.animation = "none";
+  box.offsetHeight; // force reflow
+  box.style.animation = "fadeSlide 0.4s ease";
+
+  techIndex = (techIndex + 1) % techniqueSteps.length;
+}
+    
     function backupData(){
       const data = localStorage.getItem("SprintIQUsers") || "No data found";
       if(navigator.clipboard && navigator.clipboard.writeText){
