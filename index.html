@@ -446,9 +446,11 @@
   <div class="card">
   <b>🏃 Sprint Technique Training</b>
 
-  <video autoplay loop muted playsinline style="width:100%; border-radius:12px; margin-top:10px;">
-    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-  </video>
+  <div id="runnerContainer" style="margin-top:15px; text-align:center;">
+  <img id="runnerImg" 
+       src="https://i.imgur.com/8QfKuz1.png" 
+       style="width:160px; filter:drop-shadow(0 0 10px rgba(255,0,0,0.5)); transition:0.3s;">
+</div>
 
   <div style="margin-top:15px;">
     <div><b>Start / Drive Phase</b></div>
@@ -1848,37 +1850,47 @@ function rotateTechnique(){
 }
 
 function startTechniqueRotation(){
+
   const steps = [
     {
       title: "Start / Drive Phase",
-      desc: "Low forward angle • Explosive push • Big arm drive"
+      desc: "Low forward angle • Explosive push • Big arm drive",
+      scale: 0.9
     },
     {
       title: "Acceleration (0–30m)",
-      desc: "Gradually rise up • Powerful strides • Stay aggressive"
+      desc: "Gradually rise up • Powerful strides • Stay aggressive",
+      scale: 1.0
     },
     {
       title: "Top Speed (30–60m)",
-      desc: "Upright posture • Relax shoulders • Fast turnover"
+      desc: "Upright posture • Relax shoulders • Fast turnover",
+      scale: 1.1
     },
     {
       title: "Finish",
-      desc: "Lean chest forward • Don’t slow early"
+      desc: "Lean chest forward • Don’t slow early",
+      scale: 1.05
     }
   ];
 
   let i = 0;
 
   setInterval(() => {
+
     const title = document.getElementById("techTitle");
     const desc = document.getElementById("techDesc");
+    const runner = document.getElementById("runnerImg");
 
-    if(!title || !desc) return;
+    if(!title || !desc || !runner) return;
 
     title.innerText = steps[i].title;
     desc.innerText = steps[i].desc;
 
-    // 🔥 THIS TRIGGERS YOUR ANIMATION
+    // 🔥 ANIMATION EFFECT
+    runner.style.transform = `scale(${steps[i].scale}) translateX(${i * 5}px)`;
+
+    // fade text
     title.style.animation = "none";
     desc.style.animation = "none";
 
@@ -1889,7 +1901,7 @@ function startTechniqueRotation(){
 
     i = (i + 1) % steps.length;
 
-  }, 3000);
+  }, 2500);
 }
     
     function backupData(){
