@@ -30,7 +30,15 @@
       min-height:100vh;
       overflow-y:auto;
     }
+#runnerImg {
+  animation: bounceRun 0.6s infinite alternate;
+}
 
+@keyframes bounceRun {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-6px); }
+}
+    
     .active{ display:block; }
 
     .header{
@@ -448,8 +456,8 @@
 
   <div id="runnerContainer" style="margin-top:15px; text-align:center;">
   <img id="runnerImg" 
-       src="https://i.imgur.com/8QfKuz1.png" 
-       style="width:160px; filter:drop-shadow(0 0 10px rgba(255,0,0,0.5)); transition:0.3s;">
+     src="https://cdn-icons-png.flaticon.com/512/3771/3771567.png"
+     style="width:160px; filter:drop-shadow(0 0 10px rgba(255,0,0,0.5)); transition:0.3s;">
 </div>
 
   <div style="margin-top:15px;">
