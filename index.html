@@ -38,6 +38,22 @@
   0% { transform: translateY(0px); }
   100% { transform: translateY(-6px); }
 }
+
+#runnerSprite {
+  width: 180px;
+  height: 180px;
+  margin: 15px auto;
+
+  background: url("https://i.imgur.com/6X12R6R.png") no-repeat;
+  background-size: 800% 100%;
+
+  animation: runCycle 0.8s steps(8) infinite;
+}
+
+@keyframes runCycle {
+  from { background-position: 0 0; }
+  to { background-position: -1440px 0; }
+}
     
     .active{ display:block; }
 
@@ -455,7 +471,7 @@
   <b>🏃 Sprint Technique Training</b>
 
   <div id="runnerContainer" style="margin-top:15px; text-align:center;">
-  <img id="runnerImg" 
+  <div id="runnerSprite"></div>
      src="https://cdn-icons-png.flaticon.com/512/3771/3771567.png"
      style="width:160px; filter:drop-shadow(0 0 10px rgba(255,0,0,0.5)); transition:0.3s;">
 </div>
