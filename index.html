@@ -39,7 +39,7 @@
   100% { transform: translateY(-6px); }
 }
 
-#runnerSprite {
+ #runnerSprite {
   width: 180px;
   height: 180px;
   margin: 15px auto;
@@ -47,13 +47,20 @@
   background: url("https://i.imgur.com/Q9bQ4ZK.png") no-repeat;
   background-size: 800% 100%;
 
-  animation: runCycle 0.8s steps(8) infinite;
+  animation: runCycle 0.8s steps(8) infinite, bounce 0.4s infinite alternate;
 }
 
+/* 🔥 frame animation */
 @keyframes runCycle {
   from { background-position: 0 0; }
   to { background-position: -1440px 0; }
 }
+
+/* 🔥 vertical bounce = running in place */
+@keyframes bounce {
+  0%   { transform: translateY(0px); }
+  100% { transform: translateY(-8px); }
+}   
     
     .active{ display:block; }
 
@@ -1922,7 +1929,7 @@ function startTechniqueRotation(){
     runner.style.animationDuration = step.speed + "s";
 
     // 🔥 MOTION (this makes it feel real)
-    runner.style.transform = `translateX(${step.move}px) scale(1.05)`;
+    runner.style.transform = "scale(1.05)";
 
     // 🔥 TEXT FADE
     title.style.animation = "none";
