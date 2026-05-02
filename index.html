@@ -1909,7 +1909,7 @@ function startTechniqueRotation(){
 
     const title = document.getElementById("techTitle");
     const desc = document.getElementById("techDesc");
-    const runner = document.getElementById("runnerSprite");
+    const runner = document.getElementById("runnerSprite"); // ✅ ONLY THIS
 
     if(!title || !desc || !runner) return;
 
@@ -1918,13 +1918,13 @@ function startTechniqueRotation(){
     title.innerText = step.title;
     desc.innerText = step.desc;
 
-    // 🔥 SPEED CHANGE
+    // 🔥 SPEED
     runner.style.animationDuration = step.speed + "s";
 
-    // 🔥 MOVEMENT (feels real)
+    // 🔥 MOTION (this makes it feel real)
     runner.style.transform = `translateX(${step.move}px) scale(1.05)`;
 
-    // 🔥 TEXT ANIMATION
+    // 🔥 TEXT FADE
     title.style.animation = "none";
     desc.style.animation = "none";
 
