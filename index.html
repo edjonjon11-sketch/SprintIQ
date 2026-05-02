@@ -1911,6 +1911,13 @@ function startTechniqueRotation(){
     title.innerText = steps[i].title;
     desc.innerText = steps[i].desc;
 
+    const runner = document.getElementById("runnerSprite");
+
+if(runner){
+  const speeds = [1.2, 1, 0.7, 0.9];
+  runner.style.animationDuration = speeds[i] + "s";
+}
+
     // 🔥 ANIMATION EFFECT
     runner.style.transform = `scale(${steps[i].scale}) translateX(${i * 5}px)`;
 
