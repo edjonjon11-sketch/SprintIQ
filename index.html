@@ -44,7 +44,7 @@
   height: 180px;
   margin: 15px auto;
 
-  background: url("https://i.imgur.com/6X12R6R.png") no-repeat;
+  background: url("https://i.imgur.com/Q9bQ4ZK.png") no-repeat;
   background-size: 800% 100%;
 
   animation: runCycle 0.8s steps(8) infinite;
@@ -742,9 +742,7 @@ window.onload = async function(){
   }
 
   await renderPRClips();
-  rotateTechnique(); // show first
-setInterval(rotateTechnique, 3000);
-};
+  
 
     function showScreen(id){
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1882,22 +1880,26 @@ function startTechniqueRotation(){
     {
       title: "Start / Drive Phase",
       desc: "Low forward angle • Explosive push • Big arm drive",
-      scale: 0.9
+      speed: 1.2,
+      move: -10
     },
     {
       title: "Acceleration (0–30m)",
       desc: "Gradually rise up • Powerful strides • Stay aggressive",
-      scale: 1.0
+      speed: 1.0,
+      move: 0
     },
     {
       title: "Top Speed (30–60m)",
       desc: "Upright posture • Relax shoulders • Fast turnover",
-      scale: 1.1
+      speed: 0.7,
+      move: 10
     },
     {
       title: "Finish",
       desc: "Lean chest forward • Don’t slow early",
-      scale: 1.05
+      speed: 0.9,
+      move: 5
     }
   ];
 
@@ -1907,31 +1909,29 @@ function startTechniqueRotation(){
 
     const title = document.getElementById("techTitle");
     const desc = document.getElementById("techDesc");
-    const runner = document.getElementById("runnerImg");
+    const runner = document.getElementById("runnerSprite");
 
     if(!title || !desc || !runner) return;
 
-    title.innerText = steps[i].title;
-    desc.innerText = steps[i].desc;
+    const step = steps[i];
 
-    const runner = document.getElementById("runnerSprite");
+    title.innerText = step.title;
+    desc.innerText = step.desc;
 
-if(runner){
-  const speeds = [1.2, 1, 0.7, 0.9];
-  runner.style.animationDuration = speeds[i] + "s";
-}
+    // 🔥 SPEED CHANGE
+    runner.style.animationDuration = step.speed + "s";
 
-    // 🔥 ANIMATION EFFECT
-    runner.style.transform = `scale(${steps[i].scale}) translateX(${i * 5}px)`;
+    // 🔥 MOVEMENT (feels real)
+    runner.style.transform = `translateX(${step.move}px) scale(1.05)`;
 
-    // fade text
+    // 🔥 TEXT ANIMATION
     title.style.animation = "none";
     desc.style.animation = "none";
 
     setTimeout(()=>{
-      title.style.animation = "fadeSlide 0.6s ease";
-      desc.style.animation = "fadeSlide 0.6s ease";
-    },10);
+      title.style.animation = "fadeSlide 0.5s ease";
+      desc.style.animation = "fadeSlide 0.5s ease";
+    }, 10);
 
     i = (i + 1) % steps.length;
 
