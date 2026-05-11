@@ -56,16 +56,24 @@
 }
 
 /* 🔥 frame animation */
-@keyframes runCycle {
-  from { background-position: 0 0; }
-  to { background-position: -1440px 0; }
+@keyframes runCycle{
+  from{
+    background-position:0 0;
+  }
+  to{
+    background-position:-1440px 0;
+  }
 }
 
-/* 🔥 vertical bounce = running in place */
-@keyframes bounce {
-  0%   { transform: translateY(0px); }
-  100% { transform: translateY(-8px); }
-}   
+@keyframes bounceRun{
+  from{
+    transform:translateY(0px) scale(1);
+  }
+
+  to{
+    transform:translateY(-10px) scale(1.03);
+  }
+}
     
     .active{ display:block; }
 
