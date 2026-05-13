@@ -1460,7 +1460,14 @@ async function detectPose(){
   if(!detector || !currentStream) return;
 
   const video = document.getElementById("camera");
-  const poses = await detector.estimatePoses(video);
+  let poses = [];
+
+try{
+  poses = await detector.estimatePoses(video);
+}catch(err){
+  console.log("Pose detect failed");
+  return;
+}
 
   if(poses.length > 0){
     const keypoints = poses[0].keypoints;
