@@ -1903,21 +1903,14 @@ function startTechniqueRotation(){
     const title = document.getElementById("techTitle");
     const desc = document.getElementById("techDesc");
 
-    if(!title || !desc || !runner) return;
+    const runner = document.getElementById("runnerSprite");
+
+if(!title || !desc || !runner) return;
 
     const step = steps[i];
 
     title.innerText = step.title;
     desc.innerText = step.desc;
-
-
-    // 🔥 MOTION (this makes it feel real)
-    const runner = document.getElementById("runnerSprite");
-
-if(runner){
-  runner.style.filter =
-    "drop-shadow(0 0 20px rgba(255,0,0,0.7))";
-}
 
     // 🔥 TEXT FADE
     title.style.animation = "none";
