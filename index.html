@@ -1910,11 +1910,14 @@ function startTechniqueRotation(){
     title.innerText = step.title;
     desc.innerText = step.desc;
 
-    // 🔥 SPEED
-    runner.style.animationDuration = step.speed + "s";
 
     // 🔥 MOTION (this makes it feel real)
-    runner.style.transform = "scale(1.05)";
+    const runner = document.getElementById("runnerSprite");
+
+if(runner){
+  runner.style.filter =
+    "drop-shadow(0 0 20px rgba(255,0,0,0.7))";
+}
 
     // 🔥 TEXT FADE
     title.style.animation = "none";
