@@ -1900,21 +1900,33 @@ function startTechniqueRotation(){
 
   setInterval(() => {
 
-    const title = document.getElementById("techTitle");
-    const desc = document.getElementById("techDesc");
+  const title = document.getElementById("techTitle");
+  const desc = document.getElementById("techDesc");
+  const runner = document.getElementById("runnerSprite");
 
-    const runner = document.getElementById("runnerSprite");
+  if(!title || !desc || !runner) return;
 
-if(!title || !desc || !runner) return;
+  const step = steps[i];
 
-    const step = steps[i];
+  title.innerText = step.title;
+  desc.innerText = step.desc;
 
-    title.innerText = step.title;
-    desc.innerText = step.desc;
+  runner.style.animationDuration = step.speed + "s";
 
-    // 🔥 TEXT FADE
-    title.style.animation = "none";
-    desc.style.animation = "none";
+  runner.style.filter =
+    "drop-shadow(0 0 20px rgba(255,0,0,0.7))";
+
+  title.style.animation = "none";
+  desc.style.animation = "none";
+
+  setTimeout(()=>{
+    title.style.animation = "fadeSlide 0.5s ease";
+    desc.style.animation = "fadeSlide 0.5s ease";
+  }, 10);
+
+  i = (i + 1) % steps.length;
+
+}, 2500);
 
     setTimeout(()=>{
       title.style.animation = "fadeSlide 0.5s ease";
