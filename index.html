@@ -1573,6 +1573,8 @@ function drawSkeleton(keypoints){
   const canvas = document.getElementById("laneOverlay");
   const ctx = canvas.getContext("2d");
 
+  if(!canvas) return;
+
   ctx.fillStyle = "#00ff88";
 
   keypoints.forEach(k => {
