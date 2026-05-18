@@ -416,7 +416,7 @@
       🏃 Track Menu
     </div>
 
-    <div class="menuItem" onclick="navigate('setup'); toggleMenu()">Start Run</div>
+    <div class="menuItem" onclick="openSetup()">Start Run</div>
 
 <div class="menuItem" onclick="goToHistory(); toggleMenu()">History</div>
     <div class="menuItem" onclick="showProfiles()">Athletes</div>
@@ -834,7 +834,19 @@ async function getVideoFromDB(videoId){
         showProfiles();
       }
     }
+function openSetup(){
 
+  showScreen("setup");
+
+  const menu = document.getElementById("sideMenu");
+  const overlay = document.getElementById("menuOverlay");
+
+  menu.style.left = "-260px";
+  overlay.style.display = "none";
+  overlay.style.pointerEvents = "none";
+
+  menuOpen = false;
+}
    async function initPose(){
   const model = poseDetection.SupportedModels.MoveNet;
 
