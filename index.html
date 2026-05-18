@@ -1583,9 +1583,9 @@ function analyzeForm(body){
 
 function drawSkeleton(keypoints){
   const canvas = document.getElementById("laneOverlay");
-  const ctx = canvas.getContext("2d");
-
   if(!canvas) return;
+
+const ctx = canvas.getContext("2d");
 
   ctx.fillStyle = "#00ff88";
 
@@ -1901,69 +1901,56 @@ function startTechniqueRotation(){
     {
       title: "Start / Drive Phase",
       desc: "Low forward angle • Explosive push • Big arm drive",
-      speed: 1.2,
-      move: -10
+      speed: 1.2
     },
     {
       title: "Acceleration (0–30m)",
       desc: "Gradually rise up • Powerful strides • Stay aggressive",
-      speed: 1.0,
-      move: 0
+      speed: 1.0
     },
     {
       title: "Top Speed (30–60m)",
       desc: "Upright posture • Relax shoulders • Fast turnover",
-      speed: 0.7,
-      move: 10
+      speed: 0.7
     },
     {
       title: "Finish",
       desc: "Lean chest forward • Don’t slow early",
-      speed: 0.9,
-      move: 5
+      speed: 0.9
     }
   ];
 
   let i = 0;
 
-  setInterval(() => {
+  function updateTechnique(){
 
-  const title = document.getElementById("techTitle");
-  const desc = document.getElementById("techDesc");
-  const runner = document.getElementById("runnerSprite");
+    const title = document.getElementById("techTitle");
+    const desc = document.getElementById("techDesc");
+    const runner = document.getElementById("runnerSprite");
 
-  if(!title || !desc || !runner) return;
+    if(!title || !desc || !runner) return;
 
-  const step = steps[i];
+    const step = steps[i];
 
-  title.innerText = step.title;
-  desc.innerText = step.desc;
+    title.innerText = step.title;
+    desc.innerText = step.desc;
 
-  runner.style.animationDuration = step.speed + "s";
+    runner.style.animationDuration = step.speed + "s";
 
-  runner.style.filter =
-    "drop-shadow(0 0 20px rgba(255,0,0,0.7))";
-
-  title.style.animation = "none";
-  desc.style.animation = "none";
-
-  setTimeout(()=>{
-    title.style.animation = "fadeSlide 0.5s ease";
-    desc.style.animation = "fadeSlide 0.5s ease";
-  }, 10);
-
-  i = (i + 1) % steps.length;
-
-}, 2500);
+    title.style.animation = "none";
+    desc.style.animation = "none";
 
     setTimeout(()=>{
       title.style.animation = "fadeSlide 0.5s ease";
       desc.style.animation = "fadeSlide 0.5s ease";
-    }, 10);
+    },10);
 
     i = (i + 1) % steps.length;
+  }
 
-  }, 2500);
+  updateTechnique();
+
+  setInterval(updateTechnique, 2500);
 }
     
     function backupData(){
