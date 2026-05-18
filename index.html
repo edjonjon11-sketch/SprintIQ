@@ -32,9 +32,20 @@
   max-width:100vw;
   min-height:100vh;
   overflow-y:auto;
-
-  background:linear-gradient(to bottom,#000,#111);
   color:white;
+}
+
+#home,
+#setup,
+#results,
+#profiles,
+#history,
+#replay{
+  background:linear-gradient(to bottom,#000,#111);
+}
+
+#live{
+  background:transparent;
 }
 #runnerImg {
   animation: bounceRun 0.6s infinite alternate;
@@ -1379,6 +1390,14 @@ setTimeout(()=>{
     video.srcObject = currentStream;
     await video.play();
 
+    await new Promise(resolve => {
+  if(video.readyState >= 2){
+    resolve();
+  }else{
+    video.onloadeddata = () => resolve();
+  }
+});
+
     mediaRecorder = null;
     recordedChunks = [];
     recordedBlob = null;
@@ -1456,17 +1475,30 @@ function setupRecorder(){
 }
 
    function update(){
+
   if(!isRunning || !startTime) return;
 
   const t = (Date.now() - startTime) / 1000;
-  document.getElementById("timer").innerText = t.toFixed(2) + "s";
 
-  drawLanes();
-  drawRunnerBox();
-  drawSpeedChart();
+  const timerEl = document.getElementById("timer");
 
-  detectPose();
-} 
+  if(timerEl){
+    timerEl.innerText = t.toFixed(2) + "s";
+  }
+
+  try{
+    drawLanes();
+    drawRunnerBox();
+    drawSpeedChart();
+
+    if(currentStream && detector){
+      detectPose();
+    }
+
+  }catch(err){
+    console.log("Update loop error:", err);
+  }
+}
 
 async function detectPose(){
   if(!detector || !currentStream) return;
