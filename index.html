@@ -728,11 +728,7 @@
     
 window.onload = async function(){
 
-  try{
-    await initPose();
-  }catch(err){
-    console.log("Pose failed, continuing...");
-  }
+  console.log("Pose temporarily disabled");
 
   showScreen("home");
   updateActiveUserUI();
@@ -1491,9 +1487,7 @@ function setupRecorder(){
     drawRunnerBox();
     drawSpeedChart();
 
-    if(currentStream && detector){
-      detectPose();
-    }
+    // detectPose disabled for testing
 
   }catch(err){
     console.log("Update loop error:", err);
