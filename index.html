@@ -46,14 +46,19 @@
 
 #live{
   display:none;
+
   position:fixed;
-  inset:0;
+  top:0;
+  left:0;
 
   width:100vw;
   height:100vh;
 
-  background:transparent;
+  background:#000;
+
   z-index:9997;
+
+  overflow:hidden;
 }
 #runnerImg {
   animation: bounceRun 0.6s infinite alternate;
@@ -100,7 +105,9 @@
   }
 }
     
-    .active{ display:block; }
+    .active{
+  display:block !important;
+}
 
     .header{
       font-size:28px;
@@ -765,10 +772,31 @@ window.onload = async function(){
 };
 
     function showScreen(id){
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(id);
-      if(target) target.classList.add('active');
+
+  document.querySelectorAll(".screen").forEach(s=>{
+    s.classList.remove("active");
+    s.style.display = "none";
+  });
+
+  const target = document.getElementById(id);
+
+  if(target){
+
+    target.classList.add("active");
+
+    if(id === "live"){
+      target.style.display = "block";
+      target.style.position = "fixed";
+      target.style.top = "0";
+      target.style.left = "0";
+      target.style.width = "100vw";
+      target.style.height = "100vh";
+      target.style.zIndex = "9997";
+    }else{
+      target.style.display = "block";
     }
+  }
+}
 
 const DB_NAME = "TrackStarDB";
 const DB_VERSION = 1;
@@ -1358,7 +1386,10 @@ if(!cameraStarted){
   return; // STOP if camera fails
 }
 
-showScreen('live');
+showScreen("live");
+
+document.getElementById("camera").style.display = "block";
+document.getElementById("camera").style.visibility = "visible";
 
 // 🔥 AUTO FLOW
 setTimeout(()=>{
