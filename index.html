@@ -1374,17 +1374,21 @@ setTimeout(()=>{
     }
 
     currentStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: useBackCamera ? "environment" : "user",
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      audio: false
-    });
+  video: true,
+  audio: false
+});
 
     const video = document.getElementById("camera");
-    video.srcObject = currentStream;
-    await video.play();
+
+video.style.display = "block";
+video.style.zIndex = "5";
+video.style.background = "red";
+
+video.srcObject = currentStream;
+
+await video.play();
+
+console.log("video ready");
 
     await new Promise(resolve => {
   if(video.readyState >= 2){
