@@ -184,17 +184,13 @@
 
     #camera{
   position:fixed;
-  inset:0;
-
+  top:0;
+  left:0;
   width:100vw;
   height:100vh;
-
-  display:block;
   object-fit:cover;
-
-  z-index:9998;
-
-  background:red;
+  z-index:99999;
+  display:block;
 }
 
     #laneOverlay{
@@ -1404,110 +1400,39 @@ setTimeout(()=>{
     }
 
     async function startCamera(){
-  console.log("🎥 Attempting camera start...");
 
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    alert("Camera not supported");
-    return false;
-  }
+  const video = document.getElementById("camera");
 
   try{
+
     if(currentStream){
-      currentStream.getTracks().forEach(track => track.stop());
-      currentStream = null;
+      currentStream.getTracks().forEach(t => t.stop());
     }
 
     currentStream = await navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: false
-});
+      video:{
+        facingMode:"environment"
+      },
+      audio:false
+    });
 
-    const video = document.getElementById("camera");
+    video.srcObject = currentStream;
 
-video.pause();
+    video.setAttribute("playsinline", true);
+    video.muted = true;
 
-video.removeAttribute("src");
-video.srcObject = null;
+    await video.play();
 
-/* force Safari repaint */
-video.style.display = "none";
+    alert("✅ Camera started");
 
-setTimeout(async ()=>{
-
-  video.srcObject = currentStream;
-
-  video.style.position = "fixed";
-  video.style.top = "0";
-  video.style.left = "0";
-
-  video.style.width = "100vw";
-  video.style.height = "100vh";
-
-  video.style.objectFit = "cover";
-
-  video.style.zIndex = "99999";
-
-  video.style.background = "transparent";
-
-  video.style.display = "block";
-  video.style.visibility = "visible";
-
-  await video.play();
-
-  console.log("video ready");
-
-},100);
-
-    await new Promise(resolve => {
-  if(video.readyState >= 2){
-    resolve();
-  }else{
-    video.onloadeddata = () => resolve();
-  }
-});
-
-    mediaRecorder = null;
-    recordedChunks = [];
-    recordedBlob = null;
-
-    if(typeof MediaRecorder !== "undefined"){
-      try{
-        let options = {};
-
-        if(MediaRecorder.isTypeSupported("video/webm;codecs=vp8")){
-          options.mimeType = "video/webm;codecs=vp8";
-        }else if(MediaRecorder.isTypeSupported("video/webm")){
-          options.mimeType = "video/webm";
-        }else if(MediaRecorder.isTypeSupported("video/mp4")){
-          options.mimeType = "video/mp4";
-        }
-
-        mediaRecorder = new MediaRecorder(currentStream, options);
-
-        mediaRecorder.ondataavailable = function(e){
-          if(e.data && e.data.size > 0){
-            recordedChunks.push(e.data);
-          }
-        };
-
-        mediaRecorder.onerror = function(e){
-          console.log("Recorder error:", e);
-        };
-
-      }catch(err){
-        console.log("MediaRecorder setup failed:", err);
-        mediaRecorder = null;
-      }
-    }else{
-      console.log("MediaRecorder not supported");
-    }
-
-    console.log("✅ Camera started");
     return true;
 
   }catch(err){
-    console.error("❌ Camera error:", err);
-    alert("Camera blocked. Allow camera access.");
+
+    console.log(err);
+
+    alert("Camera failed: " + err.message);
+
     return false;
   }
 }
