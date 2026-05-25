@@ -43,8 +43,7 @@
 #replay{
   background:linear-gradient(to bottom,#000,#111);
 }
-
-#live{
+  #live{
   display:none;
   position:fixed;
   inset:0;
@@ -52,7 +51,7 @@
   width:100vw;
   height:100vh;
 
-  background:transparent;
+  background:#000;
 
   z-index:9997;
   overflow:hidden;
@@ -181,15 +180,15 @@
 
     #camera{
   position:fixed;
-  inset:0;
+  top:0;
+  left:0;
 
   width:100vw;
   height:100vh;
 
   object-fit:cover;
 
-  display:block;
-  visibility:visible;
+  display:none;
 
   z-index:9998;
 
