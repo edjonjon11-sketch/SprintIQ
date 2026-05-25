@@ -1415,30 +1415,27 @@ setTimeout(()=>{
     }
 
     currentStream = await navigator.mediaDevices.getUserMedia({
-      video:{
-        facingMode:"environment"
-      },
+      video:true,
       audio:false
     });
 
     video.srcObject = currentStream;
 
-    video.setAttribute("playsinline", true);
     video.muted = true;
+    video.setAttribute("playsinline", true);
+    video.setAttribute("autoplay", true);
 
     video.style.display = "block";
-video.style.visibility = "visible";
-video.style.zIndex = "99999";
+    video.style.visibility = "visible";
+    video.style.zIndex = "99999";
 
-await video.play();
+    await video.play();
 
-setupRecorder();
+    setupRecorder();
 
-return true;
+    return true;
 
   }catch(err){
-
-    console.log(err);
 
     alert("Camera failed: " + err.message);
 
