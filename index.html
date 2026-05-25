@@ -46,7 +46,6 @@
 
 #live{
   display:none;
-
   position:fixed;
   top:0;
   left:0;
@@ -54,11 +53,9 @@
   width:100vw;
   height:100vh;
 
-  #live{
-  background:lime;
+  background:#000;
 
   z-index:9997;
-
   overflow:hidden;
 }
 #runnerImg {
@@ -1421,11 +1418,13 @@ setTimeout(()=>{
     video.setAttribute("playsinline", true);
     video.muted = true;
 
-    await video.play();
+    video.style.display = "block";
+video.style.visibility = "visible";
+video.style.zIndex = "99999";
 
-    alert("✅ Camera started");
+await video.play();
 
-    return true;
+return true;
 
   }catch(err){
 
