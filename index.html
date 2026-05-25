@@ -1418,20 +1418,28 @@ setTimeout(()=>{
       currentStream.getTracks().forEach(t => t.stop());
     }
 
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video:true,
+    const constraints = {
+      video:{
+        facingMode: useBackCamera
+          ? { ideal:"environment" }
+          : "user"
+      },
       audio:false
-    });
+    };
+
+    currentStream =
+      await navigator.mediaDevices.getUserMedia(constraints);
+
+    video.pause();
 
     video.srcObject = currentStream;
 
     video.muted = true;
-    video.setAttribute("playsinline", true);
-    video.setAttribute("autoplay", true);
+    video.playsInline = true;
+    video.autoplay = true;
 
     video.style.display = "block";
     video.style.visibility = "visible";
-    video.style.zIndex = "99999";
 
     await video.play();
 
@@ -1440,6 +1448,8 @@ setTimeout(()=>{
     return true;
 
   }catch(err){
+
+    console.error(err);
 
     alert("Camera failed: " + err.message);
 
