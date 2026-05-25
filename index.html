@@ -499,11 +499,18 @@
   <div class="sub">Train Faster. Run Smarter.</div>
 
   <!-- LOGIN CARD -->
-  <div class="card">
-    <button class="btn" onclick="quickLogin()">🔐 Login</button>
-    <button class="btn" onclick="quickSignup()">🆕 Create Account</button>
-    <div class="small-note">You can still run in Guest mode without logging in.</div>
+<div class="card">
+
+  <button class="btn" onclick="openSetup()">🏃 Start Run</button>
+
+  <button class="btn" onclick="quickLogin()">🔐 Login</button>
+
+  <button class="btn" onclick="quickSignup()">🆕 Create Account</button>
+
+  <div class="small-note">
+    You can still run in Guest mode without logging in.
   </div>
+</div>
 
   <!-- BEST TIMES -->
   <div class="card">
@@ -1423,6 +1430,8 @@ video.style.visibility = "visible";
 video.style.zIndex = "99999";
 
 await video.play();
+
+setupRecorder();
 
 return true;
 
