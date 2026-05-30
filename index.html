@@ -861,44 +861,64 @@ function goToHistory(){
 }
 
 function showHistory(){
-  const runs=getLocalRunsForCurrentUser().slice().reverse();
-  let html=`<b>${currentUser} History</b><br><br>`;
+
+  const runs =
+    getLocalRunsForCurrentUser()
+      .slice()
+      .reverse();
+
+  let html =
+    `<b>${currentUser} History</b><br><br>`;
 
   if(!runs.length){
-    html+="No runs yet";
+
+    html += "No runs yet";
+
   }else{
+
     runs.forEach(r=>{
-      html+=`
-        html += `
-<div class="card">
 
-  <b>
-    ${r.distance}m •
-    ${Number(r.time).toFixed(2)}s
-  </b>
+      html += `
+      <div class="card">
 
-  <div style="color:#aaa;font-size:12px;">
-    ${r.date||""}
-  </div>
+        <b>
+          ${r.distance}m •
+          ${Number(r.time).toFixed(2)}s
+        </b>
 
-  ${
-    r.videoId
-      ? `
-      <button class="btn"
-        onclick="
-          openReplayFromDB(
-            '${r.videoId}',
-            '${r.distance}m'
-          )
+        <div style="
+          color:#aaa;
+          font-size:12px;
         ">
-        ▶️ Watch Replay
-      </button>
-      `
-      : ""
+          ${r.date||""}
+        </div>
+
+        ${
+          r.videoId
+            ? `
+            <button class="btn"
+              onclick="
+                openReplayFromDB(
+                  '${r.videoId}',
+                  '${r.distance}m'
+                )
+              ">
+              ▶️ Watch Replay
+            </button>
+            `
+            : ""
+        }
+
+      </div>
+      `;
+
+    });
   }
 
-</div>
-`;
+  document.getElementById(
+    "historyList"
+  ).innerHTML = html;
+}
 
 function clearHistory(){
   if(!confirm("Delete all runs?"))return;
