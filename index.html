@@ -574,18 +574,66 @@ async function startCamera(){
 }
 
 function setupRecorder(){
+
   mediaRecorder=null;
   recordedChunks=[];
 
-  if(!currentStream || typeof MediaRecorder==="undefined")return;
+  if(
+    !currentStream ||
+    typeof MediaRecorder==="undefined"
+  ) return;
 
   try{
-    mediaRecorder=new MediaRecorder(currentStream);
+
+    let options={};
+
+    if(
+      MediaRecorder.isTypeSupported(
+        "video/mp4"
+      )
+    ){
+
+      options={
+        mimeType:"video/mp4"
+      };
+
+    }else if(
+
+      MediaRecorder.isTypeSupported(
+        "video/webm"
+      )
+
+    ){
+
+      options={
+        mimeType:"video/webm"
+      };
+    }
+
+    mediaRecorder =
+      new MediaRecorder(
+        currentStream,
+        options
+      );
+
     mediaRecorder.ondataavailable=e=>{
-      if(e.data && e.data.size>0)recordedChunks.push(e.data);
+
+      if(
+        e.data &&
+        e.data.size>0
+      ){
+        recordedChunks.push(
+          e.data
+        );
+      }
     };
+
   }catch(e){
-    console.log("Recorder not available");
+
+    console.log(
+      "Recorder unavailable",
+      e
+    );
   }
 }
 
@@ -706,7 +754,9 @@ async function stopRun(){
             new Blob(
               recordedChunks,
               {
-                type:"video/webm"
+           type:
+                recordedChunks[0]?.type ||
+              "video/mp4"
               }
             )
           );
