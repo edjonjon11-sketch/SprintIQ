@@ -177,15 +177,15 @@ body{
 .small-note{font-size:12px;color:#aaa;margin-top:8px}
 
 #runnerSprite{
-  width:120px;
-  height:120px;
-  margin:20px auto;
-  background:#222;
+  width:140px;
+  height:140px;
+  margin:24px auto;
+  background:rgba(255,255,255,.05);
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:60px;
+  font-size:72px;
 }
 </style>
 </head>
@@ -214,8 +214,10 @@ body{
 <div class="top-right-btn">🥉</div>
 
 <div id="home" class="screen active">
-  <div id="runnerSprite">⏱️</div>
-  <div class="sub">Train Faster. Run Smarter.</div>
+  <div class="header">SprintIQ</div>
+<div class="sub">
+  Performance Tracking • Replay • Sprint Coaching
+</div>
 
   <div class="card">
 
@@ -225,26 +227,34 @@ body{
     overflow:hidden;
   ">
 
-    <img
-      src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop"
-      alt="Track and field"
-      style="
-        width:100%;
-        height:180px;
-        object-fit:cover;
-        border-radius:16px;
-        display:block;
-      "
-    />
+    <div class="card">
 
+  <img
+    src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop"
+    alt="Track and field"
+    style="
+      width:100%;
+      height:190px;
+      object-fit:cover;
+      border-radius:16px;
+      display:block;
+    "
+  />
+
+  <div class="small-note"
+       style="margin-top:10px;">
+    Ready for your next run
   </div>
 
 </div>
 
 <div class="card">
-  <b>BEST TIMES</b>
-  <div id="bestTimesText">
-    100m: -- | 200m: -- | 400m: --
+  <div style="
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:8px;
+  ">
+    🏁 Best Times
   </div>
 </div>
 
@@ -253,14 +263,24 @@ body{
     <div id="bestTimesText">100m: -- | 200m: -- | 400m: --</div>
   </div>
 
-  <div class="card">
-    <b>PR CLIPS</b>
-    <div id="prClipsList">No PR clips yet</div>
-  </div>
+  <div style="
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:8px;
+">
+  🎥 Replay Library
+</div>
 
   <div class="card">
-    <b>🏃 Sprint Technique Training</b>
-    <div id="runnerSprite">🏃</div>
+    <div style="
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:8px;
+">
+  ⏱ Sprint Technique
+</div>
+
+<div id="runnerSprite">⏱️</div>
     <div id="techTitle" style="font-weight:bold;"></div>
     <div id="techDesc" class="small-note"></div>
   </div>
