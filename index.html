@@ -136,10 +136,11 @@ body{
 
 .top-left-btn,.top-right-btn{
   position:fixed;
-  top:20px;
+  top:18px;
   z-index:12000;
-  width:50px;
-  height:50px;
+  width:64px;
+  height:64px;
+  font-size:28px;
   border-radius:50%;
   display:flex;
   align-items:center;
@@ -199,6 +200,12 @@ body{
   <div class="menuItem" onclick="goToHistory()">History</div>
   <div class="menuItem" onclick="showProfiles()">Athletes</div>
   <div class="menuItem" onclick="switchUser()">Switch User</div>
+  <div class="menuItem" onclick="quickLogin()">
+  🔐 Login
+</div>
+
+<div class="menuItem" onclick="quickSignup()">
+  🆕 Create Account
 </div>
 
 <div class="top-left-btn" onclick="toggleMenu()">🏟️</div>
@@ -209,11 +216,25 @@ body{
   <div class="sub">Train Faster. Run Smarter.</div>
 
   <div class="card">
-    <button class="btn" onclick="openSetup()">🏃 Start Run</button>
-    <button class="btn" onclick="quickLogin()">🔐 Login</button>
-    <button class="btn" onclick="quickSignup()">🆕 Create Account</button>
-    <div class="small-note">You can still run in Guest mode.</div>
-  </div>
+    <div style="
+  margin-top:10px;
+  border-radius:16px;
+  overflow:hidden;
+">
+
+  <img
+    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop"
+    alt="Track and field"
+    style="
+      width:100%;
+      height:180px;
+      object-fit:cover;
+      border-radius:16px;
+      display:block;
+    "
+  />
+
+</div>
 
   <div class="card">
     <b>BEST TIMES</b>
