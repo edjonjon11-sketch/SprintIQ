@@ -317,6 +317,52 @@ body{
   <button class="btn" onclick="showScreen('home')">Back</button>
 </div>
 
+<div id="replay" class="screen">
+  <div class="header">Coach Replay</div>
+
+  <div class="card">
+    <div id="replayTitle"
+         style="font-weight:bold;margin-bottom:10px;">
+      Replay
+    </div>
+
+    <video id="replayVideo"
+           controls
+           playsinline
+           style="
+             width:100%;
+             border-radius:12px;
+             background:#000;
+           ">
+    </video>
+
+    <button class="btn"
+      onclick="setReplaySpeed(.5)">
+      0.5x Slow
+    </button>
+
+    <button class="btn"
+      onclick="setReplaySpeed(1)">
+      1x Normal
+    </button>
+
+    <button class="btn"
+      onclick="jumpReplay(-2)">
+      ⏪ -2 sec
+    </button>
+
+    <button class="btn"
+      onclick="jumpReplay(2)">
+      +2 sec ⏩
+    </button>
+  </div>
+
+  <button class="btn"
+    onclick="goToHistory()">
+    Back to History
+  </button>
+</div>
+  
 <script>
 let useBackCamera=true;
 let currentStream=null;
@@ -330,7 +376,93 @@ let distance=100;
 let splits=[];
 let selectedLane=1;
 let menuOpen=false;
+const DB_NAME = "TrackStarDB";
+const DB_VERSION = 1;
+const STORE_NAME = "videos";
 
+let lastSavedVideoId = null;
+
+function openVideoDB(){
+  return new Promise((resolve,reject)=>{
+
+    const request =
+      indexedDB.open(DB_NAME,DB_VERSION);
+
+    request.onupgradeneeded=e=>{
+
+      const db = e.target.result;
+
+      if(
+        !db.objectStoreNames.contains(
+          STORE_NAME
+        )
+      ){
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+
+    request.onsuccess=
+      ()=>resolve(request.result);
+
+    request.onerror=
+      ()=>reject(request.error);
+  });
+}
+
+async function saveVideoToDB(
+  videoId,
+  blob
+){
+
+  const db =
+    await openVideoDB();
+
+  return new Promise(
+    (resolve,reject)=>{
+
+    const tx =
+      db.transaction(
+        STORE_NAME,
+        "readwrite"
+      );
+
+    tx.objectStore(
+      STORE_NAME
+    ).put(blob,videoId);
+
+    tx.oncomplete=resolve;
+    tx.onerror=reject;
+  });
+}
+
+async function getVideoFromDB(
+  videoId
+){
+
+  const db =
+    await openVideoDB();
+
+  return new Promise(
+    (resolve,reject)=>{
+
+    const tx =
+      db.transaction(
+        STORE_NAME,
+        "readonly"
+      );
+
+    const request =
+      tx.objectStore(
+        STORE_NAME
+      ).get(videoId);
+
+    request.onsuccess=
+      ()=>resolve(request.result);
+
+    request.onerror=
+      ()=>reject(request.error);
+  });
+}
 window.onload=function(){
   showScreen("home");
   updateActiveUserUI();
@@ -541,26 +673,83 @@ function markSplit(){
 }
 
 async function stopRun(){
+
   clearInterval(timer);
 
-  const t=startTime?(Date.now()-startTime)/1000:0;
-  const speed=t>0?(distance/t)*2.237:0;
+  const t =
+    startTime
+      ? (Date.now()-startTime)/1000
+      : 0;
+
+  const speed =
+    t>0
+      ? (distance/t)*2.237
+      : 0;
 
   isRunning=false;
 
-  if(mediaRecorder && mediaRecorder.state==="recording"){
-    try{mediaRecorder.stop();}catch(e){}
+  let blob=null;
+
+  if(
+    mediaRecorder &&
+    mediaRecorder.state==="recording"
+  ){
+
+    blob =
+      await new Promise(resolve=>{
+
+      mediaRecorder.onstop=()=>{
+
+        if(recordedChunks.length){
+
+          resolve(
+            new Blob(
+              recordedChunks,
+              {
+                type:"video/webm"
+              }
+            )
+          );
+
+        }else{
+          resolve(null);
+        }
+      };
+
+      mediaRecorder.stop();
+    });
   }
 
   if(currentStream){
-    currentStream.getTracks().forEach(track=>track.stop());
+
+    currentStream
+      .getTracks()
+      .forEach(
+        t=>t.stop()
+      );
+
     currentStream=null;
   }
 
-  document.getElementById("camera").style.display="none";
+  document.getElementById(
+    "camera"
+  ).style.display="none";
 
-  saveRun(t,speed);
-  showResults(t,speed);
+  const videoId =
+    await saveRun(
+      t,
+      speed,
+      blob
+    );
+
+  lastSavedVideoId=videoId;
+
+  showResults(
+    t,
+    speed,
+    videoId
+  );
+
   showScreen("results");
 }
 
@@ -591,20 +780,57 @@ function showResults(t,speed){
   document.getElementById("splitsBox").innerHTML=html;
 }
 
-function saveRun(time,speed){
-  const data=JSON.parse(localStorage.getItem("SprintIQUsers")||"{}");
-  if(!data[currentUser])data[currentUser]=[];
+async function saveRun(
+  time,
+  speed,
+  videoBlob
+){
+
+  const data =
+    JSON.parse(
+      localStorage.getItem(
+        "SprintIQUsers"
+      ) || "{}"
+    );
+
+  if(!data[currentUser]){
+    data[currentUser]=[];
+  }
+
+  let videoId=null;
+
+  if(videoBlob){
+
+    videoId =
+      "vid_" + Date.now();
+
+    await saveVideoToDB(
+      videoId,
+      videoBlob
+    );
+  }
 
   data[currentUser].push({
+
     distance,
     time,
     speed,
     splits,
-    date:new Date().toLocaleString()
+    videoId,
+
+    date:
+      new Date()
+        .toLocaleString()
   });
 
-  localStorage.setItem("SprintIQUsers",JSON.stringify(data));
+  localStorage.setItem(
+    "SprintIQUsers",
+    JSON.stringify(data)
+  );
+
   renderBestTimes();
+
+  return videoId;
 }
 
 function getLocalRunsForCurrentUser(){
