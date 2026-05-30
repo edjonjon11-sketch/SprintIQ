@@ -869,16 +869,36 @@ function showHistory(){
   }else{
     runs.forEach(r=>{
       html+=`
-        <div class="card">
-          <b>${r.distance}m • ${Number(r.time).toFixed(2)}s</b>
-          <div style="color:#aaa;font-size:12px;">${r.date||""}</div>
-        </div>
-      `;
-    });
+        html += `
+<div class="card">
+
+  <b>
+    ${r.distance}m •
+    ${Number(r.time).toFixed(2)}s
+  </b>
+
+  <div style="color:#aaa;font-size:12px;">
+    ${r.date||""}
+  </div>
+
+  ${
+    r.videoId
+      ? `
+      <button class="btn"
+        onclick="
+          openReplayFromDB(
+            '${r.videoId}',
+            '${r.distance}m'
+          )
+        ">
+        ▶️ Watch Replay
+      </button>
+      `
+      : ""
   }
 
-  document.getElementById("historyList").innerHTML=html;
-}
+</div>
+`;
 
 function clearHistory(){
   if(!confirm("Delete all runs?"))return;
@@ -947,6 +967,67 @@ function toggleMenuClose(){
   menuOpen=false;
 }
 
+async function openReplayFromDB(
+  videoId,
+  title
+){
+
+  const blob =
+    await getVideoFromDB(
+      videoId
+    );
+
+  if(!blob){
+    alert("No video found");
+    return;
+  }
+
+  const video =
+    document.getElementById(
+      "replayVideo"
+    );
+
+  const titleEl =
+    document.getElementById(
+      "replayTitle"
+    );
+
+  titleEl.innerText =
+    title || "Replay";
+
+  const url =
+    URL.createObjectURL(blob);
+
+  video.pause();
+
+  video.src=url;
+
+  video.load();
+
+  showScreen("replay");
+}
+
+function setReplaySpeed(rate){
+
+  document.getElementById(
+    "replayVideo"
+  ).playbackRate=rate;
+}
+
+function jumpReplay(sec){
+
+  const v =
+    document.getElementById(
+      "replayVideo"
+    );
+
+  v.currentTime =
+    Math.max(
+      0,
+      v.currentTime + sec
+    );
+}
+  
 function startTechniqueRotation(){
   const steps=[
     ["Start / Drive Phase","Low forward angle • Explosive push • Big arm drive"],
