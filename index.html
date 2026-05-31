@@ -315,11 +315,14 @@ body{
   <div class="card">
     <div style="color:#aaa;font-size:14px;margin-bottom:6px;">Select Lane</div>
     <select onchange="selectedLane=Number(this.value);updateLaneUI();" style="width:100%;padding:12px;border-radius:10px;background:#222;color:white;border:none;">
-      <option value="1">Lane 1</option>
-      <option value="2">Lane 2</option>
-      <option value="3">Lane 3</option>
-      <option value="4">Lane 4</option>
-      <option value="5">Lane 5</option>
+<option value="1">Lane 1</option>
+<option value="2">Lane 2</option>
+<option value="3">Lane 3</option>
+<option value="4">Lane 4</option>
+<option value="5">Lane 5</option>
+<option value="6">Lane 6</option>
+<option value="7">Lane 7</option>
+<option value="8">Lane 8</option>
     </select>
   </div>
 
@@ -775,7 +778,7 @@ function drawLanes(){
     canvas.height
   );
 
-  const lanes = 5;
+  const lanes = 8;
 
   const laneHeight =
     canvas.height / lanes;
@@ -825,9 +828,9 @@ function drawRunnerBox(){
     canvas.getContext("2d");
 
   const laneHeight =
-    canvas.height / 5;
+    canvas.height / 8;
 
-  const x =
+  const x =8
     canvas.width/2 - 40;
 
   const y =
