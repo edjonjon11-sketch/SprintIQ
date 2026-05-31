@@ -410,15 +410,33 @@ body{
       Replay
     </div>
 
-    <video id="replayVideo"
-           controls
-           playsinline
-           style="
-             width:100%;
-             border-radius:12px;
-             background:#000;
-           ">
-    </video>
+  <div style="
+  position:relative;
+  width:100%;
+">
+
+  <video id="replayVideo"
+         controls
+         playsinline
+         style="
+           width:100%;
+           border-radius:12px;
+           background:#000;
+         ">
+  </video>
+
+  <canvas id="replayOverlay"
+    style="
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      border-radius:12px;
+    ">
+  </canvas>
+
+</div>  
 
     <button class="btn"
       onclick="setReplaySpeed(.5)">
@@ -1230,6 +1248,102 @@ function setReplaySpeed(rate){
   ).playbackRate=rate;
 }
 
+<script>
+function drawReplayCoaching(){
+
+  const video =
+    document.getElementById("replayVideo");
+
+  const canvas =
+    document.getElementById("replayOverlay");
+
+  if(!video || !canvas) return;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  canvas.width =
+    video.clientWidth;
+
+  canvas.height =
+    video.clientHeight;
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  if(video.paused) return;
+
+  const kneeX =
+    canvas.width * .52;
+
+  const kneeY =
+    canvas.height * .62;
+
+  const armX =
+    canvas.width * .62;
+
+  const armY =
+    canvas.height * .42;
+
+  const leanX =
+    canvas.width * .45;
+
+  const leanY =
+    canvas.height * .28;
+
+  // knee
+  ctx.fillStyle="#ffd60a";
+  ctx.beginPath();
+  ctx.arc(kneeX,kneeY,10,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillText(
+    "Knee drive",
+    kneeX+15,
+    kneeY
+  );
+
+  // arm
+  ctx.fillStyle="#34c759";
+  ctx.beginPath();
+  ctx.arc(armX,armY,10,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillText(
+    "Arm angle good",
+    armX+15,
+    armY
+  );
+
+  // lean
+  ctx.fillStyle="#ff453a";
+  ctx.beginPath();
+  ctx.arc(leanX,leanY,10,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillText(
+    "Lean forward",
+    leanX+15,
+    leanY
+  );
+
+  requestAnimationFrame(
+    drawReplayCoaching
+  );
+}
+
+document
+  .getElementById("replayVideo")
+  ?.addEventListener(
+    "play",
+    drawReplayCoaching
+  );
+</script>
+  
 function jumpReplay(sec){
 
   const v =
