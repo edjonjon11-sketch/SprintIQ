@@ -775,48 +775,110 @@ function update(){
 }
 
 function drawLanes(){
-  const canvas=document.getElementById("laneOverlay");
-  const ctx=canvas.getContext("2d");
 
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
+  const canvas =
+    document.getElementById("laneOverlay");
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const ctx =
+    canvas.getContext("2d");
 
-  const lanes=5;
-  const laneWidth=canvas.width/lanes;
+  canvas.width =
+    window.innerWidth;
+
+  canvas.height =
+    window.innerHeight;
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  const lanes = 5;
+
+  const laneHeight =
+    canvas.height / lanes;
 
   for(let i=0;i<lanes;i++){
-    const x=i*laneWidth;
-    ctx.strokeStyle="rgba(255,255,255,.25)";
-    ctx.lineWidth=2;
+
+    const y =
+      i * laneHeight;
+
+    ctx.strokeStyle =
+      "rgba(255,255,255,.25)";
+
+    ctx.lineWidth = 2;
+
     ctx.beginPath();
-    ctx.moveTo(x,0);
-    ctx.lineTo(x,canvas.height);
+
+    ctx.moveTo(0,y);
+
+    ctx.lineTo(
+      canvas.width,
+      y
+    );
+
     ctx.stroke();
 
     if(i+1===selectedLane){
-      ctx.fillStyle="rgba(255,0,0,.12)";
-      ctx.fillRect(x,0,laneWidth,canvas.height);
+
+      ctx.fillStyle =
+        "rgba(255,0,0,.12)";
+
+      ctx.fillRect(
+        0,
+        y,
+        canvas.width,
+        laneHeight
+      );
     }
   }
 }
 
 function drawRunnerBox(){
-  const canvas=document.getElementById("laneOverlay");
-  const ctx=canvas.getContext("2d");
 
-  const laneWidth=canvas.width/5;
-  const x=(selectedLane-1)*laneWidth+laneWidth/2-40;
-  const y=canvas.height/2-60;
+  const canvas =
+    document.getElementById("laneOverlay");
 
-  ctx.strokeStyle="#ff3b30";
-  ctx.lineWidth=3;
-  ctx.strokeRect(x,y,80,120);
+  const ctx =
+    canvas.getContext("2d");
 
-  ctx.fillStyle="#ff3b30";
-  ctx.font="14px sans-serif";
-  ctx.fillText("TRACKING",x,y-10);
+  const laneHeight =
+    canvas.height / 5;
+
+  const x =
+    canvas.width/2 - 40;
+
+  const y =
+    (selectedLane-1) *
+    laneHeight +
+    laneHeight/2 -
+    60;
+
+  ctx.strokeStyle =
+    "#ff3b30";
+
+  ctx.lineWidth = 3;
+
+  ctx.strokeRect(
+    x,
+    y,
+    80,
+    120
+  );
+
+  ctx.fillStyle =
+    "#ff3b30";
+
+  ctx.font =
+    "14px sans-serif";
+
+  ctx.fillText(
+    "TRACKING",
+    x,
+    y-10
+  );
 }
 
 function markSplit(){
