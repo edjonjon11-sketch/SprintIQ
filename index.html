@@ -483,7 +483,7 @@ running mechanics.
 </p>
 
 <button class="btn"
-onclick="alert('Technique recording coming soon');">
+onclick="startTechniqueRecording()">
 
 Record Technique
 
@@ -1389,6 +1389,21 @@ document
     "play",
     drawReplayCoaching
   );
+async function startTechniqueRecording(){
+
+  alert("Technique recording will use the same camera recording system as sprint runs.");
+
+  showScreen("live");
+
+  const ok = await startCamera();
+
+  if(!ok){
+    showScreen("technique");
+    return;
+  }
+
+  beginMovement();
+}
   
 function jumpReplay(sec){
 
