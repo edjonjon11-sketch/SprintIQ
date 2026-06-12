@@ -492,48 +492,40 @@ Back
   
   <div id="technique" class="screen">
 
-<div class="header">
-Technique Analysis
-</div>
+  <div class="header">
+    Technique Analysis
+  </div>
 
-<div class="card">
+  <div class="card">
 
-<h3>🎥 Technique Analysis (Beta)</h3>
+    <h3>🎥 Technique Analysis V1</h3>
 
-<p>
-Record a 5–10 second sprint clip and review
-running mechanics.
-</p>
+    <p>
+      Select the event. KayLTrac will show the key technique points to review.
+    </p>
 
-<button class="btn"
-onclick="startTechniqueRecording()">
+    <button class="btn" onclick="loadTechniqueGuide(100)">
+      100m Technique
+    </button>
 
-Record Technique
+    <button class="btn" onclick="loadTechniqueGuide(200)">
+      200m Technique
+    </button>
 
-</button>
+    <button class="btn" onclick="loadTechniqueGuide(400)">
+      400m Technique
+    </button>
 
-<button class="btn"
-onclick="alert('Form analysis coming soon');">
+    <div id="techniqueResults"
+    style="margin-top:15px;color:#ddd;">
+      Select an event above.
+    </div>
 
-Analyze Form
+  </div>
 
-</button>
-
-<div id="techniqueResults"
-style="margin-top:15px;color:#aaa;">
-
-No analysis available yet.
-
-</div>
-
-</div>
-
-<button class="btn"
-onclick="showScreen('home')">
-
-Back Home
-
-</button>
+  <button class="btn" onclick="showScreen('home')">
+    Back Home
+  </button>
 
 </div>
   
@@ -554,7 +546,7 @@ let menuOpen=false;
 const DB_NAME = "TrackStarDB";
 const DB_VERSION = 1;
 const STORE_NAME = "videos";
-
+let selectedTechniqueEvent = 100;
 let lastSavedVideoId = null;
 let techniqueVideos =
 JSON.parse(
@@ -1526,6 +1518,99 @@ function startTechniqueRotation(){
 
   run();
   setInterval(run,2500);
+}
+  function loadTechniqueGuide(event){
+
+  selectedTechniqueEvent = event;
+
+  let html = '';
+
+  if(event === 100){
+
+    html = `
+      <h3>100m Technique Review</h3>
+
+      <b>Drive Phase</b>
+      <ul>
+        <li>Forward body lean</li>
+        <li>Powerful first steps</li>
+        <li>Strong arm drive</li>
+        <li>Head stays down early</li>
+      </ul>
+
+      <b>Acceleration</b>
+      <ul>
+        <li>Gradually rise up</li>
+        <li>Knees drive forward</li>
+        <li>Foot lands under hips</li>
+      </ul>
+
+      <b>Top Speed</b>
+      <ul>
+        <li>Relax shoulders</li>
+        <li>Tall posture</li>
+        <li>Fast arms, fast legs</li>
+      </ul>
+    `;
+
+  } else if(event === 200){
+
+    html = `
+      <h3>200m Technique Review</h3>
+
+      <b>Curve Running</b>
+      <ul>
+        <li>Slight lean into the curve</li>
+        <li>Stay relaxed through shoulders</li>
+        <li>Control stride length</li>
+      </ul>
+
+      <b>Acceleration</b>
+      <ul>
+        <li>Build speed smoothly</li>
+        <li>Do not pop up too early</li>
+        <li>Keep arms driving straight</li>
+      </ul>
+
+      <b>Finish</b>
+      <ul>
+        <li>Hold form late</li>
+        <li>Do not tighten up</li>
+        <li>Run through the line</li>
+      </ul>
+    `;
+
+  } else if(event === 400){
+
+    html = `
+      <h3>400m Technique Review</h3>
+
+      <b>Opening 100m</b>
+      <ul>
+        <li>Controlled aggressive start</li>
+        <li>Do not sprint all-out too early</li>
+        <li>Relax face and shoulders</li>
+      </ul>
+
+      <b>Backstretch</b>
+      <ul>
+        <li>Smooth rhythm</li>
+        <li>Good posture</li>
+        <li>Consistent arm swing</li>
+      </ul>
+
+      <b>Final 100m</b>
+      <ul>
+        <li>Keep knees lifting</li>
+        <li>Keep arms moving</li>
+        <li>Hold form when tired</li>
+      </ul>
+    `;
+
+  }
+
+  document.getElementById('techniqueResults').innerHTML = html;
+
 }
 </script>
 </body>
