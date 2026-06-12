@@ -504,6 +504,10 @@ Back
       Select the event. KayLTrac will show the key technique points to review.
     </p>
 
+    <button class="btn" onclick="startTechniqueRecording()">
+🎥 Record Technique
+</button>
+    
     <button class="btn" onclick="loadTechniqueGuide(100)">
       100m Technique
     </button>
@@ -1063,7 +1067,7 @@ async function stopRun(){
 
 lastSavedVideoId = videoId;
 
-if(videoId){
+if(videoId && recordingTechnique){
 
   techniqueVideos.unshift({
 
@@ -1074,7 +1078,9 @@ if(videoId){
     videoId
 
   });
-
+  
+recordingTechnique = false;
+  
   localStorage.setItem(
     "techniqueVideos",
     JSON.stringify(
@@ -1136,7 +1142,6 @@ async function saveRun(
   if(!data[currentUser]){
     data[currentUser]=[];
   }
-recordingTechnique = false;
   
   let videoId=null;
 
