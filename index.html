@@ -466,6 +466,53 @@ onclick="showScreen('technique')">
     Back to History
   </button>
 </div>
+
+  <div id="technique" class="screen">
+
+<div class="header">
+Technique Analysis
+</div>
+
+<div class="card">
+
+<h3>🎥 Technique Analysis (Beta)</h3>
+
+<p>
+Record a 5–10 second sprint clip and review
+running mechanics.
+</p>
+
+<button class="btn"
+onclick="alert('Technique recording coming soon');">
+
+Record Technique
+
+</button>
+
+<button class="btn"
+onclick="alert('Form analysis coming soon');">
+
+Analyze Form
+
+</button>
+
+<div id="techniqueResults"
+style="margin-top:15px;color:#aaa;">
+
+No analysis available yet.
+
+</div>
+
+</div>
+
+<button class="btn"
+onclick="showScreen('home')">
+
+Back Home
+
+</button>
+
+</div>
   
 <script>
 let useBackCamera=true;
@@ -837,7 +884,7 @@ function drawRunnerBox(){
   const laneHeight =
     canvas.height / 8;
 
-  const x =8
+  const x =
     canvas.width/2 - 40;
 
   const y =
