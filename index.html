@@ -204,7 +204,13 @@ body{
   <div class="menuItem" onclick="quickLogin()">
   🔐 Login
 </div>
+<div class="menuItem"
+onclick="showTechniqueLibrary()">
 
+🎥 Technique Library
+
+</div>
+  
 <div class="menuItem" onclick="quickSignup()">
   🆕 Create Account
 </div>
@@ -467,6 +473,23 @@ onclick="showScreen('technique')">
   </button>
 </div>
 
+  <div id="techniqueLibrary" class="screen">
+
+<div class="header">
+Technique Library
+</div>
+
+<div id="techniqueLibraryList"></div>
+
+<button class="btn"
+onclick="showScreen('home')">
+
+Back
+
+</button>
+
+</div>
+  
   <div id="technique" class="screen">
 
 <div class="header">
@@ -516,6 +539,7 @@ Back Home
   
 <script>
 let useBackCamera=true;
+let recordingTechnique = false;
 let currentStream=null;
 let mediaRecorder=null;
 let recordedChunks=[];
@@ -532,6 +556,10 @@ const DB_VERSION = 1;
 const STORE_NAME = "videos";
 
 let lastSavedVideoId = null;
+let techniqueVideos =
+JSON.parse(
+localStorage.getItem("techniqueVideos") || "[]"
+);
 
 function openVideoDB(){
   return new Promise((resolve,reject)=>{
@@ -800,7 +828,44 @@ function beginMovement(){
   clearInterval(timer);
   timer=setInterval(update,100);
 }
+function showTechniqueLibrary(){
 
+  const box =
+  document.getElementById(
+    "techniqueLibraryList"
+  );
+
+  box.innerHTML = "";
+
+  techniqueVideos.forEach(v=>{
+
+    box.innerHTML += `
+      <div class="card">
+
+        <b>${v.date}</b>
+
+        <button class="btn"
+        onclick="
+        openReplayFromDB(
+          '${v.videoId}',
+          'Technique Analysis'
+        )">
+
+        Watch Video
+
+        </button>
+
+      </div>
+    `;
+
+  });
+
+  showScreen(
+    "techniqueLibrary"
+  );
+
+}
+  
 function update(){
   if(!isRunning || !startTime)return;
 
@@ -998,13 +1063,34 @@ async function stopRun(){
   ).style.display="none";
 
   const videoId =
-    await saveRun(
-      t,
-      speed,
-      blob
-    );
+  await saveRun(
+    t,
+    speed,
+    blob
+  );
 
-  lastSavedVideoId=videoId;
+lastSavedVideoId = videoId;
+
+if(videoId){
+
+  techniqueVideos.unshift({
+
+    date:
+    new Date().toLocaleString(),
+
+    videoId:
+    videoId
+
+  });
+
+  localStorage.setItem(
+    "techniqueVideos",
+    JSON.stringify(
+      techniqueVideos
+    )
+  );
+
+}
 
   showResults(
     t,
@@ -1058,7 +1144,8 @@ async function saveRun(
   if(!data[currentUser]){
     data[currentUser]=[];
   }
-
+recordingTechnique = false;
+  
   let videoId=null;
 
   if(videoBlob){
@@ -1403,6 +1490,9 @@ async function startTechniqueRecording(){
   }
 
   beginMovement();
+  
+recordingTechnique = true;
+  
 }
   
 function jumpReplay(sec){
