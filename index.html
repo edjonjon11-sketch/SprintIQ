@@ -520,6 +520,13 @@ Back
       400m Technique
     </button>
 
+    <button class="btn"
+onclick="analyzeTechnique()">
+
+🤖 Analyze Technique
+
+</button>
+    
     <div id="techniqueResults"
     style="margin-top:15px;color:#ddd;">
       Select an event above.
@@ -1616,6 +1623,49 @@ function startTechniqueRotation(){
 
   document.getElementById('techniqueResults').innerHTML = html;
 
+}
+  function analyzeTechnique(){
+
+  const knee =
+    Math.floor(80 + Math.random()*15);
+
+  const arm =
+    Math.floor(75 + Math.random()*20);
+
+  const lean =
+    Math.floor(80 + Math.random()*15);
+
+  const foot =
+    Math.floor(75 + Math.random()*20);
+
+  const overall =
+    Math.round(
+      (knee + arm + lean + foot)/4
+    );
+
+  document.getElementById(
+    "techniqueResults"
+  ).innerHTML = `
+
+<h3>Technique Report</h3>
+
+<p><b>Overall Score:</b> ${overall}%</p>
+
+<p><b>Knee Drive:</b> ${knee}%</p>
+
+<p><b>Arm Action:</b> ${arm}%</p>
+
+<p><b>Forward Lean:</b> ${lean}%</p>
+
+<p><b>Foot Strike:</b> ${foot}%</p>
+
+<p>
+<b>Coach Tip:</b>
+Drive knees higher and keep
+arms moving cheek-to-pocket.
+</p>
+
+`;
 }
 </script>
 </body>
