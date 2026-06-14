@@ -519,7 +519,18 @@ Back
     <button class="btn" onclick="loadTechniqueGuide(400)">
       400m Technique
     </button>
+<input
+type="file"
+id="techniqueUpload"
+accept="video/*"
+style="margin-top:15px;">
 
+<button class="btn"
+onclick="uploadTechniqueVideo()">
+
+📤 Upload Video
+
+</button>
     <button class="btn"
 onclick="analyzeTechnique()">
 
@@ -1666,6 +1677,51 @@ arms moving cheek-to-pocket.
 </p>
 
 `;
+}
+  async function uploadTechniqueVideo(){
+
+  const file =
+    document.getElementById(
+      "techniqueUpload"
+    ).files[0];
+
+  if(!file){
+
+    alert(
+      "Choose a video first."
+    );
+
+    return;
+  }
+
+  const videoId =
+    "vid_" + Date.now();
+
+  await saveVideoToDB(
+    videoId,
+    file
+  );
+
+  techniqueVideos.unshift({
+
+    date:
+    new Date().toLocaleString(),
+
+    videoId
+
+  });
+
+  localStorage.setItem(
+    "techniqueVideos",
+    JSON.stringify(
+      techniqueVideos
+    )
+  );
+
+  alert(
+    "Technique video uploaded."
+  );
+
 }
 </script>
 </body>
