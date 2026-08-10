@@ -314,7 +314,15 @@ background:#000;
 
       <button
         class="btn"
-        onclick="showScreen('home')"
+        onclick="
+  const v=document.getElementById('introVideo');
+  if(v){
+    v.pause();
+    v.currentTime=0;
+    v.muted=true;
+  }
+  showScreen('home');
+"
         style="
           margin-top:22px;
           width:100%;
@@ -341,56 +349,139 @@ background:#000;
     Performance Tracking • Replay • Sprint Coaching
   </div>
   
-  <!-- TRAINING GUIDES -->
-  <div class="card">
+  <!-- TECHNIQUE GUIDES -->
+<div class="card">
+
+  <div style="
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:6px;
+  ">
+    🎥 Technique Guides
+  </div>
+
+  <div style="
+    color:#aaa;
+    font-size:14px;
+    margin-bottom:16px;
+  ">
+    Choose an event to watch the proper technique.
+  </div>
+
+
+  <div
+    onclick="openTechniqueDemo(100)"
+    style="
+      padding:16px;
+      margin-bottom:12px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#171717,#0b0b0b);
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+    ">
 
     <div style="
-      font-size:18px;
+      font-size:19px;
       font-weight:bold;
-      margin-bottom:12px;
     ">
-      🔥 Sprint Training Guides
+      ⚡ 100m Start & Acceleration
     </div>
 
     <div style="
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+      color:#aaa;
+      font-size:13px;
+      margin-top:5px;
     ">
+      Block start • Drive phase • Acceleration • Max speed
+    </div>
 
-      <img
-  src="./100m-guide.jpeg.jpg"
-  alt="100m guide"
-  style="
-    width:100%;
-    border-radius:16px;
-    display:block;
-  "
-/>
-
-<img
-  src="./200m-guide.jpeg.jpg"
-  alt="200m guide"
-  style="
-    width:100%;
-    border-radius:16px;
-    display:block;
-  "
-/>
-
-<img
-  src="./400m-guide.jpeg.jpg"
-  alt="400m guide"
-  style="
-    width:100%;
-    border-radius:16px;
-    display:block;
-  "
-/>
-
+    <div style="
+      margin-top:12px;
+      color:#ff5a5a;
+      font-weight:bold;
+      font-size:14px;
+    ">
+      Watch Technique →
     </div>
 
   </div>
+
+
+  <div
+    onclick="openTechniqueDemo(200)"
+    style="
+      padding:16px;
+      margin-bottom:12px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#171717,#0b0b0b);
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+    ">
+
+    <div style="
+      font-size:19px;
+      font-weight:bold;
+    ">
+      🏃 200m Curve Technique
+    </div>
+
+    <div style="
+      color:#aaa;
+      font-size:13px;
+      margin-top:5px;
+    ">
+      Curve running • Transition • Relaxation • Finish
+    </div>
+
+    <div style="
+      margin-top:12px;
+      color:#ff5a5a;
+      font-weight:bold;
+      font-size:14px;
+    ">
+      Watch Technique →
+    </div>
+
+  </div>
+
+
+  <div
+    onclick="openTechniqueDemo(400)"
+    style="
+      padding:16px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#171717,#0b0b0b);
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+    ">
+
+    <div style="
+      font-size:19px;
+      font-weight:bold;
+    ">
+      🔥 400m Rhythm & Finish
+    </div>
+
+    <div style="
+      color:#aaa;
+      font-size:13px;
+      margin-top:5px;
+    ">
+      Controlled start • Rhythm • Form under fatigue • Finish
+    </div>
+
+    <div style="
+      margin-top:12px;
+      color:#ff5a5a;
+      font-weight:bold;
+      font-size:14px;
+    ">
+      Watch Technique →
+    </div>
+
+  </div>
+
+</div>
 
   <!-- BEST TIMES -->
   <div class="card">
@@ -663,6 +754,60 @@ onclick="analyzeTechnique()">
   </button>
 
 </div>
+
+<div id="home" class="screen">
+  ...
+  all your home-page cards
+  ...
+</div>
+
+<div id="techniqueDemo" class="screen">
+
+  <div class="header" id="demoTitle">
+    Technique Demo
+  </div>
+
+  <div class="card">
+
+    <video
+      id="demoVideo"
+      controls
+      playsinline
+      style="
+        width:100%;
+        border-radius:16px;
+        background:#000;
+        display:block;
+      ">
+    </video>
+
+    <div
+      id="demoPoints"
+      style="
+        margin-top:16px;
+        color:#ddd;
+        line-height:1.6;
+      ">
+    </div>
+
+  </div>
+
+  <button
+    class="btn"
+    onclick="
+      const v=document.getElementById('demoVideo');
+      if(v){
+        v.pause();
+        v.currentTime=0;
+      }
+      showScreen('home');
+    ">
+    Back
+  </button>
+
+</div>
+
+<div id="setup" class="screen">
   
 <script>
 let useBackCamera=true;
@@ -793,6 +938,85 @@ function showScreen(id){
   }
 }
 
+function openTechniqueDemo(event){
+
+  const video =
+    document.getElementById("demoVideo");
+
+  const title =
+    document.getElementById("demoTitle");
+
+  const points =
+    document.getElementById("demoPoints");
+
+
+  if(event===100){
+
+    title.innerText =
+      "100m Start & Acceleration";
+
+    video.src =
+      "SprintIQ.mp4";
+
+    points.innerHTML = `
+      <b>Watch for:</b><br><br>
+      • Low drive angle out of the blocks<br>
+      • Powerful first 6–8 steps<br>
+      • Strong arm drive<br>
+      • Gradual rise into upright sprinting<br>
+      • Quick ground contact
+    `;
+
+  }
+
+
+  if(event===200){
+
+    title.innerText =
+      "200m Curve Technique";
+
+    video.removeAttribute("src");
+    video.load();
+
+    points.innerHTML = `
+      <b>200m video coming next.</b><br><br>
+      • Slight natural lean on the curve<br>
+      • Relaxed shoulders<br>
+      • Smooth transition into the straight<br>
+      • Maintain speed through the finish
+    `;
+
+  }
+
+
+  if(event===400){
+
+    title.innerText =
+      "400m Rhythm & Finish";
+
+    video.removeAttribute("src");
+    video.load();
+
+    points.innerHTML = `
+      <b>400m video coming next.</b><br><br>
+      • Controlled opening 100m<br>
+      • Smooth backstretch rhythm<br>
+      • Tall posture under fatigue<br>
+      • Keep arms and knees moving late<br>
+      • Run through the finish
+    `;
+
+  }
+
+
+  showScreen("techniqueDemo");
+
+  if(event===100){
+    video.play().catch(()=>{});
+  }
+
+}
+  
 function toggleMenu(){
   const menu=document.getElementById("sideMenu");
   const overlay=document.getElementById("menuOverlay");
