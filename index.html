@@ -964,21 +964,22 @@ function openTechniqueDemo(event){
 
   if(event===200){
 
-    title.innerText =
-      "200m Curve Technique";
+  title.innerText =
+    "200m Curve Technique";
 
-    video.removeAttribute("src");
-    video.load();
+  video.src =
+    "SprintIQ-200m.mp4";
 
-    points.innerHTML = `
-      <b>200m video coming next.</b><br><br>
-      • Slight natural lean on the curve<br>
-      • Relaxed shoulders<br>
-      • Smooth transition into the straight<br>
-      • Maintain speed through the finish
-    `;
+  points.innerHTML = `
+    <b>Watch for:</b><br><br>
+    • Controlled block start on the curve<br>
+    • Slight natural lean into the turn<br>
+    • Relaxed shoulders and strong arm action<br>
+    • Smooth transition from curve to straight<br>
+    • Maintain posture and speed through the finish
+  `;
 
-  }
+}
 
 
   if(event===400){
